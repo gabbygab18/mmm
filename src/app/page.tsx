@@ -189,11 +189,11 @@ export default function Home() {
 
         {/* Social links */}
         <div className="relative mt-14 flex justify-center -space-x-8">
-  <Social label="Facebook" href="#" iconSrc="/landing/fb-logo.png" />
-  <Social label="Instagram" href="#" iconSrc="/landing/ig-logo.png" />
-  <Social label="YouTube" href="#" iconSrc="/landing/yt-logo.png" />
-  <Social label="TikTok" href="#" iconSrc="/landing/tiktok-logo.png" />
-</div>
+          <Social label="Facebook" href="#" iconSrc="/landing/fb-logo.png" />
+          <Social label="Instagram" href="#" iconSrc="/landing/ig-logo.png" />
+          <Social label="YouTube" href="#" iconSrc="/landing/yt-logo.png" />
+          <Social label="TikTok" href="#" iconSrc="/landing/tiktok-logo.png" />
+        </div>
       </section>
 
       {/* ============ Footer ============ */}
