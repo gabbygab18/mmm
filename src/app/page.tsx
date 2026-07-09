@@ -123,10 +123,10 @@ export default function Home() {
 
           <div className="landing-rise landing-delay-2 flex flex-col items-center gap-5 lg:mt-40 lg:self-start">
             <Link
-  href="/login"
-  aria-label="Get started — it's free"
-  className="group inline-block self-center rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ocean-800"
->
+              href="/login"
+              aria-label="Get started — it's free"
+              className="group inline-block self-center rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ocean-800"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/landing/btn-get-started.png"
@@ -135,10 +135,10 @@ export default function Home() {
               />
             </Link>
             <Link
-  href="/login"
-  aria-label="Sign in"
-  className="group inline-block self-center rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ocean-800"
->
+              href="/login"
+              aria-label="Sign in"
+              className="group inline-block self-center rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ocean-800"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/landing/btn-signin.png"
@@ -188,12 +188,12 @@ export default function Home() {
         </div>
 
         {/* Social links */}
-        <div className="relative mt-14 flex justify-center">
-          <Social label="Facebook" href="#" iconSrc="/landing/fb-logo.png" />
-          <Social label="Instagram" href="#" iconSrc="/landing/ig-logo.png" />
-          <Social label="YouTube" href="#" iconSrc="/landing/yt-logo.png" />
-          <Social label="TikTok" href="#" iconSrc="/landing/tiktok-logo.png" />
-        </div>
+        <div className="relative mt-14 flex justify-center -space-x-8">
+  <Social label="Facebook" href="#" iconSrc="/landing/fb-logo.png" />
+  <Social label="Instagram" href="#" iconSrc="/landing/ig-logo.png" />
+  <Social label="YouTube" href="#" iconSrc="/landing/yt-logo.png" />
+  <Social label="TikTok" href="#" iconSrc="/landing/tiktok-logo.png" />
+</div>
       </section>
 
       {/* ============ Footer ============ */}
