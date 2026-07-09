@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-stone-50 text-stone-900;
+  }
+}
+
+/* ---------- Landing page ---------- */
+.landing-hero-photo {
+  background-image: url('/landing/hero.jpg');
+  background-size: cover;
+  background-position: center 20%;
+}
+
+/* Soft glow behind the light-streak wave */
+.landing-wave-glow {
+  filter: drop-shadow(0 0 14px rgba(226, 240, 255, 0.65));
+}
+
+/* Entrance animations (disabled under reduced-motion) */
+@keyframes landing-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.landing-rise {
+  animation: landing-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.landing-delay-1 { animation-delay: 0.08s; }
+.landing-delay-2 { animation-delay: 0.16s; }
+.landing-delay-3 { animation-delay: 0.24s; }
+.landing-delay-4 { animation-delay: 0.32s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-rise {
+    animation: none;
+  }
+}
