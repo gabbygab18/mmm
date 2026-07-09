@@ -141,67 +141,40 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bright light-streak wave — full-width gentle sweep near the hero's base */}
-        <svg
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-48 w-full select-none sm:h-64"
-          viewBox="0 0 1440 240"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <defs>
-            <filter id="wave-glow" x="-20%" y="-60%" width="140%" height="260%">
-              <feGaussianBlur stdDeviation="9" />
-            </filter>
-          </defs>
-          {/* soft outer halo */}
-          <path
-            d="M0,150 C320,74 620,66 860,120 C1090,172 1280,182 1440,132"
-            fill="none"
-            stroke="rgba(210,232,255,0.5)"
-            strokeWidth="26"
-            strokeLinecap="round"
-            filter="url(#wave-glow)"
-          />
-          {/* mid glow */}
-          <path
-            d="M0,150 C320,74 620,66 860,120 C1090,172 1280,182 1440,132"
-            fill="none"
-            stroke="rgba(226,241,255,0.85)"
-            strokeWidth="8"
-            strokeLinecap="round"
-            filter="url(#wave-glow)"
-          />
-          {/* bright core */}
-          <path
-            d="M0,150 C320,74 620,66 860,120 C1090,172 1280,182 1440,132"
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
       </section>
 
       {/* ============ Features (blue section) ============ */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-ocean-800 via-ocean-900 to-ocean-950 px-6 pb-16 pt-10 sm:pb-20">
+      <section className="relative bg-gradient-to-b from-ocean-800 via-ocean-900 to-ocean-950 px-6 pb-16 pt-10 sm:pb-20">
+        {/* Bright light-streak wave — bridges the hero/blue seam. Sits above the blue background (paints after
+            the section's own bg) but below the cards and notes (they get z-10, this stays at the default z-0). */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/landing/wave.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-0 w-full -translate-y-[70%] rotate-2 select-none"
+          width={1080}
+          height={929}
+        />
+
         {/* Note decorations */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/landing/notes-ur.png" alt="" aria-hidden="true" className="pointer-events-none absolute right-0 top-6 w-44 opacity-30 sm:w-64" />
+        <img src="/landing/notes-ur.png" alt="" aria-hidden="true" className="pointer-events-none absolute right-0 top-6 z-10 w-44 opacity-30 sm:w-64" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/landing/notes-bl.png" alt="" aria-hidden="true" className="pointer-events-none absolute bottom-6 left-0 w-44 opacity-30 sm:w-64" />
+        <img src="/landing/notes-bl.png" alt="" aria-hidden="true" className="pointer-events-none absolute bottom-6 left-0 z-10 w-44 opacity-30 sm:w-64" />
 
-        <div className="relative mx-auto grid max-w-6xl gap-6 sm:grid-cols-3">
+        <div className="relative z-10 mx-auto mt-24 grid max-w-6xl gap-6 sm:grid-cols-3">
           {FEATURES.map((f, i) => (
             <article
               key={f.title}
-              className={`landing-rise landing-delay-${i + 1} flex flex-col rounded-3xl bg-white p-5 shadow-xl`}
+              className={`landing-rise landing-delay-${i + 1} relative overflow-hidden rounded-[2.5rem] shadow-xl`}
             >
-              <div className="overflow-hidden rounded-2xl">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={f.img} alt={f.alt} className="h-44 w-full object-cover" loading="lazy" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={f.img} alt={f.alt} className="block w-full h-auto" loading="lazy" />
+              <div className="absolute inset-x-0 bottom-0 top-[55%] flex flex-col items-center justify-start px-6 pb-6 pt-2 text-center">
+                <h2 className="text-lg font-extrabold uppercase tracking-wider text-ocean-800">{f.title}</h2>
+                <p className="mt-3 text-sm leading-relaxed text-ocean-700">{f.body}</p>
               </div>
-              <h2 className="mt-5 text-center text-lg font-extrabold uppercase tracking-wider text-ocean-800">{f.title}</h2>
-              <p className="mt-3 text-center text-sm leading-relaxed text-ocean-700">{f.body}</p>
             </article>
           ))}
         </div>
