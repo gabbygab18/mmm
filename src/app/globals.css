@@ -15,7 +15,7 @@
 .landing-hero-photo {
   background-image: url('/landing/hero.jpg');
   background-size: cover;
-  background-position: center 20%;
+  background-position: center 75%;
 }
 
 /* Soft glow behind the light-streak wave */
