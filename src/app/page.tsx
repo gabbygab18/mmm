@@ -9,18 +9,21 @@ import Link from 'next/link'
 const FEATURES = [
   {
     img: '/landing/card-musicians.png',
+    mobileImg: '/landing/For_Musicians__1_.png',
     alt: 'A volunteer musician playing an acoustic guitar',
     title: 'For Musicians',
     body: 'Share your availability, browse nearby memory care centers, and schedule meaningful volunteer performances in your community.',
   },
   {
     img: '/landing/card-centers.png',
+    mobileImg: '/landing/For_Memory_Care_Centers__1_.png',
     alt: 'A caregiver sitting with two smiling residents',
     title: 'For Memory Care Centers',
     body: 'Find local volunteer musicians, coordinate scheduling, and bring joyful live music to your residents with ease.',
   },
   {
     img: '/landing/card-free.png',
+    mobileImg: '/landing/Always_Free__1_.png',
     alt: 'An older couple smiling together',
     title: 'Always Free',
     body: 'This platform is built entirely to facilitate volunteer connections — no fees, no commissions, no hidden costs.',
@@ -54,7 +57,7 @@ export default function Home() {
           </Link>
           <Link
             href="/login"
-            className="rounded-xl bg-ocean-700 px-7 py-2.5 text-sm font-extrabold uppercase tracking-[0.12em] text-white shadow-md transition hover:bg-ocean-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+            className="rounded-xl bg-ocean-700 px-7 py-2.5 text-[13.2px] sm:text-[17.8px] font-extrabold uppercase tracking-[0.12em] text-white shadow-md transition hover:bg-ocean-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
           >
             Sign in
           </Link>
@@ -95,8 +98,7 @@ export default function Home() {
 
         {/* Content */}
         <div
-          className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-6 pb-20 pt-48 sm:pb-28 sm:pt-56 lg:grid-cols-[1.45fr_1fr] lg:pb-36 lg:pt-64"
-          style={{ transform: 'translateY(60px)' }}
+          className="relative z-10 mx-auto grid max-w-6xl items-center gap-6 px-6 pb-10 pt-20 sm:gap-10 sm:pb-20 sm:pt-32 lg:grid-cols-[1.45fr_1fr] lg:translate-y-[60px] lg:pb-36 lg:pt-64"
         >
           <div>
             <h1 className="landing-rise">
@@ -121,7 +123,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="landing-rise landing-delay-2 flex flex-col items-center gap-5 lg:mt-40 lg:self-start">
+          <div className="landing-rise landing-delay-2 mt-4 flex flex-col items-center gap-4 sm:mt-6 sm:gap-5 lg:mt-40 lg:self-start">
             <Link
               href="/login"
               aria-label="Get started — it's free"
@@ -171,17 +173,19 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/landing/notes-bl.png" alt="" aria-hidden="true" className="pointer-events-none absolute bottom-6 left-0 z-10 w-44 opacity-30 sm:w-64" />
 
-        <div className="relative z-10 mx-auto mt-40 grid max-w-6xl gap-6 sm:grid-cols-3">
+        <div className="relative z-10 mx-auto mt-14 grid max-w-6xl gap-6 sm:mt-24 sm:grid-cols-3 lg:mt-40">
           {FEATURES.map((f, i) => (
             <article
               key={f.title}
               className={`landing-rise landing-delay-${i + 1} relative overflow-hidden rounded-[2.5rem] shadow-xl`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={f.img} alt={f.alt} className="block w-full h-auto" loading="lazy" />
+              <img src={f.mobileImg} alt={f.alt} className="block w-full h-auto sm:hidden" loading="lazy" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={f.img} alt={f.alt} className="hidden w-full h-auto sm:block" loading="lazy" />
               <div className="absolute inset-x-0 bottom-0 top-[55%] flex flex-col items-center justify-start px-6 pb-6 pt-2 text-center">
-                <h2 className="text-lg font-extrabold uppercase tracking-wider text-ocean-800">{f.title}</h2>
-                <p className="mt-3 text-sm leading-relaxed text-ocean-700">{f.body}</p>
+                <h2 className="text-[13.4px] sm:text-[14.2px] font-extrabold uppercase tracking-wider text-ocean-800">{f.title}</h2>
+                <p className="mt-3 text-[10.8px] sm:text-[11.5px] leading-relaxed text-ocean-700">{f.body}</p>
               </div>
             </article>
           ))}
@@ -198,7 +202,7 @@ export default function Home() {
 
       {/* ============ Footer ============ */}
       <footer className="bg-cream">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-6 text-sm text-ocean-800/70 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 py-6 text-center text-[9.6px] sm:text-[10.8px] text-ocean-800/70 sm:flex-row sm:justify-between sm:text-left">
           <p>© {year} Margaret&apos;s MemoryCare Music · Connecting communities through music</p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="transition hover:text-ocean-800">Privacy Policy</Link>

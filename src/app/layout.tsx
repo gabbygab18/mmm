@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Nunito, Playfair_Display } from 'next/font/google'
+import { Nunito, Playfair_Display, Poppins, Cormorant_Garamond } from 'next/font/google'
 import './globals.css'
 
 const nunito = Nunito({
@@ -15,6 +15,22 @@ const playfair = Playfair_Display({
   variable: '--font-playfair',
 })
 
+// Auth-page typography (per design spec): Cormorant Garamond display + Poppins UI.
+const poppins = Poppins({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-poppins',
+})
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['600', '700'],
+  variable: '--font-cormorant',
+})
+
 export const metadata: Metadata = {
   title: "Margaret's MemoryCare Music",
   description: 'Connecting volunteer musicians with memory care facilities for live performances.',
@@ -22,7 +38,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${nunito.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${nunito.variable} ${playfair.variable} ${poppins.variable} ${cormorant.variable}`}>
       <body className="overflow-x-hidden antialiased">{children}</body>
     </html>
   )

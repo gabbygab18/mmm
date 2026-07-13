@@ -11,6 +11,9 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-nunito)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         display: ['var(--font-playfair)', 'Georgia', 'Cambria', 'serif'],
+        // Auth pages (per design spec)
+        garamond: ['var(--font-cormorant)', 'Cormorant Garamond', 'Georgia', 'serif'],
+        poppins: ['var(--font-poppins)', 'Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Landing-page palette (blue "ocean" theme + warm cream).

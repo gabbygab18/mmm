@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
-import { SiteFooter } from '@/components/site-footer'
+import { AuthShell } from '@/components/auth-shell'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      
+
       if (!url || !key) {
         throw new Error('Missing Supabase configuration')
       }
@@ -55,101 +55,81 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left brand panel — desktop only */}
-      <div className="hidden lg:flex lg:w-5/12 lg:flex-col lg:justify-between lg:bg-brand-900 lg:p-10">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500">
-            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
-                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
-          </div>
-          <span className="font-bold text-white">Margaret's MemoryCare Music</span>
-        </Link>
-        <div>
-          <blockquote className="text-xl font-semibold italic leading-relaxed text-brand-200">
-            &ldquo;Music touches parts of the mind that nothing else can reach.&rdquo;
+    <AuthShell
+      photoSrc="/landing/hero.jpg"
+      photoAlt="A volunteer musician performing for smiling memory care residents"
+      photoPositionDesktop="center 70%"
+      mobilePhotoHeightClassName="h-60 sm:h-80"
+      asideOverlapClassName="-mt-9 sm:-mt-12"
+      asideDesktopClassName="lg:self-end lg:justify-self-end lg:pb-16"
+      aside={
+        <div className="text-center lg:text-left">
+          <blockquote className="font-poppins text-[10.9px] font-medium italic leading-snug text-white drop-shadow-md sm:text-lg lg:text-[22.2px]">
+            &ldquo; Music touches parts of the mind that nothing else can reach&rdquo;
           </blockquote>
-          <p className="mt-4 text-sm text-brand-400">— Memory care community</p>
-        </div>
-        <p className="text-xs text-brand-500">Connecting volunteer musicians with memory care centers.</p>
-      </div>
-
-      {/* Right form panel */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-stone-50 px-6 py-12">
-        {/* Mobile logo */}
-        <Link href="/" className="mb-10 flex items-center gap-2 lg:hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
-            <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
-                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
-          </div>
-          <span className="font-bold text-stone-900">Margaret's MemoryCare Music</span>
-        </Link>
-
-        <div className="w-full max-w-sm">
-          <h1 className="text-3xl font-bold text-stone-900">Welcome back</h1>
-          <p className="mt-2 text-sm text-stone-500">Sign in to your account to continue.</p>
-
-          {accountDeleted && (
-            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-              Your account has been deleted and your personal information removed. Thank you for being part of our community.
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-            <label className="block text-sm font-semibold text-stone-700">
-              Email address
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                disabled={loading}
-                required
-                autoComplete="email"
-                className="mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-stone-900 outline-none ring-brand-500 transition focus:ring-2 disabled:cursor-not-allowed disabled:bg-stone-100"
-              />
-            </label>
-
-            <label className="block text-sm font-semibold text-stone-700">
-              Password
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                disabled={loading}
-                required
-                autoComplete="current-password"
-                className="mt-1.5 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-stone-900 outline-none ring-brand-500 transition focus:ring-2 disabled:cursor-not-allowed disabled:bg-stone-100"
-              />
-            </label>
-
-            {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? 'Signing in…' : 'Sign in'}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-stone-500">
-            New here?{' '}
-            <Link href="/signup" className="font-semibold text-brand-600 hover:text-brand-700">
-              Create a free account
-            </Link>
+          <p className="mt-2 font-poppins text-[8.7px] italic text-white/90 drop-shadow sm:text-sm lg:mt-4 lg:text-[17.8px]">
+            -Memory care community
           </p>
         </div>
-        <SiteFooter theme="light" />
-      </div>
-    </div>
+      }
+    >
+      <h1 className="font-garamond text-[24.3px] font-bold leading-tight text-ocean-900 lg:text-[37.7px]">Welcome back!</h1>
+      <p className="mt-2 font-poppins text-[8.9px] text-ocean-900/80 lg:text-[13.8px]">Sign in to your account to continue.</p>
+
+      {accountDeleted && (
+        <div className="mt-4 rounded-xl border border-green-300 bg-green-50 px-4 py-3 font-poppins text-[8.3px] font-medium text-green-800 lg:text-[10.7px]">
+          Your account has been deleted and your personal information removed. Thank you for being part of our community.
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+        <label className="block font-poppins text-[8.3px] font-medium text-ocean-900 lg:text-[10.7px]">
+          E-mail Address
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            disabled={loading}
+            required
+            autoComplete="email"
+            className="mt-1.5 w-full rounded-xl border border-ocean-400 bg-white px-3.5 py-2.5 font-poppins text-[8.3px] text-ocean-950 shadow-sm outline-none transition focus:border-ocean-600 focus:ring-2 focus:ring-ocean-500/40 disabled:cursor-not-allowed disabled:bg-stone-100 lg:text-[10.7px]"
+          />
+        </label>
+
+        <label className="block font-poppins text-[8.3px] font-medium text-ocean-900 lg:text-[10.7px]">
+          Password
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            disabled={loading}
+            required
+            autoComplete="current-password"
+            className="mt-1.5 w-full rounded-xl border border-ocean-400 bg-white px-3.5 py-2.5 font-poppins text-[8.3px] text-ocean-950 shadow-sm outline-none transition focus:border-ocean-600 focus:ring-2 focus:ring-ocean-500/40 disabled:cursor-not-allowed disabled:bg-stone-100 lg:text-[10.7px]"
+          />
+        </label>
+
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-poppins text-[8.3px] font-medium text-red-700 lg:text-[10.7px]">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="mx-auto block rounded-lg bg-gradient-to-r from-ocean-400 to-ocean-800 px-12 py-3 font-poppins text-[13.1px] font-bold uppercase tracking-[0.2em] text-white shadow-lg lg:text-[17px] transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+
+      <p className="mt-5 text-center font-poppins text-[8.3px] text-ocean-900/80 lg:text-[10.7px]">
+        New here?{' '}
+        <Link href="/signup" className="font-bold text-ocean-700 transition hover:text-ocean-600">
+          Create a free account
+        </Link>
+      </p>
+    </AuthShell>
   )
 }
