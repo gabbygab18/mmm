@@ -81,7 +81,7 @@ export default function Home() {
             meaningful moments through live music at no cost.
           </p>
 
-          <div className="landing-rise landing-delay-2 mt-10 flex flex-col items-start gap-4 sm:absolute sm:bottom-36 sm:right-8 sm:mt-0 sm:items-center lg:right-16">
+          <div className="landing-rise landing-delay-2 mt-10 flex flex-col items-start gap-4 lg:absolute lg:bottom-36 lg:right-16 lg:mt-0 lg:items-center">
             <Link
               href="/get-started"
               className="rounded-lg bg-[#faf4e7] px-10 py-3 text-center font-poppins text-[17px] font-bold tracking-[0.14em] text-ocean-900 shadow-lg transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"

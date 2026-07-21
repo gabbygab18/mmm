@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChangeEvent, ReactNode, useState } from 'react'
+import { ChangeEvent, ReactNode, useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
@@ -25,6 +25,129 @@ const STEP_LABELS = [
 
 const PERFORMANCE_TYPES = ['Solo', 'Duo', 'Small Group', 'Large Group'] as const
 
+// ---------- Step 4 (Availability) — updated layout ----------
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
+const TIMES = ['Morning', 'Afternoon', 'Evening'] as const
+const FREQUENCIES = ['Weekly', 'Every 2 weeks', 'Monthly', 'Flexible'] as const
+const DISTANCES = ['Within 5 miles', 'Within 10 miles', 'Within 15 miles', 'Within 25 miles', 'Within 50 miles', 'Any distance'] as const
+const WEEKDAY_HEADERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const
+
+function CheckPill({ label, checked, onChange, className = '' }: { label: string; checked: boolean; onChange: () => void; className?: string }) {
+  return (
+    <label
+      className={`flex cursor-pointer select-none items-center gap-2 rounded-lg border-[1.5px] px-3 py-2 font-poppins text-[10.7px] font-bold text-ocean-900 transition ${
+        checked ? 'border-ocean-800 bg-ocean-100' : 'border-ocean-300 bg-white hover:border-ocean-500'
+      } ${className}`}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="h-3.5 w-3.5 rounded border-ocean-400 text-ocean-700 focus:ring-ocean-500"
+      />
+      {label}
+    </label>
+  )
+}
+
+function isoDate(y: number, m: number, d: number) {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
+/** Month calendar for picking unavailable dates (updated Step 4 design). */
+function UnavailableCalendar({ selected, onToggle }: { selected: string[]; onToggle: (iso: string) => void }) {
+  const now = new Date()
+  const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() })
+
+  const firstDow = new Date(view.y, view.m, 1).getDay()
+  const daysInMonth = new Date(view.y, view.m + 1, 0).getDate()
+  const daysInPrev = new Date(view.y, view.m, 0).getDate()
+  const todayIso = isoDate(now.getFullYear(), now.getMonth(), now.getDate())
+
+  const cells: { day: number; iso: string; inMonth: boolean }[] = []
+  for (let i = firstDow - 1; i >= 0; i--) {
+    const d = daysInPrev - i
+    cells.push({ day: d, iso: isoDate(view.m === 0 ? view.y - 1 : view.y, (view.m + 11) % 12, d), inMonth: false })
+  }
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, iso: isoDate(view.y, view.m, d), inMonth: true })
+  let trailing = 1
+  while (cells.length % 7 !== 0) {
+    cells.push({ day: trailing, iso: isoDate(view.m === 11 ? view.y + 1 : view.y, (view.m + 1) % 12, trailing), inMonth: false })
+    trailing++
+  }
+
+  const changeMonth = (delta: number) =>
+    setView(({ y, m }) => {
+      const next = m + delta
+      if (next < 0) return { y: y - 1, m: 11 }
+      if (next > 11) return { y: y + 1, m: 0 }
+      return { y, m: next }
+    })
+
+  return (
+    <div className="rounded-xl border border-ocean-300 bg-white px-3 py-3 sm:px-4">
+      <div className="flex items-center justify-between px-1">
+        <button
+          type="button"
+          onClick={() => changeMonth(-1)}
+          aria-label="Previous month"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-ocean-900 transition hover:bg-ocean-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
+        <p className="font-poppins text-[12px] font-bold text-ocean-900">
+          {MONTH_NAMES[view.m]} {view.y}
+        </p>
+        <button
+          type="button"
+          onClick={() => changeMonth(1)}
+          aria-label="Next month"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-ocean-900 transition hover:bg-ocean-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="mt-2 grid grid-cols-7 text-center">
+        {WEEKDAY_HEADERS.map((d) => (
+          <span key={d} className="py-1 font-poppins text-[10.7px] font-bold text-ocean-900">
+            {d}
+          </span>
+        ))}
+        {cells.map((cell, i) => {
+          const isSelected = selected.includes(cell.iso)
+          const isPast = cell.iso < todayIso
+          const disabled = !cell.inMonth || isPast
+          return (
+            <button
+              key={`${cell.iso}-${i}`}
+              type="button"
+              disabled={disabled}
+              onClick={() => onToggle(cell.iso)}
+              aria-pressed={isSelected}
+              aria-label={`${cell.iso}${isSelected ? ' — unavailable' : ''}`}
+              className={`mx-auto my-0.5 flex h-8 w-8 items-center justify-center rounded-full font-poppins text-[10.7px] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 ${
+                isSelected
+                  ? 'bg-ocean-800 font-bold text-white'
+                  : disabled
+                    ? 'cursor-default text-ocean-300'
+                    : 'text-ocean-700 hover:bg-ocean-100'
+              }`}
+            >
+              {cell.day}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const inputClass =
   'w-full rounded-lg border border-ocean-300 bg-white px-4 py-2.5 font-poppins text-[12px] text-ocean-900 placeholder:text-ocean-900/40 focus:border-ocean-500 focus:outline-none focus:ring-1 focus:ring-ocean-400'
 const labelClass = 'mb-1.5 block font-poppins text-[10.7px] font-bold text-ocean-900'
@@ -41,7 +164,7 @@ function Field({ label, children, className = '' }: { label: string; children: R
 function StepTracker({ current }: { current: number }) {
   return (
     <div
-      className="relative mx-auto mt-10 max-w-[840px] overflow-hidden rounded-2xl bg-[#faf4e7]/90 px-6 py-6 shadow-lg sm:px-10"
+      className="relative mx-auto mt-10 max-w-[840px] overflow-hidden rounded-2xl bg-[#faf4e7]/90 px-3 py-5 shadow-lg sm:px-10 sm:py-6"
     >
       <div
         className="absolute inset-0 opacity-20"
@@ -56,10 +179,10 @@ function StepTracker({ current }: { current: number }) {
           return (
             <li key={label.join(' ')} className="relative flex flex-1 flex-col items-center">
               {i > 0 && (
-                <span className="absolute right-1/2 top-6 -z-0 hidden h-[2px] w-full -translate-y-1/2 bg-ocean-700/50 sm:block" aria-hidden="true" style={{ right: '50%', width: '100%' }} />
+                <span className="absolute right-1/2 top-[18px] -z-0 h-[2px] w-full -translate-y-1/2 bg-ocean-700/50 sm:top-7" aria-hidden="true" style={{ right: '50%', width: '100%' }} />
               )}
               <span
-                className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 font-poppins text-[20px] font-bold sm:h-14 sm:w-14 ${
+                className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 font-poppins text-[15px] font-bold sm:h-14 sm:w-14 sm:text-[20px] ${
                   active
                     ? 'border-ocean-900 bg-ocean-900 text-white'
                     : 'border-ocean-900 bg-[#faf4e7] text-ocean-900'
@@ -67,14 +190,14 @@ function StepTracker({ current }: { current: number }) {
                 aria-current={active ? 'step' : undefined}
               >
                 {done ? (
-                  <svg className="h-6 w-6 text-ocean-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} aria-hidden="true">
+                  <svg className="h-4 w-4 text-ocean-900 sm:h-6 sm:w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 ) : (
                   stepNo
                 )}
               </span>
-              <span className="mt-2 text-center font-poppins text-[11px] leading-tight text-ocean-900 sm:text-[13px]">
+              <span className="mt-1.5 text-center font-poppins text-[9.5px] leading-tight text-ocean-900 sm:mt-2 sm:text-[13px]">
                 {label.map((line) => (
                   <span key={line} className="block">
                     {line}
@@ -91,13 +214,13 @@ function StepTracker({ current }: { current: number }) {
 
 function StepHeading({ step, title, subtitle, icon }: { step: number; title: string; subtitle: string; icon: ReactNode }) {
   return (
-    <div className="flex items-center gap-5">
-      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-ocean-900 text-white sm:h-24 sm:w-24">
+    <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ocean-900 text-white sm:h-24 sm:w-24">
         {icon}
       </div>
       <div>
         <p className="font-poppins text-[13px] text-ocean-900">Step {step} of 5</p>
-        <h2 className="font-garamond text-[34px] font-bold leading-none text-ocean-900 sm:text-[50.8px]">{title}</h2>
+        <h2 className="font-garamond text-[30px] font-bold leading-none text-ocean-900 sm:text-[50.8px]">{title}</h2>
         <p className="mt-1 font-poppins text-[13px] text-ocean-900 sm:text-[16.1px]">{subtitle}</p>
       </div>
     </div>
@@ -157,11 +280,21 @@ export default function MusicianRegistrationPage() {
   const [genres, setGenres] = useState('')
   const [experience, setExperience] = useState('')
 
-  // Step 4 — Availability
-  const [preferredDays, setPreferredDays] = useState('')
-  const [preferredTime, setPreferredTime] = useState('')
+  // Step 4 — Availability (updated layout)
+  const [preferredDays, setPreferredDays] = useState<string[]>([])
+  const [preferredTimes, setPreferredTimes] = useState<string[]>([])
   const [frequency, setFrequency] = useState('')
+  const [maxDistance, setMaxDistance] = useState('')
+  const [unavailableDates, setUnavailableDates] = useState<string[]>([])
   const [availabilityNotes, setAvailabilityNotes] = useState('')
+
+  // Arriving from /signup after the account was created → land on the last page.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('welcome') === '1') setDone(true)
+  }, [])
+
+  const toggleInList = (setter: (fn: (cur: string[]) => string[]) => void, value: string) =>
+    setter((cur) => (cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value]))
 
   // Step 5 — Agreement
   const [agreeVolunteer, setAgreeVolunteer] = useState(false)
@@ -186,11 +319,13 @@ export default function MusicianRegistrationPage() {
       }
     }
     setStep((s) => Math.min(5, s + 1))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const goBack = () => {
     setError(null)
     setStep((s) => Math.max(1, s - 1))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handlePhoto = (e: ChangeEvent<HTMLInputElement>) => {
@@ -225,9 +360,11 @@ export default function MusicianRegistrationPage() {
             years_of_experience: yearsExperience.trim(),
             genres: genres.trim(),
             musical_experience: experience.trim(),
-            preferred_days: preferredDays.trim(),
-            preferred_time: preferredTime.trim(),
-            availability_frequency: frequency.trim(),
+            preferred_days: preferredDays.join(', '),
+            preferred_time: preferredTimes.join(', '),
+            availability_frequency: frequency,
+            max_travel_distance: maxDistance,
+            unavailable_dates: unavailableDates,
             availability_notes: availabilityNotes.trim(),
             agreed_to_volunteer_agreement: true,
           },
@@ -245,7 +382,11 @@ export default function MusicianRegistrationPage() {
       setNotice('Check your e-mail to confirm your account, then sign in.')
     }
     setLoading(false)
+    // Account created → go to the last page (Welcome screen). The ?welcome=1
+    // flag keeps them on it even after a refresh or middleware round-trip.
     setDone(true)
+    window.history.replaceState(null, '', '/register/musician?welcome=1')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -260,8 +401,8 @@ export default function MusicianRegistrationPage() {
           aria-hidden="true"
         />
 
-        <div className="relative mx-auto max-w-[900px] px-5 pb-20 pt-14 sm:px-8">
-          <h1 className="text-center font-garamond text-[42px] font-semibold leading-tight text-white drop-shadow-md sm:text-[56px] lg:text-[65.9px]">
+        <div className="relative mx-auto max-w-[900px] px-4 pb-20 pt-12 sm:px-8 sm:pt-14">
+          <h1 className="text-center font-garamond text-[36px] font-semibold leading-tight text-white drop-shadow-md sm:text-[56px] lg:text-[65.9px]">
             Musician Registration
           </h1>
           <p className="mx-auto mt-3 max-w-[640px] text-center font-poppins text-[14px] leading-relaxed text-white drop-shadow sm:text-[16.1px]">
@@ -271,7 +412,7 @@ export default function MusicianRegistrationPage() {
           {!done && <StepTracker current={step} />}
 
           {/* ============ Card ============ */}
-          <div className="mt-8 rounded-3xl border-2 border-ocean-900 bg-[#faf4e7] px-6 py-10 shadow-2xl sm:px-12">
+          <div className="mt-8 rounded-3xl border-2 border-ocean-900 bg-[#faf4e7] px-4 py-8 shadow-2xl sm:px-8 sm:py-10 md:px-12">
             {done ? (
               /* ---------- Success screen ---------- */
               <div className="flex flex-col items-center py-6 text-center">
@@ -505,7 +646,7 @@ export default function MusicianRegistrationPage() {
                   </div>
                 )}
 
-                {/* ---------- Step 4 — Availability ---------- */}
+                {/* ---------- Step 4 — Availability (updated layout) ---------- */}
                 {step === 4 && (
                   <div>
                     <StepHeading
@@ -513,31 +654,111 @@ export default function MusicianRegistrationPage() {
                       title="Availability"
                       subtitle="When are you available to share your music?"
                       icon={
-                        <svg className="h-12 w-12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                          <path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zm-2 8h14v10H5V10zm3 2v2h2v-2H8zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2zm-8 4v2h2v-2H8zm4 0v2h2v-2h-2z" />
-                        </svg>
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src="/mmm/availability-icon.png" alt="" className="h-full w-full rounded-full object-cover" />
                       }
                     />
-                    <div className="mt-8 grid gap-x-8 gap-y-5 sm:grid-cols-2">
-                      <div className="space-y-5">
-                        <Field label="Preferred Days">
-                          <input className={inputClass} value={preferredDays} onChange={(e) => setPreferredDays(e.target.value)} />
-                        </Field>
-                        <Field label="Preferred Time">
-                          <input className={inputClass} value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} />
-                        </Field>
-                        <Field label="How often are you available?">
-                          <input className={inputClass} value={frequency} onChange={(e) => setFrequency(e.target.value)} />
-                        </Field>
+
+                    <div className="mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-2">
+                      {/* -------- Left column — recurring availability -------- */}
+                      <div>
+                        <h3 className="font-poppins text-[12px] font-bold text-ocean-900">Recurring Availability</h3>
+
+                        <div className="mt-4">
+                          <span className={labelClass}>Preferred Days</span>
+                          <div className="grid grid-cols-3 gap-2.5 min-[400px]:grid-cols-4">
+                            {DAYS.map((d) => (
+                              <CheckPill
+                                key={d}
+                                label={d}
+                                checked={preferredDays.includes(d)}
+                                onChange={() => toggleInList(setPreferredDays, d)}
+                                className="justify-start"
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-5">
+                          <span className={labelClass}>Preferred Time</span>
+                          <div className="grid grid-cols-1 gap-2.5 min-[400px]:grid-cols-3">
+                            {TIMES.map((t) => (
+                              <CheckPill
+                                key={t}
+                                label={t}
+                                checked={preferredTimes.includes(t)}
+                                onChange={() => toggleInList(setPreferredTimes, t)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-5">
+                          <span className={labelClass}>How often would you like to volunteer?</span>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                            {FREQUENCIES.map((f) => (
+                              <label key={f} className="flex cursor-pointer select-none items-center gap-2 font-poppins text-[10.7px] text-ocean-900">
+                                <input
+                                  type="checkbox"
+                                  checked={frequency === f}
+                                  onChange={() => setFrequency((cur) => (cur === f ? '' : f))}
+                                  className="h-4 w-4 rounded border-ocean-400 text-ocean-700 focus:ring-ocean-500"
+                                />
+                                {f}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-5">
+                          <span className={labelClass}>Maximum Travel Distance</span>
+                          <select
+                            className={`${inputClass} ${maxDistance ? '' : 'text-ocean-900/40'}`}
+                            value={maxDistance}
+                            onChange={(e) => setMaxDistance(e.target.value)}
+                          >
+                            <option value="">Select distance</option>
+                            {DISTANCES.map((d) => (
+                              <option key={d} value={d}>
+                                {d}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <Field label="Additional Notes (Optional)">
-                        <textarea
-                          className={`${inputClass} min-h-[210px] resize-none`}
-                          value={availabilityNotes}
-                          onChange={(e) => setAvailabilityNotes(e.target.value)}
-                        />
-                      </Field>
+
+                      {/* -------- Right column — unavailable dates + notes -------- */}
+                      <div>
+                        <h3 className="font-poppins text-[12px] font-bold text-ocean-900">Unavailable Dates</h3>
+                        <p className="mt-0.5 font-poppins text-[10.7px] text-ocean-900">Select any dates you are unavailable</p>
+                        <div className="mt-3">
+                          <UnavailableCalendar
+                            selected={unavailableDates}
+                            onToggle={(iso) => toggleInList(setUnavailableDates, iso)}
+                          />
+                        </div>
+
+                        <div className="mt-5">
+                          <span className={labelClass}>Additional Notes (Optional)</span>
+                          <p className="-mt-0.5 mb-1.5 font-poppins text-[10.7px] text-ocean-900">
+                            Share anything else we should know about your availability?
+                          </p>
+                          <div className="relative">
+                            <textarea
+                              className={`${inputClass} min-h-[96px] resize-none pb-6`}
+                              maxLength={250}
+                              value={availabilityNotes}
+                              onChange={(e) => setAvailabilityNotes(e.target.value)}
+                              placeholder="e.g. Available after work, prefer piano performances, only available weekends, etc."
+                            />
+                            <span className="pointer-events-none absolute bottom-2.5 right-3 font-poppins text-[10px] text-ocean-900/60">
+                              {availabilityNotes.length}/250
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+
                     <div className="mt-8 flex items-center justify-between">
                       <BackButton onClick={goBack} />
                       <NextButton onClick={goNext} />

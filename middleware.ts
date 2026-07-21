@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-const PUBLIC_PATHS = ['/', '/login', '/signup']
+const PUBLIC_PATHS = ['/', '/login', '/signup', '/get-started', '/education', '/terms', '/privacy']
+const PUBLIC_PREFIXES = ['/register']
 
 function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.includes(pathname)
+  return PUBLIC_PATHS.includes(pathname) || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))
 }
 
 export async function middleware(request: NextRequest) {
