@@ -34,6 +34,7 @@ const STEP_LABELS = [
 ]
 
 const PERFORMANCE_TYPES = PERFORMANCE_TYPE_OPTIONS
+const STEP2_PERFORMANCE_TYPES = ['Solo', 'Duo', 'Small Group', 'Large Group'] as const
 
 // ---------- Step 4 (Availability) — updated layout ----------
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -459,29 +460,32 @@ export default function MusicianRegistrationPage() {
                 {/* ---------- Step 2 — Profile ---------- */}
                 {step === 2 && (
                   <div>
-                    <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-                      <label className="flex h-40 w-40 shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-ocean-300 bg-white text-center transition hover:border-ocean-500">
+                    <div className="flex items-start gap-4 sm:items-center sm:gap-6">
+                      <label className="flex h-[132px] w-[120px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-ocean-300 bg-white/70 px-2 text-center transition hover:border-ocean-500 focus-within:border-ocean-500 sm:h-[168px] sm:w-[164px]">
                         <input type="file" accept="image/jpeg,image/png" className="sr-only" onChange={handlePhoto} />
-                        <svg className="h-9 w-9 text-ocean-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                          <path d="M9 3l-1.8 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2.5A2.5 2.5 0 1 0 12 10a2.5 2.5 0 0 0 0 5.5z" />
-                        </svg>
-                        <span className="font-poppins text-[11px] font-bold text-ocean-900">Upload Photo</span>
-                        <span className="px-2 font-poppins text-[9.5px] text-ocean-900/50">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/mmm/pages/upload-photo.png" alt="" className="h-11 w-11 object-contain sm:h-14 sm:w-14" />
+                        <span className="font-poppins text-[10px] font-bold text-ocean-900 sm:text-[12px]">Upload Photo</span>
+                        <span className="font-poppins text-[8px] leading-tight text-ocean-900/50 sm:text-[10px]">
                           {photoName ?? 'JPG, PNG (max 5MB)'}
                         </span>
                       </label>
-                      <div>
-                        <p className="font-poppins text-[13px] text-ocean-900">Step 2 of 5</p>
-                        <h2 className="font-garamond text-[34px] font-bold leading-none text-ocean-900 sm:text-[50.8px]">Profile</h2>
-                        <p className="mt-1 font-poppins text-[13px] text-ocean-900 sm:text-[16.1px]">Tell us a little a bit about yourself.</p>
+                      <div className="min-w-0">
+                        <p className="font-poppins text-[11px] text-ocean-900 sm:text-[13px]">Step 2 of 5</p>
+                        <h2 className="font-garamond text-[26px] font-bold leading-none text-ocean-900 sm:text-[44px] lg:text-[50.8px]">
+                          Profile
+                        </h2>
+                        <p className="mt-1 font-poppins text-[11.5px] text-ocean-900 sm:text-[14px] lg:text-[16.1px]">
+                          Tell us a little a bit about yourself.
+                        </p>
                       </div>
                     </div>
 
-                    <div className="mt-8 space-y-5">
+                    <div className="mt-6 space-y-5 sm:mt-8">
                       <Field label="Short Bio">
                         <div className="relative">
                           <textarea
-                            className={`${inputClass} min-h-[88px] resize-none pb-6`}
+                            className={`${inputClass} min-h-[96px] resize-none pb-7`}
                             maxLength={250}
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
@@ -492,39 +496,48 @@ export default function MusicianRegistrationPage() {
                           </span>
                         </div>
                       </Field>
+
                       <div className="grid gap-5 sm:grid-cols-2">
-                        <Field label="Phone Number">
-                          <input className={inputClass} value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
-                        </Field>
-                        <Field label="ZIP Code">
-                          <input className={inputClass} value={zip} onChange={(e) => setZip(e.target.value)} inputMode="numeric" autoComplete="postal-code" />
-                        </Field>
-                        <PillGroup
-                          label="Languages You Speak"
-                          options={LANGUAGES}
-                          selected={languages}
-                          onToggle={(v) => toggleInList(setLanguages, v)}
+                        <TextField label="Phone Number" value={phone} onChange={setPhone} autoComplete="tel" inputMode="tel" />
+                        <TextField
+                          label="ZIP Code"
+                          value={zip}
+                          onChange={(v) => setZip(v.replace(/\D/g, '').slice(0, 5))}
+                          inputMode="numeric"
+                          maxLength={5}
+                          autoComplete="postal-code"
                         />
-                        <Field label="Performance Types">
-                          <div className="flex flex-wrap gap-2.5">
-                            {PERFORMANCE_TYPES.map((t) => {
-                              const checked = performanceTypes.includes(t)
-                              return (
-                                <label
-                                  key={t}
-                                  className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 font-poppins text-[10.7px] font-bold transition ${
-                                    checked ? 'border-ocean-700 bg-ocean-100 text-ocean-900' : 'border-ocean-300 bg-white text-ocean-900'
-                                  }`}
-                                >
-                                  <input type="checkbox" checked={checked} onChange={() => togglePerformanceType(t)} className="h-3.5 w-3.5 rounded border-ocean-400 text-ocean-700 focus:ring-ocean-500" />
-                                  {t}
-                                </label>
-                              )
-                            })}
-                          </div>
-                        </Field>
                       </div>
+
+                      {/* Four equal tiles across, on phones as well as desktop,
+                          matching both mockups. */}
+                      <fieldset>
+                        <legend className={labelClass}>Performance Types</legend>
+                        <div className="mt-1 grid grid-cols-4 gap-2 sm:gap-3">
+                          {STEP2_PERFORMANCE_TYPES.map((t) => {
+                            const checked = performanceTypes.includes(t)
+                            return (
+                              <label
+                                key={t}
+                                className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border-[1.5px] px-1.5 py-2.5 text-center font-poppins text-[8.5px] font-bold leading-tight text-ocean-900 transition sm:gap-2 sm:px-3 sm:text-[10.7px] ${
+                                  checked ? 'border-ocean-700 bg-ocean-100' : 'border-ocean-300 bg-white hover:border-ocean-500'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => togglePerformanceType(t)}
+                                  className="h-3 w-3 shrink-0 rounded-sm border-ocean-400 text-ocean-700 focus:ring-ocean-500 sm:h-3.5 sm:w-3.5"
+                                />
+                                {t}
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </fieldset>
                     </div>
+
+                    {error && <p className="mt-4 text-center font-poppins text-[11px] font-medium text-red-600">{error}</p>}
                     <div className="mt-8 flex items-center justify-between">
                       <BackButton onClick={goBack} />
                       <NextButton onClick={goNext} />
@@ -532,7 +545,6 @@ export default function MusicianRegistrationPage() {
                   </div>
                 )}
 
-                {/* ---------- Step 3 — Musical Background ---------- */}
                 {step === 3 && (
                   <div>
                     <StepHeading
@@ -566,6 +578,12 @@ export default function MusicianRegistrationPage() {
                         />
                       </div>
                       <div className="space-y-5">
+                        <PillGroup
+                          label="Languages You Speak"
+                          options={LANGUAGES}
+                          selected={languages}
+                          onToggle={(v) => toggleInList(setLanguages, v)}
+                        />
                         <PillGroup
                           label="Genres You Play"
                           options={GENRES}
