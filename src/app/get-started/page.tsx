@@ -119,7 +119,7 @@ export default function GetStartedPage() {
                   Bring meaningful live performances to your residents
                 </p>
                 <Link
-                  href="/signup"
+                  href="/register/facility"
                   className="mt-5 rounded-lg border-[1.5px] border-ocean-800 px-6 py-2.5 font-poppins text-[12.2px] font-bold uppercase tracking-[0.12em] text-ocean-900 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
                 >
                   Register Your Community

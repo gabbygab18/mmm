@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { DASH_ICONS, StatCard, WelcomeBanner } from '@/components/mmm/dashboard-ui'
 
 type RequestStatus = 'initiated' | 'matched' | 'accepted' | 'completed' | 'cancelled'
 
@@ -321,6 +322,10 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     musicianFilter || centerFilter || fromDateFilter || toDateFilter || statusFilters.length > 0
   )
   const hasAnyAccountFilter = hasMusicianFilter || hasCenterFilter
+
+  // Summary counts for the branded overview tiles.
+  const pendingMusicianCount = (musicians ?? []).filter((m) => !m.approved && !m.deleted_at).length
+  const pendingCenterCount = (centers ?? []).filter((c) => !c.approved && !c.deleted_at).length
   const filteredMusicians = musicians ?? []
   const filteredCenters = centers ?? []
 
@@ -373,13 +378,58 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const thirtyDaysAgo = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000)
   const toIsoDate = (value: Date) => value.toISOString().slice(0, 10)
 
+  const todayLabel = new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date())
+
   return (
-    <section className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Admin Operations</h1>
-        <p className="mt-1 text-sm text-stone-600">
-          Admin controls for moderation, account management, and support-led request interventions.
-        </p>
+    <section className="mx-auto max-w-[1240px] space-y-5">
+      <WelcomeBanner
+        title="Welcome back, Admin!"
+        subtitle="Here’s what’s happening on Margaret’s Memorycare Music today."
+        aside={
+          <span className="inline-flex items-center gap-2 self-start rounded-xl bg-ocean-800 px-5 py-3 font-poppins text-[12.4px] font-semibold text-white shadow">
+            {DASH_ICONS.calendar}
+            {todayLabel}
+          </span>
+        }
+      />
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          icon={DASH_ICONS.people}
+          title="Pending Musicians"
+          value={`${pendingMusicianCount} awaiting review`}
+          eyebrow="Pending musicians"
+          actionLabel="View all"
+          actionHref="/dashboard/admin?musicianStatus=pending"
+        />
+        <StatCard
+          icon={DASH_ICONS.building}
+          title="Pending Facilities"
+          value={`${pendingCenterCount} awaiting review`}
+          eyebrow="Pending facilities"
+          actionLabel="View all"
+          actionHref="/dashboard/admin?centerStatus=pending"
+        />
+        <StatCard
+          icon={DASH_ICONS.calendar}
+          title="Today’s Requests"
+          value={`${requestRows.length} in view`}
+          eyebrow="Today’s requests"
+          actionLabel="View all"
+          actionHref="/dashboard/requests"
+        />
+        <StatCard
+          icon={DASH_ICONS.music}
+          title="Open Flags"
+          value={`${openFlags.length} to resolve`}
+          eyebrow="Needs attention"
+          actionLabel="View all"
+          actionHref="/dashboard/admin"
+        />
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">

@@ -41,7 +41,7 @@ export default function Home() {
       <MarketingHeader />
 
       {/* ============ Hero ============ */}
-      <section className="relative overflow-hidden" id="about">
+      <section className="relative overflow-hidden" id="hero">
         {/* Photo */}
         <div
           className="absolute inset-0 bg-cover"
@@ -135,8 +135,13 @@ export default function Home() {
       </section>
 
       {/* ============ Choose Your Path ============ */}
-      <section style={{ background: 'linear-gradient(180deg, #10416f 0%, #0a2f5a 100%)' }}>
-        <div className="mx-auto grid max-w-[1080px] gap-8 px-6 py-16 sm:px-8 md:grid-cols-2">
+      <section id="choose-your-path" style={{ background: 'linear-gradient(180deg, #10416f 0%, #0a2f5a 100%)' }}>
+        <div className="mx-auto max-w-[1080px] px-6 py-16 sm:px-8">
+          <h2 className="text-center font-garamond text-[30px] font-bold text-white sm:text-[38px]">Choose Your Path</h2>
+          <p className="mx-auto mt-2 max-w-[560px] text-center font-poppins text-[13.8px] leading-relaxed text-white/90">
+            Volunteer your music, or bring live performances to your residents.
+          </p>
+          <div className="mt-10 grid gap-8 md:grid-cols-2">
           {/* Musician card */}
           <div className="relative overflow-hidden rounded-2xl border-2 border-ocean-200/60 shadow-xl">
             <div
@@ -181,19 +186,20 @@ export default function Home() {
                 Bring meaningful live performances to your residents
               </p>
               <Link
-                href="/signup"
+                href="/register/facility"
                 className="mt-5 rounded-lg bg-[#faf4e7] px-6 py-2.5 font-poppins text-[12.2px] font-bold uppercase tracking-[0.12em] text-ocean-900 shadow transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 Register Your Facility
               </Link>
             </div>
           </div>
+          </div>
         </div>
       </section>
 
       {/* ============ Why Music Matters ============ */}
       <section
-        id="faq"
+        id="why-music-matters"
         className="relative overflow-hidden"
         style={{ background: 'linear-gradient(180deg, #0a2f5a 0%, #072544 100%)' }}
       >

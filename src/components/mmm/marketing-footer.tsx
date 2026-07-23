@@ -7,11 +7,12 @@ import Link from 'next/link'
  */
 
 const QUICK_LINKS: Array<{ label: string; href: string }> = [
-  { label: 'About Us', href: '/#about' },
-  { label: 'How It Works', href: '/#how-it-works' },
+  { label: 'About Us', href: '/about' },
+  { label: 'How It Works', href: '/how-it-works' },
+  { label: 'Why Music Matters', href: '/why-music-matters' },
   { label: 'Education', href: '/education' },
-  { label: 'FAQ', href: '/#faq' },
-  { label: 'Contact', href: '/#contact' },
+  { label: 'FAQ', href: '/faq' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 const SOCIALS = [

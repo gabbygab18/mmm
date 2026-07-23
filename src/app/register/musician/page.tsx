@@ -5,6 +5,16 @@ import { ChangeEvent, ReactNode, useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
+import { PasswordField, PillGroup, SelectField, TextField } from '@/components/mmm/form-kit'
+import { BackButton, NextButton, StepHeading, StepTracker } from '@/components/mmm/registration-ui'
+import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
+import {
+  GENRES,
+  INSTRUMENTS,
+  LANGUAGES,
+  PERFORMANCE_TYPES as PERFORMANCE_TYPE_OPTIONS,
+  YEARS_EXPERIENCE,
+} from '@/lib/mmm/options'
 
 /**
  * Musician Registration — 5-step wizard (approved design):
@@ -23,7 +33,7 @@ const STEP_LABELS = [
   ['Agreement'],
 ]
 
-const PERFORMANCE_TYPES = ['Solo', 'Duo', 'Small Group', 'Large Group'] as const
+const PERFORMANCE_TYPES = PERFORMANCE_TYPE_OPTIONS
 
 // ---------- Step 4 (Availability) — updated layout ----------
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -161,97 +171,6 @@ function Field({ label, children, className = '' }: { label: string; children: R
   )
 }
 
-function StepTracker({ current }: { current: number }) {
-  return (
-    <div
-      className="relative mx-auto mt-10 max-w-[840px] overflow-hidden rounded-2xl bg-[#faf4e7]/90 px-3 py-5 shadow-lg sm:px-10 sm:py-6"
-    >
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{ backgroundImage: "url('/mmm/notes-bg.png')", backgroundRepeat: 'no-repeat', backgroundSize: '760px auto', backgroundPosition: 'left -30px center' }}
-        aria-hidden="true"
-      />
-      <ol className="relative flex items-start justify-between">
-        {STEP_LABELS.map((label, i) => {
-          const stepNo = i + 1
-          const done = stepNo < current
-          const active = stepNo === current
-          return (
-            <li key={label.join(' ')} className="relative flex flex-1 flex-col items-center">
-              {i > 0 && (
-                <span className="absolute right-1/2 top-[18px] -z-0 h-[2px] w-full -translate-y-1/2 bg-ocean-700/50 sm:top-7" aria-hidden="true" style={{ right: '50%', width: '100%' }} />
-              )}
-              <span
-                className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 font-poppins text-[15px] font-bold sm:h-14 sm:w-14 sm:text-[20px] ${
-                  active
-                    ? 'border-ocean-900 bg-ocean-900 text-white'
-                    : 'border-ocean-900 bg-[#faf4e7] text-ocean-900'
-                }`}
-                aria-current={active ? 'step' : undefined}
-              >
-                {done ? (
-                  <svg className="h-4 w-4 text-ocean-900 sm:h-6 sm:w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  stepNo
-                )}
-              </span>
-              <span className="mt-1.5 text-center font-poppins text-[9.5px] leading-tight text-ocean-900 sm:mt-2 sm:text-[13px]">
-                {label.map((line) => (
-                  <span key={line} className="block">
-                    {line}
-                  </span>
-                ))}
-              </span>
-            </li>
-          )
-        })}
-      </ol>
-    </div>
-  )
-}
-
-function StepHeading({ step, title, subtitle, icon }: { step: number; title: string; subtitle: string; icon: ReactNode }) {
-  return (
-    <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
-      <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ocean-900 text-white sm:h-24 sm:w-24">
-        {icon}
-      </div>
-      <div>
-        <p className="font-poppins text-[13px] text-ocean-900">Step {step} of 5</p>
-        <h2 className="font-garamond text-[30px] font-bold leading-none text-ocean-900 sm:text-[50.8px]">{title}</h2>
-        <p className="mt-1 font-poppins text-[13px] text-ocean-900 sm:text-[16.1px]">{subtitle}</p>
-      </div>
-    </div>
-  )
-}
-
-function BackButton({ onClick, label = 'Back' }: { onClick: () => void; label?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-full border-[1.5px] border-ocean-800 px-7 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.14em] text-ocean-900 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
-    >
-      {label === 'Back' ? <>&larr; {label}</> : label}
-    </button>
-  )
-}
-
-function NextButton({ onClick, label = 'Next', disabled = false }: { onClick: () => void; label?: string; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="rounded-full bg-ocean-800 px-7 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.14em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400"
-    >
-      {label === 'Next' ? <>{label} &rarr;</> : label}
-    </button>
-  )
-}
-
 export default function MusicianRegistrationPage() {
   const [step, setStep] = useState(1)
   const [done, setDone] = useState(false)
@@ -260,24 +179,26 @@ export default function MusicianRegistrationPage() {
   const [loading, setLoading] = useState(false)
 
   // Step 1 — Create Account
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [agreeTos, setAgreeTos] = useState(false)
+  const [human, setHuman] = useState<HumanCheckValue>({ verified: false, token: null })
 
   // Step 2 — Profile
   const [photoName, setPhotoName] = useState<string | null>(null)
   const [bio, setBio] = useState('')
   const [phone, setPhone] = useState('')
   const [zip, setZip] = useState('')
-  const [languages, setLanguages] = useState('')
+  const [languages, setLanguages] = useState<string[]>([])
   const [performanceTypes, setPerformanceTypes] = useState<string[]>([])
 
   // Step 3 — Musical Background
-  const [primaryInstruments, setPrimaryInstruments] = useState('')
+  const [primaryInstrument, setPrimaryInstrument] = useState('')
   const [otherInstruments, setOtherInstruments] = useState('')
   const [yearsExperience, setYearsExperience] = useState('')
-  const [genres, setGenres] = useState('')
+  const [genres, setGenres] = useState<string[]>([])
   const [experience, setExperience] = useState('')
 
   // Step 4 — Availability (updated layout)
@@ -305,12 +226,20 @@ export default function MusicianRegistrationPage() {
   const goNext = () => {
     setError(null)
     if (step === 1) {
-      if (!name.trim() || !email.trim() || !password) {
-        setError('Please fill in your name, e-mail address, and password.')
+      if (!firstName.trim() || !lastName.trim()) {
+        setError('Please enter your first and last name.')
+        return
+      }
+      if (!email.trim() || !password) {
+        setError('Please fill in your e-mail address and password.')
         return
       }
       if (password.length < 8) {
         setError('Password must be at least 8 characters.')
+        return
+      }
+      if (!human.verified) {
+        setError('Please complete the human verification check.')
         return
       }
       if (!agreeTos) {
@@ -348,17 +277,22 @@ export default function MusicianRegistrationPage() {
       options: {
         data: {
           role: 'musician',
-          full_name: name.trim(),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          full_name: `${firstName.trim()} ${lastName.trim()}`,
+          human_verification_token: human.token,
           registration: {
             bio: bio.trim(),
             phone: phone.trim(),
             zip_code: zip.trim(),
-            languages: languages.trim(),
+            languages,
             performance_types: performanceTypes,
-            primary_instruments: primaryInstruments.trim(),
+            performance_type: performanceTypes[0] ?? '',
+            primary_instrument: primaryInstrument,
+            instruments: [primaryInstrument, ...otherInstruments.split(',').map((v) => v.trim())].filter(Boolean),
             other_instruments: otherInstruments.trim(),
-            years_of_experience: yearsExperience.trim(),
-            genres: genres.trim(),
+            years_of_experience: yearsExperience,
+            genres,
             musical_experience: experience.trim(),
             preferred_days: preferredDays.join(', '),
             preferred_time: preferredTimes.join(', '),
@@ -409,7 +343,7 @@ export default function MusicianRegistrationPage() {
             Join our community of volunteer musicians and bring the joy of live music to memory care residents.
           </p>
 
-          {!done && <StepTracker current={step} />}
+          {!done && <StepTracker steps={STEP_LABELS} current={step} />}
 
           {/* ============ Card ============ */}
           <div className="mt-8 rounded-3xl border-2 border-ocean-900 bg-[#faf4e7] px-4 py-8 shadow-2xl sm:px-8 sm:py-10 md:px-12">
@@ -480,15 +414,16 @@ export default function MusicianRegistrationPage() {
                       }
                     />
                     <div className="mx-auto mt-8 max-w-[520px] space-y-5">
-                      <Field label="Name">
-                        <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your name" autoComplete="name" />
-                      </Field>
-                      <Field label="E-mail Address">
-                        <input className={inputClass} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your e-mail address" autoComplete="email" />
-                      </Field>
-                      <Field label="Password">
-                        <input className={inputClass} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" autoComplete="new-password" />
-                      </Field>
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <TextField label="First Name" value={firstName} onChange={setFirstName} placeholder="Enter your first name" autoComplete="given-name" />
+                        <TextField label="Last Name" value={lastName} onChange={setLastName} placeholder="Enter your last name" autoComplete="family-name" />
+                      </div>
+                      <p className="font-poppins text-[10px] text-ocean-900/60">
+                        Facilities see your first name and last initial — for example, Maria S.
+                      </p>
+                      <TextField label="E-mail Address" type="email" value={email} onChange={setEmail} placeholder="Enter your e-mail address" autoComplete="email" inputMode="email" />
+                      <PasswordField value={password} onChange={setPassword} hint="At least 8 characters." />
+                      <HumanCheck onChange={setHuman} />
                       <label className="flex items-start justify-center gap-2 pt-1 font-poppins text-[10.7px] text-ocean-900">
                         <input
                           type="checkbox"
@@ -564,9 +499,12 @@ export default function MusicianRegistrationPage() {
                         <Field label="ZIP Code">
                           <input className={inputClass} value={zip} onChange={(e) => setZip(e.target.value)} inputMode="numeric" autoComplete="postal-code" />
                         </Field>
-                        <Field label="Languages You Speak">
-                          <input className={inputClass} value={languages} onChange={(e) => setLanguages(e.target.value)} />
-                        </Field>
+                        <PillGroup
+                          label="Languages You Speak"
+                          options={LANGUAGES}
+                          selected={languages}
+                          onToggle={(v) => toggleInList(setLanguages, v)}
+                        />
                         <Field label="Performance Types">
                           <div className="flex flex-wrap gap-2.5">
                             {PERFORMANCE_TYPES.map((t) => {
@@ -609,20 +547,31 @@ export default function MusicianRegistrationPage() {
                     />
                     <div className="mt-8 grid gap-x-8 gap-y-5 sm:grid-cols-2">
                       <div className="space-y-5">
-                        <Field label="Primary Instrument/s">
-                          <input className={inputClass} value={primaryInstruments} onChange={(e) => setPrimaryInstruments(e.target.value)} placeholder="e.g. Guitar, Piano, Vocals" />
-                        </Field>
+                        <SelectField
+                          label="Primary Instrument"
+                          value={primaryInstrument}
+                          onChange={setPrimaryInstrument}
+                          options={INSTRUMENTS}
+                          placeholder="Select your primary instrument"
+                        />
                         <Field label="Other Instruments (Optional)">
                           <input className={inputClass} value={otherInstruments} onChange={(e) => setOtherInstruments(e.target.value)} placeholder="e.g. Ukulele, Harmonica" />
                         </Field>
-                        <Field label="Years of Experience">
-                          <input className={inputClass} value={yearsExperience} onChange={(e) => setYearsExperience(e.target.value)} inputMode="numeric" />
-                        </Field>
+                        <SelectField
+                          label="Years of Experience"
+                          value={yearsExperience}
+                          onChange={setYearsExperience}
+                          options={YEARS_EXPERIENCE}
+                          placeholder="Select years of experience"
+                        />
                       </div>
                       <div className="space-y-5">
-                        <Field label="Genres You Play">
-                          <input className={inputClass} value={genres} onChange={(e) => setGenres(e.target.value)} placeholder="e.g. Folk, Classical, Pop, Gospel" />
-                        </Field>
+                        <PillGroup
+                          label="Genres You Play"
+                          options={GENRES}
+                          selected={genres}
+                          onToggle={(v) => toggleInList(setGenres, v)}
+                        />
                         <Field label="Tell us about your musical experience">
                           <div className="relative">
                             <textarea
