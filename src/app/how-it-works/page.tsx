@@ -93,14 +93,21 @@ export default function HowItWorksPage() {
 
       {/* ============ Hero — two photos framing the promise ============ */}
       <section className="relative overflow-hidden bg-[#faf4e7]">
-        <div className="absolute inset-y-0 left-0 w-1/3 sm:w-[28%]" aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/mmm/mobile/how-hero.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover sm:hidden"
+        />
+        <div className="absolute inset-y-0 left-0 hidden w-1/3 sm:block sm:w-[28%]" aria-hidden="true">
           <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: "url('/mmm/card-musician.png')" }} />
           <div
             className="absolute inset-0"
             style={{ background: 'linear-gradient(90deg, rgba(250,244,231,0) 35%, rgba(250,244,231,0.92) 100%)' }}
           />
         </div>
-        <div className="absolute inset-y-0 right-0 w-1/3 sm:w-[28%]" aria-hidden="true">
+        <div className="absolute inset-y-0 right-0 hidden w-1/3 sm:block sm:w-[28%]" aria-hidden="true">
           <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: "url('/mmm/card-community.png')" }} />
           <div
             className="absolute inset-0"

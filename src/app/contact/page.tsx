@@ -78,8 +78,8 @@ export default function ContactPage() {
 
       {/* ============ Hero ============ */}
       <PageHero
-        ratioClass="aspect-[1.9] sm:aspect-[2.6] lg:aspect-[3.2]"
-        waveOffset="26%"
+        mobileImage="/mmm/mobile/contact-bg.png"
+        ratioClass="aspect-[2.2] sm:aspect-[2.6] lg:aspect-[3.2]"
         background="linear-gradient(180deg, #dcebfb 0%, #b6d1ec 60%, #a8c8e8 100%)"
         copyWidth="max-w-[900px]"
         align="center"
@@ -255,11 +255,14 @@ export default function ContactPage() {
 
             <div className="relative min-h-[200px] sm:min-h-[280px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/mmm/pages/contact-map.png"
-                alt="Map of the Palm Beach County service area"
-                className="h-full w-full object-cover"
-              />
+              <picture>
+                <source srcSet="/mmm/mobile/contact-map.png" media="(max-width: 639px)" />
+                <img
+                  src="/mmm/pages/contact-map.png"
+                  alt="Map of the Palm Beach County service area"
+                  className="h-full w-full object-cover"
+                />
+              </picture>
             </div>
           </div>
         </div>

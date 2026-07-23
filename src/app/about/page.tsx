@@ -60,8 +60,8 @@ export default function AboutPage() {
         photoAlt="Margaret Roscoe with her son Michael"
         photoWidth="50%"
         notes="/mmm/pages/about-notes-top.png"
-        ratioClass="aspect-[1.45] sm:aspect-[1.9] lg:aspect-[2.46]"
-        photoWidthSm="40%"
+        mobileImage="/mmm/mobile/about-hero.png"
+        ratioClass="aspect-[1.69] sm:aspect-[1.9] lg:aspect-[2.46]"
         background="linear-gradient(100deg, #82aeda 0%, #a1c0e2 32%, #adc2dc 60%, #9dbcdd 100%)"
         copyWidth="max-w-[560px]"
         tailColor="#4882bf"
@@ -102,11 +102,14 @@ export default function AboutPage() {
 
         <div className="relative mx-auto grid max-w-[1150px] items-center gap-10 px-6 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-14">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/mmm/pages/about-margaret.png"
-            alt="Margaret Roscoe smiling at a family celebration"
-            className="mx-auto w-full max-w-[420px] drop-shadow-2xl"
-          />
+          <picture className="mx-auto block w-full max-w-[420px]">
+            <source srcSet="/mmm/mobile/about-margaret.png" media="(max-width: 639px)" />
+            <img
+              src="/mmm/pages/about-margaret.png"
+              alt="Margaret Roscoe smiling at a family celebration"
+              className="mx-auto w-full drop-shadow-2xl"
+            />
+          </picture>
 
           <div className="text-center lg:text-right">
             <h2 className="font-garamond text-[30px] font-bold leading-tight text-white sm:text-[42.6px]">
