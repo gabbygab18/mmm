@@ -27,7 +27,7 @@ const TOPICS = [
     icon: '/mmm/pages/wmm-research.png',
     title: 'Research',
     body: 'Explore studies and data on music and dementia care.',
-    href: '/education#research',
+    href: '/education/research-behind-music-and-memory',
   },
   {
     icon: '/mmm/pages/wmm-benefits.png',

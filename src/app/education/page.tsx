@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
 
@@ -113,10 +114,31 @@ export default function EducationPage() {
   // Mobile-only pagination (md+ always shows everything).
   const [mobilePage, setMobilePage] = useState<1 | 2>(1)
 
+  // Compatibility: older links point at /education#<topic>. The topic content now
+  // lives on its own detail route, so forward those hashes to the real page.
+  const router = useRouter()
+  const [redirecting, setRedirecting] = useState(false)
+  useEffect(() => {
+    const map: Record<string, string> = {
+      '#science': '/education/science-of-music',
+      '#brain': '/education/music-and-the-brain',
+      '#benefits': '/education/benefits-of-live-music',
+      '#memory': '/education/understanding-memory-and-dementia',
+      '#research': '/education/research-behind-music-and-memory',
+    }
+    const dest = map[window.location.hash]
+    if (dest) {
+      setRedirecting(true)
+      router.replace(dest)
+    }
+  }, [router])
+
   const goMobilePage = (page: 1 | 2) => {
     setMobilePage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  if (redirecting) return null
 
   return (
     <main className="bg-ocean-900 font-sans">
