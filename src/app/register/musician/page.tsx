@@ -11,7 +11,6 @@ import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
 import {
   GENRES,
   INSTRUMENTS,
-  LANGUAGES,
   PERFORMANCE_TYPES as PERFORMANCE_TYPE_OPTIONS,
   YEARS_EXPERIENCE,
 } from '@/lib/mmm/options'
@@ -192,7 +191,6 @@ export default function MusicianRegistrationPage() {
   const [bio, setBio] = useState('')
   const [phone, setPhone] = useState('')
   const [zip, setZip] = useState('')
-  const [languages, setLanguages] = useState<string[]>([])
   const [performanceTypes, setPerformanceTypes] = useState<string[]>([])
 
   // Step 3 — Musical Background
@@ -286,7 +284,6 @@ export default function MusicianRegistrationPage() {
             bio: bio.trim(),
             phone: phone.trim(),
             zip_code: zip.trim(),
-            languages,
             performance_types: performanceTypes,
             performance_type: performanceTypes[0] ?? '',
             primary_instrument: primaryInstrument,
@@ -578,12 +575,6 @@ export default function MusicianRegistrationPage() {
                         />
                       </div>
                       <div className="space-y-5">
-                        <PillGroup
-                          label="Languages You Speak"
-                          options={LANGUAGES}
-                          selected={languages}
-                          onToggle={(v) => toggleInList(setLanguages, v)}
-                        />
                         <PillGroup
                           label="Genres You Play"
                           options={GENRES}

@@ -16,10 +16,10 @@ const QUICK_LINKS: Array<{ label: string; href: string }> = [
 ]
 
 const SOCIALS = [
-  { label: 'Facebook', icon: '/mmm/icon-fb.png', href: '#' },
-  { label: 'Instagram', icon: '/mmm/icon-ig.png', href: '#' },
-  { label: 'YouTube', icon: '/mmm/icon-yt.png', href: '#' },
-  { label: 'TikTok', icon: '/mmm/icon-tiktok.png', href: '#' },
+  { label: 'Facebook', icon: '/mmm/icon-fb.png', href: 'https://www.facebook.com/profile.php?id=61590198659207' },
+  { label: 'Instagram', icon: '/mmm/icon-ig.png', href: 'https://www.instagram.com/margaretsmemorycaremusic/' },
+  { label: 'YouTube', icon: '/mmm/icon-yt.png', href: 'https://www.youtube.com/@MargaretsMemorycareMusic' },
+  { label: 'TikTok', icon: '/mmm/icon-tiktok.png', href: 'https://www.tiktok.com/@margaretsmemorycaremusic' },
 ]
 
 function CopyrightBar() {
@@ -90,6 +90,8 @@ export function MarketingFooter({ variant = 'simple' }: { variant?: 'full' | 'si
                 <a
                   key={s.label}
                   href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={s.label}
                   className="transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 >

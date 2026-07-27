@@ -15,13 +15,13 @@ const TOPICS = [
     icon: '/mmm/pages/wmm-science.png',
     title: 'Science of Music',
     body: 'Discover how music works in the brain and why it’s so powerful.',
-    href: '/education#science',
+    href: '/education/science-of-music',
   },
   {
     icon: '/mmm/pages/wmm-memory.png',
     title: 'Memory & Dementia',
     body: 'Understand how music impacts memory and cognitive function.',
-    href: '/education#memory',
+    href: '/education/understanding-memory-and-dementia',
   },
   {
     icon: '/mmm/pages/wmm-research.png',
@@ -33,13 +33,13 @@ const TOPICS = [
     icon: '/mmm/pages/wmm-benefits.png',
     title: 'Benefits',
     body: 'See the many ways music improves the quality of life for residents.',
-    href: '/education#benefits',
+    href: '/education/benefits-of-live-music',
   },
   {
     icon: '/mmm/pages/wmm-brain.png',
     title: 'Brain Science',
     body: 'Learn about the neurological benefits of music engagement.',
-    href: '/education#brain',
+    href: '/education/music-and-the-brain',
   },
   {
     icon: '/mmm/pages/wmm-family.png',
