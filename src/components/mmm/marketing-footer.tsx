@@ -57,7 +57,7 @@ export function MarketingFooter({ variant = 'simple' }: { variant?: 'full' | 'si
           <div className="flex items-start gap-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/mmm/logo.png"
+              src="/mmm/logo-round.png"
               alt=""
               className="h-24 w-24 shrink-0 rounded-full bg-[#faf4e7] object-contain p-2 shadow-lg"
             />
