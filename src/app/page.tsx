@@ -72,6 +72,19 @@ export default function Home() {
           className="landing-wave-glow pointer-events-none absolute bottom-0 left-1/2 w-[130%] max-w-none -translate-x-1/2 translate-y-[35%] select-none"
         />
 
+        {/* Centered play control */}
+        <a
+          href="https://www.youtube.com/@MargaretsMemorycareMusic"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Watch: Bringing Music to Memory Care"
+          className="absolute left-1/2 top-1/2 z-20 hidden h-[74px] w-[74px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-ocean-900/35 backdrop-blur-sm transition hover:bg-ocean-900/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:flex"
+        >
+          <svg viewBox="0 0 24 24" className="ml-1 h-8 w-8 fill-white" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </a>
+
         <div className="relative mx-auto flex min-h-[560px] max-w-[1200px] flex-col justify-center px-6 py-20 sm:px-8 lg:min-h-[640px]">
           <h1 className="landing-rise max-w-[640px] font-garamond text-[44px] font-semibold leading-[1.05] text-white drop-shadow-md sm:text-[58px] lg:text-[67px]">
             Bringing Music to Memory Care
@@ -81,19 +94,48 @@ export default function Home() {
             meaningful moments through live music at no cost.
           </p>
 
-          <div className="landing-rise landing-delay-2 mt-10 flex flex-col items-start gap-4 lg:absolute lg:bottom-36 lg:right-16 lg:mt-0 lg:items-center">
-            <Link
-              href="/get-started"
-              className="rounded-lg bg-[#faf4e7] px-10 py-3 text-center font-poppins text-[17px] font-bold tracking-[0.14em] text-ocean-900 shadow-lg transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              Get Started–It&apos;s Free!
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-lg bg-ocean-300/80 px-12 py-2.5 text-center font-poppins text-[17px] font-bold uppercase tracking-[0.2em] text-white shadow-[inset_0_-2px_5px_rgba(7,37,68,0.35)] backdrop-blur-sm transition hover:bg-ocean-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              Sign In
-            </Link>
+          <div className="landing-rise landing-delay-2 mt-9">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mmm/get-started-label.png"
+              alt="Get Started – Join as a:"
+              className="h-8 w-auto select-none drop-shadow"
+              draggable={false}
+            />
+            <div className="mt-4 flex flex-wrap items-center gap-3.5">
+              <Link
+                href="/register/musician"
+                aria-label="Join as a Volunteer Musician"
+                className="rounded-xl transition hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/mmm/volunteer-musician-btn.png"
+                  alt="Volunteer Musician"
+                  className="h-12 w-auto select-none drop-shadow-md"
+                  draggable={false}
+                />
+              </Link>
+              <Link
+                href="/register/facility"
+                aria-label="Join as a Memory Care Community"
+                className="rounded-xl transition hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/mmm/memory-care-btn.png"
+                  alt="Memory Care Community"
+                  className="h-12 w-auto select-none drop-shadow-md"
+                  draggable={false}
+                />
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex h-12 items-center justify-center rounded-lg bg-ocean-300/80 px-10 font-poppins text-[16px] font-bold uppercase tracking-[0.2em] text-white shadow-[inset_0_-2px_5px_rgba(7,37,68,0.35)] backdrop-blur-sm transition hover:bg-ocean-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                Sign In
+              </Link>
+            </div>
           </div>
         </div>
       </section>
