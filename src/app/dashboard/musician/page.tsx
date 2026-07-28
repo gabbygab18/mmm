@@ -44,7 +44,7 @@ export default async function MusicianDashboardPage() {
 
   const { data: musician } = await supabase
     .from('musicians')
-    .select('id, name, first_name, profile_complete')
+    .select('id, name, first_name, profile_complete, approved')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -89,13 +89,21 @@ export default async function MusicianDashboardPage() {
   const upcomingList = upcoming?.data ?? []
   const pendingList = pending?.data ?? []
   const announcementList = announcements?.data ?? []
-  const displayName = musician?.first_name ?? musician?.name ?? ''
+
+  // Prefer the musician profile name; fall back to the name captured on the
+  // auth account at registration so the banner is never blank / placeholder.
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>
+  const metaFirstName =
+    (typeof meta.first_name === 'string' && meta.first_name.trim()) ||
+    (typeof meta.full_name === 'string' && meta.full_name.trim().split(' ')[0]) ||
+    ''
+  const displayName = musician?.first_name || musician?.name || metaFirstName || ''
 
   return (
     <div className="mx-auto max-w-[1240px] space-y-5">
       <WelcomeBanner
         title="Welcome back,"
-        name={displayName ? `${displayName}` : '(Name of the Musician)'}
+        name={displayName || undefined}
         subtitle="Thank you for using your gift of music to bring joy and connection to memory care communities."
       />
 
@@ -111,6 +119,17 @@ export default async function MusicianDashboardPage() {
           >
             Complete my profile
           </Link>
+        </div>
+      )}
+
+      {musician?.profile_complete && !musician.approved && (
+        <div className="rounded-2xl border border-ocean-300 bg-ocean-50 px-6 py-5">
+          <h2 className="font-garamond text-[19px] font-bold text-ocean-900">Your profile is under review</h2>
+          <p className="mt-1 font-poppins text-[11.5px] text-ocean-900/90">
+            Thanks for completing your profile! Our team is reviewing it now. Once approved, you&apos;ll
+            appear to memory care communities and can start receiving performance requests. We&apos;ll
+            let you know as soon as you&apos;re live.
+          </p>
         </div>
       )}
 

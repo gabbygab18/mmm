@@ -74,12 +74,24 @@ export function StatCard({
         </div>
       </div>
       <p className="mt-3 font-poppins text-[8.5px] font-bold uppercase tracking-[0.12em] text-ocean-900/70">{eyebrow}</p>
-      <Link
-        href={actionHref}
-        className="mt-2 inline-block self-start rounded-md border border-ocean-800/70 px-3 py-1.5 font-poppins text-[8.5px] font-bold uppercase tracking-[0.12em] text-ocean-900 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
-      >
-        {actionLabel}
-      </Link>
+      {actionHref.includes('#') ? (
+        // Same-page anchor: use a real navigation so the browser scrolls to the
+        // target section (Next.js <Link> soft-nav skips hash scrolling when only
+        // the query/hash changes on the current route).
+        <a
+          href={actionHref}
+          className="mt-2 inline-block self-start rounded-md border border-ocean-800/70 px-3 py-1.5 font-poppins text-[8.5px] font-bold uppercase tracking-[0.12em] text-ocean-900 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
+        >
+          {actionLabel}
+        </a>
+      ) : (
+        <Link
+          href={actionHref}
+          className="mt-2 inline-block self-start rounded-md border border-ocean-800/70 px-3 py-1.5 font-poppins text-[8.5px] font-bold uppercase tracking-[0.12em] text-ocean-900 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
+        >
+          {actionLabel}
+        </Link>
+      )}
     </div>
   )
 }

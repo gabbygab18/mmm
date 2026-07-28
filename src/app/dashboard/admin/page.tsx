@@ -24,6 +24,8 @@ type AdminSearchParams = {
   fromDate?: string
   toDate?: string
   status?: string | string[]
+  musicianStatus?: string
+  centerStatus?: string
 }
 
 function formatDateLabel(value: string) {
@@ -88,6 +90,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const fromDateFilter = (params.fromDate ?? '').trim()
   const toDateFilter = (params.toDate ?? '').trim()
   const statusFilters = parseStatusFilters(params.status)
+  const musicianStatusView = (params.musicianStatus ?? '').trim() // '' | 'pending' | 'all'
+  const centerStatusView = (params.centerStatus ?? '').trim()
   const statusFilterSet = new Set<RequestStatus>(statusFilters)
 
   async function toggleMusicianApproval(formData: FormData) {
@@ -229,26 +233,57 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
   const supabase = await createSupabaseServerClient()
 
+  // Filter-independent overview counts. These must NOT depend on the search
+  // filters below, or the cards read 0 until you type a name. `head: true`
+  // fetches only the count, not the rows.
+  const [
+    { count: pendingMusicianCount },
+    { count: pendingCenterCount },
+    { count: totalUsersCount },
+  ] = await Promise.all([
+    supabase
+      .from('musicians')
+      .select('id', { count: 'exact', head: true })
+      .eq('approved', false)
+      .is('deleted_at', null),
+    supabase
+      .from('centers')
+      .select('id', { count: 'exact', head: true })
+      .eq('approved', false)
+      .is('deleted_at', null),
+    supabase.from('users').select('id', { count: 'exact', head: true }),
+  ])
+
   const hasMusicianFilter = Boolean(musicianFilter)
   const hasCenterFilter = Boolean(centerFilter)
 
-  const { data: musicians } = hasMusicianFilter
-    ? await supabase
-        .from('musicians')
-        .select('id, name, zip_code, profile_complete, approved, created_at, deleted_at')
-        .ilike('name', `%${musicianFilter}%`)
-        .order('created_at', { ascending: false })
-        .limit(250)
-    : { data: [] as { id: string; name: string; zip_code: string; profile_complete: boolean; approved: boolean; created_at: string; deleted_at: string | null }[] }
+  type ModMusician = { id: string; name: string; zip_code: string; profile_complete: boolean; approved: boolean; created_at: string; deleted_at: string | null }
+  type ModCenter = { id: string; name: string; resident_count: number | null; profile_complete: boolean; approved: boolean; created_at: string; deleted_at: string | null }
 
-  const { data: centers } = hasCenterFilter
-    ? await supabase
-        .from('centers')
-        .select('id, name, resident_count, profile_complete, approved, created_at, deleted_at')
-        .ilike('name', `%${centerFilter}%`)
-        .order('created_at', { ascending: false })
-        .limit(250)
-    : { data: [] as { id: string; name: string; resident_count: number | null; profile_complete: boolean; approved: boolean; created_at: string; deleted_at: string | null }[] }
+  const loadMusicians = hasMusicianFilter || musicianStatusView === 'pending' || musicianStatusView === 'all'
+  const loadCenters = hasCenterFilter || centerStatusView === 'pending' || centerStatusView === 'all'
+
+  let musicians: ModMusician[] = []
+  if (loadMusicians) {
+    let query = supabase
+      .from('musicians')
+      .select('id, name, zip_code, profile_complete, approved, created_at, deleted_at')
+    if (musicianFilter) query = query.ilike('name', `%${musicianFilter}%`)
+    if (musicianStatusView === 'pending') query = query.eq('approved', false).is('deleted_at', null)
+    const { data } = await query.order('created_at', { ascending: false }).limit(250)
+    musicians = (data ?? []) as ModMusician[]
+  }
+
+  let centers: ModCenter[] = []
+  if (loadCenters) {
+    let query = supabase
+      .from('centers')
+      .select('id, name, resident_count, profile_complete, approved, created_at, deleted_at')
+    if (centerFilter) query = query.ilike('name', `%${centerFilter}%`)
+    if (centerStatusView === 'pending') query = query.eq('approved', false).is('deleted_at', null)
+    const { data } = await query.order('created_at', { ascending: false }).limit(250)
+    centers = (data ?? []) as ModCenter[]
+  }
 
   const [{ data: flags }, { data: requests }, { data: completedRequestsData }] = await Promise.all([
     supabase
@@ -321,11 +356,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const hasAnyUnifiedFilter = Boolean(
     musicianFilter || centerFilter || fromDateFilter || toDateFilter || statusFilters.length > 0
   )
-  const hasAnyAccountFilter = hasMusicianFilter || hasCenterFilter
+  const hasAnyAccountFilter = loadMusicians || loadCenters
 
   // Summary counts for the branded overview tiles.
-  const pendingMusicianCount = (musicians ?? []).filter((m) => !m.approved && !m.deleted_at).length
-  const pendingCenterCount = (centers ?? []).filter((c) => !c.approved && !c.deleted_at).length
   const filteredMusicians = musicians ?? []
   const filteredCenters = centers ?? []
 
@@ -401,18 +434,18 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <StatCard
           icon={DASH_ICONS.people}
           title="Pending Musicians"
-          value={`${pendingMusicianCount} awaiting review`}
+          value={`${pendingMusicianCount ?? 0} awaiting review`}
           eyebrow="Pending musicians"
           actionLabel="View all"
-          actionHref="/dashboard/admin?musicianStatus=pending"
+          actionHref="/dashboard/admin?musicianStatus=pending#account-moderation"
         />
         <StatCard
           icon={DASH_ICONS.building}
           title="Pending Facilities"
-          value={`${pendingCenterCount} awaiting review`}
+          value={`${pendingCenterCount ?? 0} awaiting review`}
           eyebrow="Pending facilities"
           actionLabel="View all"
-          actionHref="/dashboard/admin?centerStatus=pending"
+          actionHref="/dashboard/admin?centerStatus=pending#account-moderation"
         />
         <StatCard
           icon={DASH_ICONS.calendar}
@@ -428,11 +461,19 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           value={`${openFlags.length} to resolve`}
           eyebrow="Needs attention"
           actionLabel="View all"
-          actionHref="/dashboard/admin"
+          actionHref="/dashboard/admin?musicianStatus=all&centerStatus=all#account-moderation"
         />
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <a
+          href="/dashboard/admin/users"
+          className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-colors hover:border-brand-300 hover:bg-brand-50"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Total accounts</p>
+          <p className="mt-1 text-2xl font-semibold text-stone-900">{totalUsersCount ?? 0}</p>
+          <p className="mt-1 text-xs font-medium text-brand-700">Manage users →</p>
+        </a>
         <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Open flags</p>
           <p className="mt-1 text-2xl font-semibold text-stone-900">{openFlags.length}</p>
@@ -565,12 +606,23 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         </div>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <div id="account-moderation" className="scroll-mt-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold">Account Moderation</h2>
+        {(musicianStatusView === 'pending' || centerStatusView === 'pending') && (
+          <p className="mt-1 text-xs font-medium text-brand-700">
+            Showing accounts awaiting review. <a href="/dashboard/admin" className="underline">Clear</a>
+          </p>
+        )}
         {!hasAnyAccountFilter ? (
-          <p className="mt-3 text-sm text-stone-600">Search by musician or center above to load matching accounts for moderation.</p>
+          <p className="mt-3 text-sm text-stone-600">
+            Use “View all” on the cards above, or search by musician or center, to load accounts for moderation.
+          </p>
         ) : filteredMusicians.length === 0 && filteredCenters.length === 0 ? (
-          <p className="mt-3 text-sm text-stone-600">No account records matched the current musician/center filters.</p>
+          <p className="mt-3 text-sm text-stone-600">
+            {musicianStatusView === 'pending' || centerStatusView === 'pending'
+              ? 'No accounts are awaiting review right now.'
+              : 'No account records matched the current filters.'}
+          </p>
         ) : (
           <ul className="mt-4 space-y-4">
             {filteredMusicians.map((musician) => {

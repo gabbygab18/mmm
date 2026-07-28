@@ -44,7 +44,7 @@ export default async function CenterDashboardPage() {
 
   const { data: center } = await supabase
     .from('centers')
-    .select('id, name, profile_complete')
+    .select('id, name, profile_complete, approved')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -107,7 +107,7 @@ export default async function CenterDashboardPage() {
     <div className="mx-auto max-w-[1240px] space-y-5">
       <WelcomeBanner
         title="Welcome back,"
-        name={center?.name ?? '(Name of the Facility)'}
+        name={center?.name || undefined}
         subtitle="Thank you for creating moments of joy and connection through the healing of live music."
       />
 
@@ -123,6 +123,17 @@ export default async function CenterDashboardPage() {
           >
             Complete my profile
           </Link>
+        </div>
+      )}
+
+      {center?.profile_complete && !center.approved && (
+        <div className="rounded-2xl border border-ocean-300 bg-ocean-50 px-6 py-5">
+          <h2 className="font-garamond text-[19px] font-bold text-ocean-900">Your community is under review</h2>
+          <p className="mt-1 font-poppins text-[11.5px] text-ocean-900/90">
+            Thanks for completing your community profile! Our team is reviewing it now. Once approved,
+            you&apos;ll be matched with nearby volunteer musicians and can request performances. We&apos;ll
+            let you know as soon as you&apos;re live.
+          </p>
         </div>
       )}
 
