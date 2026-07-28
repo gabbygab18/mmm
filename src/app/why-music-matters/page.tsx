@@ -45,25 +45,25 @@ const TOPICS = [
     icon: '/mmm/pages/wmm-family.png',
     title: 'Family Resources',
     body: 'Helpful information and support for families and caregivers.',
-    href: '/education#families',
+    href: '/education/family-resources',
   },
   {
     icon: '/mmm/pages/wmm-volunteer.png',
     title: 'Volunteer Resources',
     body: 'Tools, tips, and guides for our amazing volunteer musicians.',
-    href: '/education#volunteers',
+    href: '/education/volunteer-resources',
   },
   {
     icon: '/mmm/pages/wmm-download.png',
     title: 'Downloadable Resources',
     body: 'Access brochures, guides, and helpful printable materials.',
-    href: '/education#downloads',
+    href: '/education/downloadable-resources',
   },
   {
     icon: '/mmm/pages/wmm-videos.png',
     title: 'Videos',
     body: 'Watch inspiring stories, expert interviews, and educational videos.',
-    href: '/education#videos',
+    href: '/education/videos',
   },
 ]
 

@@ -119,30 +119,127 @@ export function EduSourceInline({ href }: { href: string }) {
 /** Bottom source bar: "Source:" + reference URLs on the left, Back button on the right. */
 export function EduSourceBar({ sources, backHref = '/why-music-matters' }: { sources: string[]; backHref?: string }) {
   return (
-    <div className="mt-12 flex flex-col gap-5 border-t border-white/25 pt-6 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        <p className="font-poppins text-[11px] font-bold uppercase tracking-[0.08em] text-white/90">Source:</p>
-        <ul className="mt-1 space-y-0.5">
-          {sources.map((s) => (
-            <li key={s}>
-              <a
-                href={s}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="break-all font-poppins text-[10px] text-white/80 underline decoration-white/40 underline-offset-2 transition hover:text-white sm:text-[10.1px]"
-              >
-                {s}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div
+      className={`mt-12 flex flex-col gap-5 border-t border-white/25 pt-6 sm:flex-row sm:items-end ${
+        sources.length ? 'sm:justify-between' : 'sm:justify-end'
+      }`}
+    >
+      {sources.length > 0 && (
+        <div className="min-w-0">
+          <p className="font-poppins text-[11px] font-bold uppercase tracking-[0.08em] text-white/90">Source:</p>
+          <ul className="mt-1 space-y-0.5">
+            {sources.map((s) => (
+              <li key={s}>
+                <a
+                  href={s}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="break-all font-poppins text-[10px] text-white/80 underline decoration-white/40 underline-offset-2 transition hover:text-white sm:text-[10.1px]"
+                >
+                  {s}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <Link
         href={backHref}
         className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border-[1.5px] border-white bg-white/95 px-6 py-2 font-poppins text-[11.1px] font-bold uppercase tracking-[0.14em] text-ocean-800 shadow-md transition hover:bg-white sm:self-auto"
       >
         &larr; Back
       </Link>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ *
+ * Resource-page building blocks (Family / Volunteer / Downloadable /
+ * Videos). Additive — the four "Science and Impact" pages above are
+ * untouched. These match the resource-page mockups from Tria.
+ * ------------------------------------------------------------------ */
+
+/** White Garamond section heading, sits directly on the blue body. */
+export function EduBodyTitle({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <h2 className={`font-garamond text-[28px] font-bold text-white sm:text-[35.7px] ${className}`}>{children}</h2>
+}
+
+/** One FAQ entry — light rounded card, bold question, plain answer. */
+export function EduFaqList({ items }: { items: { q: string; a: ReactNode }[] }) {
+  return (
+    <div className="mt-7 space-y-4">
+      {items.map((it) => (
+        <div
+          key={it.q}
+          className="rounded-2xl px-6 py-5 shadow-lg sm:px-8"
+          style={{ background: 'linear-gradient(135deg, #ffffff 0%, #eef4fa 60%, #dce7f5 100%)' }}
+        >
+          <p className="font-poppins text-[15px] font-bold text-ocean-800 sm:text-[16.5px]">{it.q}</p>
+          <p className="mt-1.5 font-poppins text-[13.5px] leading-relaxed text-ocean-900/90 sm:text-[15px]">{it.a}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** Small inline reference links, right-aligned under a card (mockup style). */
+export function EduRefLinks({ links, className = '' }: { links: string[]; className?: string }) {
+  return (
+    <div className={`mt-4 space-y-0.5 ${className}`}>
+      {links.map((l) => (
+        <a
+          key={l}
+          href={l}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block break-all font-poppins text-[10px] text-ocean-500 underline decoration-ocean-300 underline-offset-2 transition hover:text-ocean-700 sm:text-[10.1px]"
+        >
+          {l}
+        </a>
+      ))}
+    </div>
+  )
+}
+
+/** Helpful-Organizations table — navy card, header row, linked org names. */
+export function EduOrgTable({
+  rightHeader,
+  rows,
+}: {
+  rightHeader: string
+  rows: { name: string; href: string; find: string }[]
+}) {
+  return (
+    <div
+      className="mt-7 overflow-hidden rounded-[22px] px-4 py-2 shadow-xl sm:px-8 sm:py-4"
+      style={{ background: 'linear-gradient(160deg, #123f6e 0%, #0d3360 55%, #082846 100%)' }}
+    >
+      <div className="grid grid-cols-2 border-b border-white/25 py-4">
+        <p className="text-center font-poppins text-[13px] font-bold uppercase tracking-[0.1em] text-white sm:text-[15px]">
+          Organization
+        </p>
+        <p className="text-center font-poppins text-[13px] font-bold uppercase tracking-[0.1em] text-white sm:text-[15px]">
+          {rightHeader}
+        </p>
+      </div>
+      {rows.map((r, i) => (
+        <div
+          key={r.name}
+          className={`grid grid-cols-2 items-center gap-3 py-4 ${i < rows.length - 1 ? 'border-b border-white/12' : ''}`}
+        >
+          <a
+            href={r.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-1 text-center font-garamond text-[17px] font-medium text-white underline decoration-white/30 underline-offset-4 transition hover:text-ocean-100 hover:decoration-white sm:text-[22px]"
+          >
+            {r.name}
+          </a>
+          <p className="px-1 text-center font-poppins text-[12.5px] leading-snug text-white/90 sm:text-[15.5px]">
+            {r.find}
+          </p>
+        </div>
+      ))}
     </div>
   )
 }
