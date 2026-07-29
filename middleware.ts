@@ -23,11 +23,12 @@ function isPublicPath(pathname: string) {
 
 export async function middleware(request: NextRequest) {
   // ── Coming-soon gate ──────────────────────────────────────────────────────
-  // While COMING_SOON=true, every page request serves /coming-soon. Static
-  // assets (anything with a file extension, /_next, and the /coming-soon assets)
-  // pass through so the placeholder renders. Flip the env var to disable — no
-  // code change needed (redeploy required on Vercel for env changes to apply).
-  if (process.env.COMING_SOON === 'true') {
+  // While COMING_SOON is truthy (case-insensitive: true / TRUE / True), every
+  // page request serves /coming-soon. Static assets (anything with a file
+  // extension, /_next, and the /coming-soon assets) pass through so the
+  // placeholder renders. Flip the env var to disable — no code change needed
+  // (redeploy required on Vercel for env changes to apply).
+  if (process.env.COMING_SOON?.trim().toLowerCase() === 'true') {
     const { pathname } = request.nextUrl
     const isPlaceholder = pathname === '/coming-soon'
     const isAsset =
