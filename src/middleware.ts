@@ -15,7 +15,10 @@ const PUBLIC_PATHS = [
   '/terms',
   '/privacy',
 ]
-const PUBLIC_PREFIXES = ['/register', '/api/contact']
+// `/education` itself is listed above; the trailing slash opens its articles —
+// every link on /why-music-matters points at one, and without this they all
+// bounced signed-out readers to /login.
+const PUBLIC_PREFIXES = ['/register', '/api/contact', '/education/']
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.includes(pathname) || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))

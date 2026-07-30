@@ -1,8 +1,8 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 
 export async function updateEmailNotificationsAction(
   userId: string,
@@ -147,8 +147,32 @@ export async function deleteAccountAction(
   // ── Remove in-app alerts ───────────────────────────────────────────────
   await supabase.from('alerts').delete().eq('user_id', userId)
 
-  // Auth account deletion requires service-role key — flagged for manual admin action for MVP.
-  // Profile is fully anonymized and will not appear in discovery after deleted_at is set.
+  // ── Retire the sign-in account ─────────────────────────────────────────
+  // The profile rows stay (anonymised) because completed events reference them
+  // — a hard delete cascades through musicians/centers into `requests` and
+  // takes the event history with it.
+  //
+  // So the auth account is retired instead: the address is released so the
+  // person can register again, and the account is banned so the old password
+  // can never sign in. Without this the session stayed valid and the redirect
+  // below simply bounced back to the dashboard.
+  try {
+    const admin = createSupabaseAdminClient()
+    const { error: retireError } = await admin.auth.admin.updateUserById(userId, {
+      email: `deleted-${userId}@deleted.invalid`,
+      ban_duration: '876000h', // ~100 years
+      user_metadata: { deleted_at: now },
+    })
+    if (retireError) {
+      console.error('[deleteAccountAction] could not retire auth account:', retireError.message)
+      return { ok: false, error: 'Your data was removed, but the sign-in account could not be closed. Please contact support.' }
+    }
+  } catch (e) {
+    console.error('[deleteAccountAction] admin client unavailable:', e)
+    return { ok: false, error: 'Your data was removed, but the sign-in account could not be closed. Please contact support.' }
+  }
 
-  redirect('/login?deleted=1')
+  // The caller signs out and navigates — a redirect from here would keep the
+  // stale session cookie, and the middleware would send them back to /dashboard.
+  return { ok: true }
 }

@@ -100,8 +100,15 @@ export function AccountSettingsForm({
     if (!result.ok) {
       setDeleteError(result.error ?? 'Something went wrong. Please try again.')
       setDeleteLoading(false)
+      return
     }
-    // On success, the server action redirects to /login?deleted=1
+
+    // Drop the session here rather than letting the server redirect: the cookie
+    // would still be valid and the middleware would bounce straight back to the
+    // dashboard, which is exactly what "delete" appeared not to do.
+    const supabase = createSupabaseBrowserClient()
+    await supabase.auth.signOut().catch(() => {})
+    window.location.href = '/login?deleted=1'
   }
 
   return (
