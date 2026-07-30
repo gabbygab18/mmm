@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import plugin from 'tailwindcss/plugin'
 
 const config: Config = {
   content: [
@@ -48,6 +49,14 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // `poster:` — landscape-ish windows with room for the fixed-ratio coming-soon
+    // poster; portrait tablets fail the aspect test and get the stacked layout.
+    // Registered as a variant rather than a `screens` entry because an object
+    // screen would disable Tailwind's own `min-*`/`max-*` variants everywhere.
+    plugin(({ addVariant }) => {
+      addVariant('poster', '@media (min-width: 768px) and (min-aspect-ratio: 115/100)')
+    }),
+  ],
 }
 export default config
