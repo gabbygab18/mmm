@@ -25,7 +25,9 @@ export function PageHero({
   mobileImage,
   notes,
   /** Colour the staff artwork is painted in — a soft blue on the pale heroes. */
-  notesColor = 'rgba(70, 112, 165, 0.42)',
+  notesColor = 'rgba(63, 105, 160, 0.55)',
+  /** Soft blurred lights over the upper part of the band. */
+  bokeh = false,
   children,
   /** Aspect utility classes, width / height. Mockup desktop sits near 2.46. */
   ratioClass = 'aspect-[1.5] sm:aspect-[1.9] lg:aspect-[2.46]',
@@ -43,6 +45,7 @@ export function PageHero({
   mobileImage?: string
   notes?: string
   notesColor?: string
+  bokeh?: boolean
   children: ReactNode
   ratioClass?: string
   minHeight?: string
@@ -56,13 +59,33 @@ export function PageHero({
   return (
     <section className="relative isolate" style={{ backgroundColor: tailColor }}>
       <div className={`relative w-full overflow-hidden ${ratioClass} ${minHeight}`} style={{ background }}>
+        {bokeh && (
+          /* Soft out-of-focus lights across the upper band, as drawn in the
+             design pack. Radial gradients rather than an image — no asset for
+             them was exported, and they need to stay crisp at any width. */
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 hidden sm:block"
+            style={{
+              // A sized `circle <radius> at <x> <y>` keeps them round at any
+              // width; percentage stops alone tile into visible rectangles.
+              backgroundImage: [
+                'radial-gradient(circle 7vw at 12% 24%, rgba(255,255,255,0.30), rgba(255,255,255,0) 72%)',
+                'radial-gradient(circle 4vw at 26% 12%, rgba(255,255,255,0.24), rgba(255,255,255,0) 70%)',
+                'radial-gradient(circle 8.5vw at 38% 32%, rgba(255,255,255,0.16), rgba(255,255,255,0) 74%)',
+                'radial-gradient(circle 3vw at 47% 9%, rgba(255,255,255,0.26), rgba(255,255,255,0) 68%)',
+                'radial-gradient(circle 5vw at 7% 50%, rgba(255,255,255,0.15), rgba(255,255,255,0) 72%)',
+              ].join(', '),
+            }}
+          />
+        )}
         {notes && (
           /* The staff artwork ships as near-white line art, which disappears on
              a pale hero — in the design pack it reads as a soft blue. So it is
              painted rather than placed: the PNG masks a brand-blue fill. */
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-[3%] left-0 hidden w-[56%] select-none sm:block"
+            className="pointer-events-none absolute bottom-[6%] left-0 hidden w-[62%] select-none sm:block"
             style={{
               aspectRatio: '1100 / 467',
               backgroundColor: notesColor,
@@ -150,16 +173,16 @@ export function PageHero({
             d="M0 150 C 320 52, 880 52, 1200 118"
             fill="none"
             stroke="url(#mmm-sweep-fade)"
-            strokeWidth="54"
+            strokeWidth="78"
             strokeLinecap="round"
             filter="url(#mmm-sweep-halo)"
-            opacity="0.5"
+            opacity="0.8"
           />
           <path
             d="M0 150 C 320 52, 880 52, 1200 118"
             fill="none"
             stroke="url(#mmm-sweep-fade)"
-            strokeWidth="7"
+            strokeWidth="16"
             strokeLinecap="round"
             filter="url(#mmm-sweep-core)"
           />
