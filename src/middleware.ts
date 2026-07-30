@@ -22,18 +22,28 @@ function isPublicPath(pathname: string) {
 }
 
 /**
- * Is the coming-soon placeholder active for this deployment?
- *
- * COMING_SOON wins when set explicitly (case-insensitive true / false).
- * Unset, the gate defaults ON for the Vercel production deployment only, so
- * the live domain stays behind the placeholder while local dev and preview
- * deployments run the full app.
+ * Hostnames that serve the coming-soon placeholder — the public domain only.
+ * Every other host (mmm-phi-henna.vercel.app, preview URLs, localhost) runs the
+ * full app, so the site can be worked on and reviewed while .com stays dark.
  */
-function isComingSoon() {
+const COMING_SOON_HOSTS = ['margaretsmemorycaremusic.com', 'www.margaretsmemorycaremusic.com']
+
+/**
+ * Is the coming-soon placeholder active for this request?
+ *
+ * The host decides, so one deployment can serve the placeholder on .com and the
+ * real site on its vercel.app URL. COMING_SOON adjusts that:
+ *   "false" → gate off everywhere; this is the switch to flip at launch.
+ *   "all"   → gate on every host, for checking the placeholder locally.
+ *   anything else (including "true" or unset) → the .com hosts above.
+ */
+function isComingSoon(request: NextRequest) {
   const flag = process.env.COMING_SOON?.trim().toLowerCase()
-  if (flag === 'true') return true
   if (flag === 'false') return false
-  return process.env.VERCEL_ENV === 'production'
+  if (flag === 'all') return true
+
+  const host = (request.headers.get('host') ?? '').split(':')[0].toLowerCase()
+  return COMING_SOON_HOSTS.includes(host)
 }
 
 export async function middleware(request: NextRequest) {
@@ -43,7 +53,7 @@ export async function middleware(request: NextRequest) {
   // assets) pass through so the placeholder renders. Set COMING_SOON=false in
   // Vercel to go live — no code change needed (redeploy required on Vercel for
   // env changes to apply).
-  if (isComingSoon()) {
+  if (isComingSoon(request)) {
     const { pathname } = request.nextUrl
     const isPlaceholder = pathname === '/coming-soon'
     const isAsset =
