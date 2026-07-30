@@ -72,19 +72,6 @@ export default function Home() {
           className="landing-wave-glow pointer-events-none absolute bottom-0 left-1/2 w-[130%] max-w-none -translate-x-1/2 translate-y-[35%] select-none"
         />
 
-        {/* Centered play control */}
-        <a
-          href="https://www.youtube.com/@MargaretsMemorycareMusic"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Watch: Bringing Music to Memory Care"
-          className="absolute left-1/2 top-1/2 z-20 hidden h-[74px] w-[74px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-ocean-900/35 backdrop-blur-sm transition hover:bg-ocean-900/55 focus:outline-none focus-visible:ring-2 focus-visible:ring-white sm:flex"
-        >
-          <svg viewBox="0 0 24 24" className="ml-1 h-8 w-8 fill-white" aria-hidden="true">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        </a>
-
         <div className="relative mx-auto flex min-h-[560px] max-w-[1200px] flex-col justify-center px-6 py-20 sm:px-8 lg:min-h-[640px]">
           <h1 className="landing-rise max-w-[640px] font-garamond text-[44px] font-semibold leading-[1.05] text-white drop-shadow-md sm:text-[58px] lg:text-[67px]">
             Bringing Music to Memory Care
