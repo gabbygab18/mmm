@@ -134,7 +134,14 @@ function makeChallenge(previous?: Challenge): Challenge {
 export function HumanCheck({ onChange }: { onChange: (v: HumanCheckValue) => void }) {
   const mountedAt = useMemo(() => Date.now(), [])
   const [honeypot, setHoneypot] = useState('')
-  const [challenge, setChallenge] = useState(makeChallenge)
+  // Picked after mount, not during render: a random question chosen on the
+  // server never matches the one the browser picks, and that mismatch makes
+  // React throw away the server HTML for the whole page on hydration.
+  const [challenge, setChallenge] = useState<Challenge | null>(null)
+
+  useEffect(() => {
+    setChallenge(makeChallenge())
+  }, [])
   const [reply, setReply] = useState('')
   const [token, setToken] = useState<string | null>(null)
   const widgetRef = useRef<HTMLDivElement | null>(null)
@@ -178,7 +185,7 @@ export function HumanCheck({ onChange }: { onChange: (v: HumanCheckValue) => voi
   // ---- Report status upward ----
   const cleared = usingTurnstile
     ? Boolean(token)
-    : challenge.answers.some((a) => normalize(a) === normalize(reply)) && reply.trim() !== ''
+    : Boolean(challenge) && challenge!.answers.some((a) => normalize(a) === normalize(reply)) && reply.trim() !== ''
 
   useEffect(() => {
     const fastEnoughToBeABot = (Date.now() - mountedAt) / 1000 < MIN_SECONDS_ON_FORM
@@ -215,25 +222,28 @@ export function HumanCheck({ onChange }: { onChange: (v: HumanCheckValue) => voi
         <div className="rounded-xl border border-ocean-300 bg-white px-4 py-3.5">
           <p className="font-poppins text-[10.7px] font-bold text-ocean-900">Quick check — are you human?</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <span className="font-poppins text-[13px] text-ocean-900">{challenge.prompt}</span>
+            <span className="font-poppins text-[13px] text-ocean-900">
+              {challenge?.prompt ?? 'Loading a quick question…'}
+            </span>
             <label className="sr-only" htmlFor="mmm-human-check">
-              {challenge.prompt}
+              {challenge?.prompt ?? 'Human verification question'}
             </label>
             <input
               id="mmm-human-check"
               value={reply}
               onChange={(e) => setReply(e.target.value)}
-              inputMode={challenge.kind === 'number' ? 'numeric' : 'text'}
+              disabled={!challenge}
+              inputMode={challenge?.kind === 'number' ? 'numeric' : 'text'}
               autoComplete="off"
-              maxLength={challenge.kind === 'number' ? 8 : 16}
-              className={`rounded-lg border border-ocean-300 px-3 py-1.5 text-center font-poppins text-[13px] text-ocean-900 focus:border-ocean-500 focus:outline-none focus:ring-1 focus:ring-ocean-400 ${
-                challenge.kind === 'number' ? 'w-20' : 'w-32'
+              maxLength={challenge?.kind === 'number' ? 8 : 16}
+              className={`rounded-lg border border-ocean-300 px-3 py-1.5 text-center font-poppins text-[13px] text-ocean-900 focus:border-ocean-500 focus:outline-none focus:ring-1 focus:ring-ocean-400 disabled:bg-ocean-50 ${
+                challenge?.kind === 'number' ? 'w-20' : 'w-32'
               }`}
             />
             <button
               type="button"
               onClick={() => {
-                setChallenge((cur) => makeChallenge(cur))
+                setChallenge((cur) => makeChallenge(cur ?? undefined))
                 setReply('')
               }}
               className="font-poppins text-[10.5px] font-bold text-ocean-700 underline transition hover:text-ocean-900"

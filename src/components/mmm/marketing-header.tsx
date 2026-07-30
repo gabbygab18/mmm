@@ -39,11 +39,16 @@ function useIdentity() {
     const supabase = createSupabaseBrowserClient()
     let active = true
 
-    const load = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
+    /**
+     * The session arrives through onAuthStateChange, which fires INITIAL_SESSION
+     * as soon as we subscribe. Asking for it with auth.getUser() instead never
+     * resolves on these statically rendered pages — the auth lock is held and
+     * the promise hangs, so the header sat on "Sign In" forever while signed in.
+     *
+     * The callback itself runs while that lock is held, so the profile lookup is
+     * deferred out of it rather than awaited inline.
+     */
+    const load = async (user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
       if (!active) return
       if (!user) {
         setIdentity(null)
@@ -77,9 +82,13 @@ function useIdentity() {
       })
     }
 
-    load()
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ?? null
+      setTimeout(() => {
+        void load(user)
+      }, 0)
+    })
 
-    const { data: subscription } = supabase.auth.onAuthStateChange(() => load())
     return () => {
       active = false
       subscription.subscription.unsubscribe()
