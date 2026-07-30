@@ -54,22 +54,26 @@ function isComingSoon(request: NextRequest) {
   return COMING_SOON_HOSTS.includes(host)
 }
 
-export async function middleware(request: NextRequest) {
-  // ── Coming-soon gate ──────────────────────────────────────────────────────
-  // While the gate is active, every page request serves /coming-soon. Static
-  // assets (anything with a file extension, /_next, and the /coming-soon
-  // assets) pass through so the placeholder renders. Set COMING_SOON=false in
-  // Vercel to go live — no code change needed (redeploy required on Vercel for
-  // env changes to apply).
-  if (isComingSoon(request)) {
-    const { pathname } = request.nextUrl
-    const isPlaceholder = pathname === '/coming-soon'
-    const isAsset =
-      pathname.startsWith('/coming-soon/') ||
-      pathname.startsWith('/_next') ||
-      /\.[\w]+$/.test(pathname)
+/** Anything with a file extension: everything served straight out of /public. */
+const STATIC_FILE = /\.[\w]+$/
 
-    if (!isPlaceholder && !isAsset) {
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // Files in /public and Next's own output are served as-is: no coming-soon
+  // rewrite, and no auth guard. Without this the guard below sends every image,
+  // icon and manifest request to /login for signed-out visitors, which is what
+  // broke the artwork on the marketing pages.
+  if (pathname.startsWith('/_next') || STATIC_FILE.test(pathname)) {
+    return NextResponse.next()
+  }
+
+  // ── Coming-soon gate ──────────────────────────────────────────────────────
+  // While the gate is active, every page request serves /coming-soon. Set
+  // COMING_SOON=false in Vercel to go live — no code change needed (redeploy
+  // required on Vercel for env changes to apply).
+  if (isComingSoon(request)) {
+    if (pathname !== '/coming-soon') {
       const url = request.nextUrl.clone()
       url.pathname = '/coming-soon'
       return NextResponse.rewrite(url)
@@ -78,7 +82,6 @@ export async function middleware(request: NextRequest) {
   }
 
   const { response, user } = await updateSession(request)
-  const pathname = request.nextUrl.pathname
 
   const hasSession = Boolean(user)
 
