@@ -22,20 +22,28 @@ function isPublicPath(pathname: string) {
 }
 
 /**
- * Hostnames that serve the coming-soon placeholder — the public domain only.
- * Every other host (mmm-phi-henna.vercel.app, preview URLs, localhost) runs the
- * full app, so the site can be worked on and reviewed while .com stays dark.
+ * Hostnames that serve the coming-soon placeholder — the public domains only.
+ * margaretsmemorycaremusic.org is the main site (it also carries the email), and
+ * .com redirects to it at the platform level; both are listed so the placeholder
+ * still holds if a request reaches the app on either one. Every other host
+ * (mmm-phi-henna.vercel.app, preview URLs, localhost) runs the full app, so the
+ * site can be worked on and reviewed while the public domains stay dark.
  */
-const COMING_SOON_HOSTS = ['margaretsmemorycaremusic.com', 'www.margaretsmemorycaremusic.com']
+const COMING_SOON_HOSTS = [
+  'margaretsmemorycaremusic.org',
+  'www.margaretsmemorycaremusic.org',
+  'margaretsmemorycaremusic.com',
+  'www.margaretsmemorycaremusic.com',
+]
 
 /**
  * Is the coming-soon placeholder active for this request?
  *
- * The host decides, so one deployment can serve the placeholder on .com and the
- * real site on its vercel.app URL. COMING_SOON adjusts that:
+ * The host decides, so one deployment can serve the placeholder on the public
+ * domains and the real site on its vercel.app URL. COMING_SOON adjusts that:
  *   "false" → gate off everywhere; this is the switch to flip at launch.
  *   "all"   → gate on every host, for checking the placeholder locally.
- *   anything else (including "true" or unset) → the .com hosts above.
+ *   anything else (including "true" or unset) → the hosts listed above.
  */
 function isComingSoon(request: NextRequest) {
   const flag = process.env.COMING_SOON?.trim().toLowerCase()
