@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { SOCIAL_URLS } from '@/lib/mmm/social'
 
 /**
  * Shared shell for the auth pages (/login, /signup) — matches the approved
@@ -15,10 +16,10 @@ import type { ReactNode } from 'react'
  */
 
 const SOCIALS = [
-  { label: 'Facebook', href: '#', iconSrc: '/landing/fb-logo.png' },
-  { label: 'Instagram', href: '#', iconSrc: '/landing/ig-logo.png' },
-  { label: 'YouTube', href: '#', iconSrc: '/landing/yt-logo.png' },
-  { label: 'TikTok', href: '#', iconSrc: '/landing/tiktok-logo.png' },
+  { label: 'Facebook', href: SOCIAL_URLS.facebook, iconSrc: '/landing/fb-logo.png' },
+  { label: 'Instagram', href: SOCIAL_URLS.instagram, iconSrc: '/landing/ig-logo.png' },
+  { label: 'YouTube', href: SOCIAL_URLS.youtube, iconSrc: '/landing/yt-logo.png' },
+  { label: 'TikTok', href: SOCIAL_URLS.tiktok, iconSrc: '/landing/tiktok-logo.png' },
 ]
 
 type AuthShellProps = {
@@ -165,6 +166,8 @@ export function AuthShell({
             <a
               key={s.label}
               href={s.href}
+              target="_blank"
+              rel="noreferrer"
               aria-label={s.label}
               className="flex h-16 w-16 items-center justify-center transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ocean-900"
             >

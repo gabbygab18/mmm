@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { Metadata } from 'next'
+import { SOCIAL_URLS } from '@/lib/mmm/social'
 
 /**
  * Coming Soon placeholder — a 1:1 build of the approved design-pack mockup.
@@ -33,10 +34,10 @@ export const metadata: Metadata = {
 }
 
 const SOCIALS = [
-  { label: 'Facebook', icon: '/coming-soon/fb.png', href: 'https://www.facebook.com/profile.php?id=61590198659207' },
-  { label: 'Instagram', icon: '/coming-soon/ig.png', href: 'https://www.instagram.com/margaretsmemorycaremusic/' },
-  { label: 'YouTube', icon: '/coming-soon/yt.png', href: 'https://www.youtube.com/@MargaretsMemorycareMusic' },
-  { label: 'TikTok', icon: '/coming-soon/tiktok.png', href: 'https://www.tiktok.com/@margaretsmemorycaremusic' },
+  { label: 'Facebook', icon: '/coming-soon/fb.png', href: SOCIAL_URLS.facebook },
+  { label: 'Instagram', icon: '/coming-soon/ig.png', href: SOCIAL_URLS.instagram },
+  { label: 'YouTube', icon: '/coming-soon/yt.png', href: SOCIAL_URLS.youtube },
+  { label: 'TikTok', icon: '/coming-soon/tiktok.png', href: SOCIAL_URLS.tiktok },
 ]
 
 export default function ComingSoonPage() {

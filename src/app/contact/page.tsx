@@ -6,6 +6,7 @@ import { MarketingFooter } from '@/components/mmm/marketing-footer'
 import { PageHero } from '@/components/mmm/page-hero'
 import { Field, TextField, inputClass, labelClass } from '@/components/mmm/form-kit'
 import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
+import { SOCIAL_URLS } from '@/lib/mmm/social'
 
 /**
  * Contact — inquiry form with a volunteer / facility toggle, direct contact
@@ -17,10 +18,10 @@ import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
  */
 
 const SOCIALS = [
-  { label: 'Facebook', icon: '/mmm/pages/social-fb.png', href: 'https://www.facebook.com/' },
-  { label: 'Instagram', icon: '/mmm/pages/social-ig.png', href: 'https://www.instagram.com/' },
-  { label: 'YouTube', icon: '/mmm/pages/social-yt.png', href: 'https://www.youtube.com/' },
-  { label: 'TikTok', icon: '/mmm/pages/social-tiktok.png', href: 'https://www.tiktok.com/' },
+  { label: 'Facebook', icon: '/mmm/pages/social-fb.png', href: SOCIAL_URLS.facebook },
+  { label: 'Instagram', icon: '/mmm/pages/social-ig.png', href: SOCIAL_URLS.instagram },
+  { label: 'YouTube', icon: '/mmm/pages/social-yt.png', href: SOCIAL_URLS.youtube },
+  { label: 'TikTok', icon: '/mmm/pages/social-tiktok.png', href: SOCIAL_URLS.tiktok },
 ]
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SOCIAL_URLS } from '@/lib/mmm/social'
 
 /**
  * Marketing footer, per the approved MMM design.
@@ -16,10 +17,10 @@ const QUICK_LINKS: Array<{ label: string; href: string }> = [
 ]
 
 const SOCIALS = [
-  { label: 'Facebook', icon: '/mmm/icon-fb.png', href: 'https://www.facebook.com/profile.php?id=61590198659207' },
-  { label: 'Instagram', icon: '/mmm/icon-ig.png', href: 'https://www.instagram.com/margaretsmemorycaremusic/' },
-  { label: 'YouTube', icon: '/mmm/icon-yt.png', href: 'https://www.youtube.com/@MargaretsMemorycareMusic' },
-  { label: 'TikTok', icon: '/mmm/icon-tiktok.png', href: 'https://www.tiktok.com/@margaretsmemorycaremusic' },
+  { label: 'Facebook', icon: '/mmm/icon-fb.png', href: SOCIAL_URLS.facebook },
+  { label: 'Instagram', icon: '/mmm/icon-ig.png', href: SOCIAL_URLS.instagram },
+  { label: 'YouTube', icon: '/mmm/icon-yt.png', href: SOCIAL_URLS.youtube },
+  { label: 'TikTok', icon: '/mmm/icon-tiktok.png', href: SOCIAL_URLS.tiktok },
 ]
 
 function CopyrightBar() {
