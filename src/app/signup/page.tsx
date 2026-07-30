@@ -94,14 +94,15 @@ export default function SignupPage() {
       return
     }
 
-    // Redirect to the last page: honour a ?next= return URL if one was passed,
-    // otherwise land musicians on the final (Welcome) page of the registration
-    // flow and coordinators on their onboarding.
+    // Honour a ?next= return URL if one was passed, otherwise carry on into the
+    // registration steps. The account is made, so onboarding opens at step 2
+    // with step 1 already ticked — landing on the Welcome screen instead would
+    // skip the profile questions entirely.
     const next = new URLSearchParams(window.location.search).get('next')
     if (next && next.startsWith('/')) {
       router.push(next)
     } else {
-      router.push(role === 'musician' ? '/register/musician?welcome=1' : '/onboarding/center')
+      router.push(role === 'musician' ? '/onboarding/musician' : '/onboarding/center')
     }
     router.refresh()
   }
