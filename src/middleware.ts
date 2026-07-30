@@ -21,14 +21,29 @@ function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.includes(pathname) || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))
 }
 
+/**
+ * Is the coming-soon placeholder active for this deployment?
+ *
+ * COMING_SOON wins when set explicitly (case-insensitive true / false).
+ * Unset, the gate defaults ON for the Vercel production deployment only, so
+ * the live domain stays behind the placeholder while local dev and preview
+ * deployments run the full app.
+ */
+function isComingSoon() {
+  const flag = process.env.COMING_SOON?.trim().toLowerCase()
+  if (flag === 'true') return true
+  if (flag === 'false') return false
+  return process.env.VERCEL_ENV === 'production'
+}
+
 export async function middleware(request: NextRequest) {
   // ── Coming-soon gate ──────────────────────────────────────────────────────
-  // While COMING_SOON is truthy (case-insensitive: true / TRUE / True), every
-  // page request serves /coming-soon. Static assets (anything with a file
-  // extension, /_next, and the /coming-soon assets) pass through so the
-  // placeholder renders. Flip the env var to disable — no code change needed
-  // (redeploy required on Vercel for env changes to apply).
-  if (process.env.COMING_SOON?.trim().toLowerCase() === 'true') {
+  // While the gate is active, every page request serves /coming-soon. Static
+  // assets (anything with a file extension, /_next, and the /coming-soon
+  // assets) pass through so the placeholder renders. Set COMING_SOON=false in
+  // Vercel to go live — no code change needed (redeploy required on Vercel for
+  // env changes to apply).
+  if (isComingSoon()) {
     const { pathname } = request.nextUrl
     const isPlaceholder = pathname === '/coming-soon'
     const isAsset =
