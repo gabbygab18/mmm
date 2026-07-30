@@ -89,13 +89,16 @@ export default function AboutPage() {
 
       {/* ============ Meet Margaret ============ */}
       <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #4882bf 0%, #2f6ba8 100%)' }}>
+        {/* The staff artwork runs the width of the band, as in the design pack.
+            soft-light against this blue washed it out to nothing, so it is drawn
+            normally at a low opacity instead. */}
         <div
-          className="absolute inset-0 opacity-40 mix-blend-soft-light"
+          className="absolute inset-0 opacity-70"
           style={{
             backgroundImage: "url('/mmm/pages/about-notes-top.png')",
             backgroundRepeat: 'no-repeat',
-            backgroundSize: '1100px auto',
-            backgroundPosition: 'left -80px center',
+            backgroundSize: '1500px auto',
+            backgroundPosition: 'center center',
           }}
           aria-hidden="true"
         />
@@ -111,7 +114,8 @@ export default function AboutPage() {
             />
           </picture>
 
-          <div className="text-center lg:text-right">
+          {/* Centred, matching the mock-up — not flush right. */}
+          <div className="text-center">
             <h2 className="font-garamond text-[30px] font-bold leading-tight text-white sm:text-[42.6px]">
               Meet Margaret Roscoe
               <br className="hidden sm:block" /> and her son, Michael

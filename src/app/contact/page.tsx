@@ -183,9 +183,16 @@ export default function ContactPage() {
               We&apos;d love to connect and answer any questions you may have.
             </p>
 
-            {/* The e-mail and phone cards are held back until the real address
-                and number are ready — the placeholders were going out live. */}
+            {/* E-mail only for now — the inbox is live, the phone number is not
+                (the old card carried a placeholder), so that one stays out. */}
             <div className="mt-8 space-y-4">
+              <ContactCard
+                icon="/mmm/pages/contact-email.png"
+                title="E-mail Us"
+                lines={['info@margaretsmemorycaremusic.org']}
+                href="mailto:info@margaretsmemorycaremusic.org"
+              />
+
               <div className="rounded-2xl border border-ocean-300/50 bg-ocean-900 px-7 py-7 shadow-xl">
                 <h3 className="font-garamond text-[24px] font-bold text-white sm:text-[25.8px]">Follow us</h3>
                 <p className="mt-1 font-poppins text-[15px] leading-snug text-white/90 sm:text-[21.1px]">
@@ -261,7 +268,6 @@ export default function ContactPage() {
   )
 }
 
-/** Kept for when the e-mail address and phone number are ready to publish. */
 function ContactCard({
   icon,
   title,

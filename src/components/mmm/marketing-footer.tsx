@@ -103,7 +103,7 @@ export function MarketingFooter({ variant = 'simple' }: { variant?: 'full' | 'si
             </div>
           </div>
 
-          {/* Legal */}
+          {/* Legal — stacked, one under the other, as in the design pack. */}
           <div className="flex flex-col gap-2 md:items-end md:pt-1">
             <Link href="/privacy" className="font-poppins text-[11.8px] tracking-[0.06em] text-white/90 transition hover:text-white hover:underline">
               Privacy Policy

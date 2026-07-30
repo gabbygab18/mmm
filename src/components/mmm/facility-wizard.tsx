@@ -63,6 +63,8 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  /** True only when signUp left no session, i.e. a confirmation e-mail is pending. */
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
   const [loading, setLoading] = useState(false)
   const [initializing, setInitializing] = useState(isOnboarding)
 
@@ -463,7 +465,10 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
       return
     }
 
-    if (!data.session) setNotice('Check your e-mail to confirm your account, then sign in.')
+    if (!data.session) {
+      setAwaitingConfirmation(true)
+      setNotice('Check your e-mail to confirm your account, then sign in.')
+    }
     setLoading(false)
     setDone(true)
     window.history.replaceState(null, '', '/register/facility?welcome=1')
@@ -619,21 +624,35 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
                 {notice && (
                   <p className="mt-3 rounded-lg bg-ocean-100 px-4 py-2 font-poppins text-[12px] font-medium text-ocean-800">{notice}</p>
                 )}
+                {/* Only claim an e-mail was sent when one really was — Supabase
+                    sends the confirmation only when e-mail confirmation is on,
+                    which is what leaves signUp without a session. Otherwise point
+                    them at the next real step. */}
                 {!isOnboarding && (
                   <div
                     className="mt-7 flex max-w-[500px] items-center gap-5 rounded-2xl px-6 py-5 text-left shadow"
                     style={{ background: 'linear-gradient(100deg, #b3d0ee 0%, #d9e8f7 100%)' }}
                   >
                     <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-ocean-900">
-                      <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} aria-hidden="true">
-                        <rect x="2.5" y="5" width="19" height="14" rx="2" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7l9 6 9-6" />
-                      </svg>
+                      {awaitingConfirmation ? (
+                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} aria-hidden="true">
+                          <rect x="2.5" y="5" width="19" height="14" rx="2" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 7l9 6 9-6" />
+                        </svg>
+                      ) : (
+                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
                     </span>
                     <div>
-                      <h3 className="font-garamond text-[20px] font-bold text-ocean-900">Check your e-mail!</h3>
+                      <h3 className="font-garamond text-[20px] font-bold text-ocean-900">
+                        {awaitingConfirmation ? 'Check your e-mail!' : "You're all set!"}
+                      </h3>
                       <p className="mt-1 font-poppins text-[10.5px] font-bold leading-relaxed text-ocean-900">
-                        We&apos;ve sent a confirmation e-mail with next steps and helpful information.
+                        {awaitingConfirmation
+                          ? "We've sent a confirmation e-mail — open it to activate your account, then sign in."
+                          : 'Your community is registered and you are signed in. Head to your dashboard to add a photo and review your details.'}
                       </p>
                     </div>
                   </div>
@@ -714,7 +733,10 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
 
                     <div className="mt-8 space-y-5">
                       <TextField label="Facility Name" value={facilityName} onChange={setFacilityName} placeholder="Enter facility name" autoComplete="organization" />
-                      <TextField label="Address" value={address} onChange={setAddress} placeholder="Enter street address" autoComplete="street-address" />
+                      {/* address-line1, not street-address: Chrome fills the whole
+                          formatted address into a street-address field, which then
+                          repeats the city, state and ZIP collected below it. */}
+                      <TextField label="Address" value={address} onChange={setAddress} placeholder="Enter street address" autoComplete="address-line1" />
                       <div className="grid gap-5 sm:grid-cols-3">
                         <TextField label="City" value={city} onChange={setCity} placeholder="Enter city" autoComplete="address-level2" />
                         <SelectField label="State" value={state} onChange={setState} options={US_STATES} placeholder="Select state" />
@@ -906,7 +928,7 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
                       <h3 className="font-garamond text-[24px] font-bold text-ocean-900">Review Your Information</h3>
                       <dl className="mt-4 overflow-hidden rounded-lg border border-ocean-400/70">
                         <ReviewRow label="Facility Name" value={facilityName} />
-                        <ReviewRow label="Address" value={[address, city, state, zip].filter(Boolean).join(', ')} />
+                        <ReviewRow label="Address" value={formatAddress(address, city, state, zip)} />
                         <ReviewRow label="Activities Director" value={`${directorFirstName} ${directorLastName}`.trim()} />
                         <ReviewRow label="Preferred Days" value={preferredDays.join(', ')} />
                         <ReviewRow label="Preferred Time" value={preferredTime} />
@@ -960,6 +982,20 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
       <MarketingFooter />
     </main>
   )
+}
+
+/**
+ * Joins the address parts, skipping any the street line already contains — a
+ * pasted or autofilled "138 Lands End Way, Jupiter, Florida 33458" would
+ * otherwise be followed by the same city, state and ZIP all over again.
+ */
+function formatAddress(street: string, city: string, state: string, zip: string) {
+  const line = street.trim()
+  const haystack = line.toLowerCase()
+  const extras = [city, state, zip]
+    .map((part) => part.trim())
+    .filter((part) => part && !haystack.includes(part.toLowerCase()))
+  return [line, ...extras].filter(Boolean).join(', ')
 }
 
 function ReviewRow({ label, value, last = false }: { label: string; value: string; last?: boolean }) {
