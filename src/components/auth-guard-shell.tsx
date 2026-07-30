@@ -106,7 +106,7 @@ function Sidebar({
         )}
       </div>
 
-      <nav aria-label="Dashboard" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-4 pt-4">
+      <nav aria-label="Dashboard" className="scrollbar-on-dark min-h-0 flex-1 space-y-1 overflow-y-auto px-4 pt-4">
         {items.map((item) => {
           const active = isActive(item)
           return (
