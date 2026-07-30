@@ -1,9 +1,10 @@
 'use client'
 
-import { ChangeEvent, FormEvent, useState, useEffect } from 'react'
+import { FormEvent, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
-import { ACCEPT_ATTRIBUTE, uploadProfilePhoto, validatePhoto } from '@/lib/mmm/profile-photo'
+import { uploadProfilePhoto } from '@/lib/mmm/profile-photo'
+import { ProfilePhotoPicker } from '@/components/mmm/profile-photo-picker'
 
 const WEEKDAY_OPTIONS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const
 
@@ -41,6 +42,12 @@ export default function MusicianOnboardingPage() {
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle()
+      // A photo uploaded during registration waits in the signup metadata until
+      // the profile row exists (registration can't create one — `username` is
+      // NOT NULL and is chosen here).
+      const registration = (user.user_metadata?.registration ?? {}) as Record<string, unknown>
+      const registeredPhoto = typeof registration.profile_image_url === 'string' ? registration.profile_image_url : ''
+
       if (musician) {
         setUsername(musician.username ?? '')
         setName(musician.name ?? '')
@@ -55,8 +62,11 @@ export default function MusicianOnboardingPage() {
         setWillingToTravel(musician.willing_to_travel ?? true)
         setTravelRadiusMiles(musician.travel_radius_miles ?? 15)
         setHasOwnTransport(musician.has_own_transport ?? false)
-        setProfileImageUrl(musician.profile_image_url ?? '')
+        setProfileImageUrl(musician.profile_image_url ?? registeredPhoto)
         setYoutubeChannelUrl(musician.youtube_channel_url ?? '')
+      } else if (registeredPhoto) {
+        // First visit after registering — carry the photo they already chose.
+        setProfileImageUrl(registeredPhoto)
       }
       setInitializing(false)
     }
@@ -73,20 +83,11 @@ export default function MusicianOnboardingPage() {
     value.split(',').map((item) => item.trim()).filter(Boolean)
 
   /**
-   * Uploads a chosen photo straight away — there is always a session here — and
-   * drops the resulting public URL into the field below, which saves with the form.
+   * Uploads the cropped photo straight away — there is always a session here —
+   * and drops the resulting public URL into the field below, which saves with
+   * the form.
    */
-  const handlePhotoFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null
-    event.target.value = '' // allow re-picking the same file after an error
-    if (!file) return
-
-    const problem = validatePhoto(file)
-    if (problem) {
-      setPhotoError(problem)
-      return
-    }
-
+  const handleCroppedPhoto = async (file: File) => {
     setPhotoError(null)
     setPhotoUploading(true)
 
@@ -353,34 +354,14 @@ export default function MusicianOnboardingPage() {
             <p className="block text-sm font-medium text-stone-800">
               Profile photo <span className="text-xs font-normal text-stone-500">optional</span>
             </p>
-            <div className="flex items-center gap-3">
-              {profileImageUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={profileImageUrl}
-                  alt="Your profile photo"
-                  className="h-16 w-16 shrink-0 rounded-full border border-stone-300 object-cover"
-                />
-              ) : (
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-stone-300 text-[10px] text-stone-400">
-                  No photo
-                </div>
-              )}
-              <div className="min-w-0">
-                <input
-                  type="file"
-                  accept={ACCEPT_ATTRIBUTE}
-                  onChange={handlePhotoFile}
-                  disabled={photoUploading}
-                  aria-label="Upload a profile photo (JPG or PNG, up to 5 MB)"
-                  className="block w-full text-sm text-stone-700 file:mr-3 file:rounded-md file:border-0 file:bg-stone-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-stone-800 hover:file:bg-stone-300 disabled:opacity-60"
-                />
-                <p className="mt-1 text-xs text-stone-500">
-                  {photoUploading ? 'Uploading…' : 'JPG or PNG, up to 5 MB. Remember to save below.'}
-                </p>
-              </div>
-            </div>
-            {photoError && <p className="text-xs text-red-700">{photoError}</p>}
+            <ProfilePhotoPicker
+              currentUrl={profileImageUrl.trim() || null}
+              onPhotoReady={handleCroppedPhoto}
+              busy={photoUploading}
+              error={photoError}
+              size="sm"
+              hint="JPG or PNG, up to 5 MB. Crop it, then remember to save below."
+            />
             <label className="block text-xs text-stone-500">
               Or paste an image link
               <input

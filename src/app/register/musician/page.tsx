@@ -15,6 +15,7 @@ import {
   YEARS_EXPERIENCE,
 } from '@/lib/mmm/options'
 import { ACCEPT_ATTRIBUTE, uploadProfilePhoto, validatePhoto } from '@/lib/mmm/profile-photo'
+import { PhotoEditor } from '@/components/mmm/photo-editor'
 
 /**
  * Musician Registration — 5-step wizard (approved design):
@@ -193,6 +194,8 @@ export default function MusicianRegistrationPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
+  // Raw pick waiting in the crop/zoom editor.
+  const [pendingPhoto, setPendingPhoto] = useState<File | null>(null)
   const [bio, setBio] = useState('')
   const [phone, setPhone] = useState('')
   const [zip, setZip] = useState('')
@@ -274,11 +277,17 @@ export default function MusicianRegistrationPage() {
       return
     }
 
+    // Crop and zoom first — the wizard keeps the finished square.
     setPhotoError(null)
-    setPhotoFile(file)
+    setPendingPhoto(file)
+  }
+
+  const acceptCroppedPhoto = (cropped: File) => {
+    setPendingPhoto(null)
+    setPhotoFile(cropped)
     setPhotoPreview((previous) => {
       if (previous) URL.revokeObjectURL(previous)
-      return URL.createObjectURL(file)
+      return URL.createObjectURL(cropped)
     })
   }
 
@@ -305,6 +314,27 @@ export default function MusicianRegistrationPage() {
     setLoading(true)
 
     const supabase = createSupabaseBrowserClient()
+    const registration = {
+      bio: bio.trim(),
+      phone: phone.trim(),
+      zip_code: zip.trim(),
+      performance_types: performanceTypes,
+      performance_type: performanceTypes[0] ?? '',
+      primary_instrument: primaryInstrument,
+      instruments: [primaryInstrument, ...otherInstruments.split(',').map((v) => v.trim())].filter(Boolean),
+      other_instruments: otherInstruments.trim(),
+      years_of_experience: yearsExperience,
+      genres,
+      musical_experience: experience.trim(),
+      preferred_days: preferredDays.join(', '),
+      preferred_time: preferredTimes.join(', '),
+      availability_frequency: frequency,
+      max_travel_distance: maxDistance,
+      unavailable_dates: unavailableDates,
+      availability_notes: availabilityNotes.trim(),
+      agreed_to_volunteer_agreement: true,
+    }
+
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -315,26 +345,7 @@ export default function MusicianRegistrationPage() {
           last_name: lastName.trim(),
           full_name: `${firstName.trim()} ${lastName.trim()}`,
           human_verification_token: human.token,
-          registration: {
-            bio: bio.trim(),
-            phone: phone.trim(),
-            zip_code: zip.trim(),
-            performance_types: performanceTypes,
-            performance_type: performanceTypes[0] ?? '',
-            primary_instrument: primaryInstrument,
-            instruments: [primaryInstrument, ...otherInstruments.split(',').map((v) => v.trim())].filter(Boolean),
-            other_instruments: otherInstruments.trim(),
-            years_of_experience: yearsExperience,
-            genres,
-            musical_experience: experience.trim(),
-            preferred_days: preferredDays.join(', '),
-            preferred_time: preferredTimes.join(', '),
-            availability_frequency: frequency,
-            max_travel_distance: maxDistance,
-            unavailable_dates: unavailableDates,
-            availability_notes: availabilityNotes.trim(),
-            agreed_to_volunteer_agreement: true,
-          },
+          registration,
         },
       },
     })
@@ -354,13 +365,24 @@ export default function MusicianRegistrationPage() {
       if (data.session && data.user) {
         const upload = await uploadProfilePhoto(supabase, data.user.id, photoFile)
         if (upload.url) {
-          // The on_auth_user_created trigger already created the musicians row.
-          const { error: saveError } = await supabase
+          // Carry the URL on the signup metadata as well. The musicians row may
+          // not exist yet — its NOT NULL `username` is only chosen during
+          // onboarding — so metadata is what reliably survives, and onboarding
+          // reads it back. When the row *is* there, update it straight away.
+          await supabase.auth.updateUser({
+            data: { registration: { ...registration, profile_image_url: upload.url } },
+          })
+
+          const { data: updated, error: saveError } = await supabase
             .from('musicians')
             .update({ profile_image_url: upload.url })
             .eq('user_id', data.user.id)
+            .select('user_id')
+
           if (saveError) {
             photoNotice = `Your account is ready, but the photo could not be attached to your profile (${saveError.message}). You can add it from your profile page.`
+          } else if (!updated || updated.length === 0) {
+            photoNotice = 'Your photo is saved and will appear on your profile as soon as you finish setting it up.'
           }
         } else {
           photoNotice = `Your account is ready, but the photo did not upload (${upload.error}). You can add it from your profile page.`
@@ -543,6 +565,17 @@ export default function MusicianRegistrationPage() {
                               </span>
                             </>
                           )}
+                        </label>
+                        {/* Phones and tablets: straight to the camera. */}
+                        <label className="mt-1.5 hidden w-[120px] cursor-pointer font-poppins text-[9px] font-bold text-ocean-700 underline [@media(pointer:coarse)]:block sm:w-[164px] sm:text-[10px]">
+                          <input
+                            type="file"
+                            accept={ACCEPT_ATTRIBUTE}
+                            capture="user"
+                            className="sr-only"
+                            onChange={handlePhoto}
+                          />
+                          Take a photo instead
                         </label>
                         {photoFile && (
                           <div className="mt-1.5 w-[120px] sm:w-[164px]">
@@ -891,6 +924,10 @@ export default function MusicianRegistrationPage() {
       </section>
 
       <MarketingFooter />
+
+      {pendingPhoto && (
+        <PhotoEditor file={pendingPhoto} onCancel={() => setPendingPhoto(null)} onConfirm={acceptCroppedPhoto} />
+      )}
     </main>
   )
 }

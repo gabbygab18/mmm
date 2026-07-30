@@ -55,3 +55,41 @@ export async function uploadProfilePhoto(
   if (!data?.publicUrl) return { error: 'The photo uploaded but no public link came back.' }
   return { url: data.publicUrl }
 }
+
+/** Musicians own their photo on `musicians`, coordinators on `centers`. */
+export type ProfileTable = 'musicians' | 'centers'
+
+/**
+ * Uploads and attaches a photo to the signed-in user's own profile row.
+ * `null` clears it. Reports the "no profile row yet" case rather than reporting
+ * success for an update that matched nothing.
+ */
+export async function saveProfilePhoto(
+  supabase: SupabaseClient,
+  table: ProfileTable,
+  file: File | null,
+): Promise<{ url: string | null; error?: undefined } | { url?: undefined; error: string }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'Your session has expired — please sign in again.' }
+
+  let nextUrl: string | null = null
+  if (file) {
+    const upload = await uploadProfilePhoto(supabase, user.id, file)
+    if (!upload.url) return { error: upload.error ?? 'The photo could not be uploaded. Please try again.' }
+    nextUrl = upload.url
+  }
+
+  const { data: rows, error } = await supabase
+    .from(table)
+    .update({ profile_image_url: nextUrl })
+    .eq('user_id', user.id)
+    .select('user_id')
+
+  if (error) return { error: error.message }
+  if (!rows || rows.length === 0) {
+    return { error: 'Your profile is not set up yet — finish setting up your profile, then add the photo there.' }
+  }
+  return { url: nextUrl }
+}

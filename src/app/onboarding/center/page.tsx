@@ -3,9 +3,13 @@
 import { FormEvent, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { uploadProfilePhoto } from '@/lib/mmm/profile-photo'
+import { ProfilePhotoPicker } from '@/components/mmm/profile-photo-picker'
 
 export default function CenterOnboardingPage() {
   const router = useRouter()
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const [initializing, setInitializing] = useState(true)
   const [existingLocationId, setExistingLocationId] = useState<string | null>(null)
   const [username, setUsername] = useState('')
@@ -108,6 +112,28 @@ export default function CenterOnboardingPage() {
       clearTimeout(timer)
     }
   }, [username])
+
+  /**
+   * Uploads the cropped photo immediately — there is always a session here —
+   * and fills in the link below, which saves with the form.
+   */
+  const handleCroppedPhoto = async (file: File) => {
+    setPhotoError(null)
+    setPhotoUploading(true)
+
+    const supabase = createSupabaseBrowserClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setPhotoError('Your session has expired — please sign in again to upload a photo.')
+      setPhotoUploading(false)
+      return
+    }
+
+    const upload = await uploadProfilePhoto(supabase, user.id, file)
+    if (upload.url) setProfileImageUrl(upload.url)
+    else setPhotoError(upload.error ?? 'The photo could not be uploaded. Please try again.')
+    setPhotoUploading(false)
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -271,16 +297,29 @@ export default function CenterOnboardingPage() {
               />
             </label>
 
-            <label className="block text-sm font-medium text-stone-800 sm:col-span-2">
-              Center profile photo URL <span className="text-xs font-normal text-stone-500">optional</span>
-              <input
-                type="url"
-                value={profileImageUrl}
-                onChange={(event) => setProfileImageUrl(event.target.value)}
-                placeholder="https://..."
-                className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-600 focus:ring"
+            <div className="space-y-2 sm:col-span-2">
+              <p className="block text-sm font-medium text-stone-800">
+                Center profile photo <span className="text-xs font-normal text-stone-500">optional</span>
+              </p>
+              <ProfilePhotoPicker
+                currentUrl={profileImageUrl.trim() || null}
+                onPhotoReady={handleCroppedPhoto}
+                busy={photoUploading}
+                error={photoError}
+                size="sm"
+                hint="JPG or PNG, up to 5 MB. Crop it, then remember to save below."
               />
-            </label>
+              <label className="block text-xs text-stone-500">
+                Or paste an image link
+                <input
+                  type="url"
+                  value={profileImageUrl}
+                  onChange={(event) => setProfileImageUrl(event.target.value)}
+                  placeholder="https://..."
+                  className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none ring-brand-600 focus:ring"
+                />
+              </label>
+            </div>
           </div>
 
           <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">

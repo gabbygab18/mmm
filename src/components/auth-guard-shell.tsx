@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { AvatarPhotoButton } from '@/components/mmm/avatar-photo-button'
+import type { ProfileTable } from '@/lib/mmm/profile-photo'
 
 /**
  * Dashboard shell — approved MMM design.
@@ -70,7 +72,15 @@ function useSignOut() {
   }
 }
 
-function Sidebar({ role }: { role: Role }) {
+function Sidebar({
+  role,
+  avatarUrl,
+  photoTable,
+}: {
+  role: Role
+  avatarUrl?: string | null
+  photoTable?: ProfileTable | null
+}) {
   const pathname = usePathname()
   const items = role ? (NAV[role] ?? []) : []
   const signOut = useSignOut()
@@ -79,9 +89,21 @@ function Sidebar({ role }: { role: Role }) {
   return (
     <div className="flex h-full flex-col" style={{ background: SIDEBAR_BG }}>
       <div className="flex shrink-0 justify-center px-6 pb-2 pt-6">
-        <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-ocean-100/90 xl:h-32 xl:w-32">
-          <NavIcon name="profile" className="h-14 w-14 opacity-70 xl:h-20 xl:w-20" />
-        </div>
+        {/* Click the avatar itself to change the photo. Admins have no profile
+            row of their own, so they just get the placeholder. */}
+        {photoTable ? (
+          <AvatarPhotoButton
+            url={avatarUrl ?? null}
+            table={photoTable}
+            size={104}
+            tooltip={photoTable === 'centers' ? 'Change facility picture' : 'Change profile picture'}
+            fallback={<NavIcon name="profile" className="h-14 w-14 opacity-70" />}
+          />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-ocean-100/90 xl:h-32 xl:w-32">
+            <NavIcon name="profile" className="h-14 w-14 opacity-70 xl:h-20 xl:w-20" />
+          </div>
+        )}
       </div>
 
       <nav aria-label="Dashboard" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-4 pt-4">
@@ -167,7 +189,19 @@ function TabBar({ role }: { role: Role }) {
   )
 }
 
-export function AuthGuardShell({ children, role }: { children: React.ReactNode; role: Role }) {
+export function AuthGuardShell({
+  children,
+  role,
+  avatarUrl = null,
+  photoTable = null,
+}: {
+  children: React.ReactNode
+  role: Role
+  /** Current profile / facility photo, shown at the top of the sidebar. */
+  avatarUrl?: string | null
+  /** Profile row that owns the photo — null for admins, who have none. */
+  photoTable?: ProfileTable | null
+}) {
   const [menuOpen, setMenuOpen] = useState(false)
   const signOut = useSignOut()
 
@@ -228,7 +262,7 @@ export function AuthGuardShell({ children, role }: { children: React.ReactNode; 
 
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-[260px] shrink-0 lg:block xl:w-[300px]">
-          <Sidebar role={role} />
+          <Sidebar role={role} avatarUrl={avatarUrl} photoTable={photoTable} />
         </aside>
 
         <main
