@@ -14,6 +14,7 @@ import {
   PERFORMANCE_TYPES as PERFORMANCE_TYPE_OPTIONS,
   YEARS_EXPERIENCE,
 } from '@/lib/mmm/options'
+import { ACCEPT_ATTRIBUTE, uploadProfilePhoto, validatePhoto } from '@/lib/mmm/profile-photo'
 
 /**
  * Musician Registration — 5-step wizard (approved design):
@@ -187,7 +188,11 @@ export default function MusicianRegistrationPage() {
   const [human, setHuman] = useState<HumanCheckValue>({ verified: false, token: null })
 
   // Step 2 — Profile
-  const [photoName, setPhotoName] = useState<string | null>(null)
+  // The chosen file is held here and uploaded once the account exists (Storage
+  // writes need a session), then written to musicians.profile_image_url.
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const [bio, setBio] = useState('')
   const [phone, setPhone] = useState('')
   const [zip, setZip] = useState('')
@@ -257,9 +262,39 @@ export default function MusicianRegistrationPage() {
   }
 
   const handlePhoto = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    setPhotoName(file ? file.name : null)
+    const file = e.target.files?.[0] ?? null
+    // Let the same file be re-picked after a rejection.
+    e.target.value = ''
+
+    if (!file) return
+
+    const problem = validatePhoto(file)
+    if (problem) {
+      setPhotoError(problem)
+      return
+    }
+
+    setPhotoError(null)
+    setPhotoFile(file)
+    setPhotoPreview((previous) => {
+      if (previous) URL.revokeObjectURL(previous)
+      return URL.createObjectURL(file)
+    })
   }
+
+  const clearPhoto = () => {
+    setPhotoFile(null)
+    setPhotoError(null)
+    setPhotoPreview((previous) => {
+      if (previous) URL.revokeObjectURL(previous)
+      return null
+    })
+  }
+
+  // Release the preview blob when the wizard unmounts.
+  useEffect(() => () => {
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+  }, [photoPreview])
 
   const completeRegistration = async () => {
     setError(null)
@@ -310,9 +345,37 @@ export default function MusicianRegistrationPage() {
       return
     }
 
-    if (!data.session) {
-      setNotice('Check your e-mail to confirm your account, then sign in.')
+    // ---- Profile photo ----
+    // Storage writes are owner-checked against auth.uid(), so this only works
+    // once a session exists. When the project requires e-mail confirmation
+    // signUp returns no session, and the photo has to wait for the profile page.
+    let photoNotice: string | null = null
+    if (photoFile) {
+      if (data.session && data.user) {
+        const upload = await uploadProfilePhoto(supabase, data.user.id, photoFile)
+        if (upload.url) {
+          // The on_auth_user_created trigger already created the musicians row.
+          const { error: saveError } = await supabase
+            .from('musicians')
+            .update({ profile_image_url: upload.url })
+            .eq('user_id', data.user.id)
+          if (saveError) {
+            photoNotice = `Your account is ready, but the photo could not be attached to your profile (${saveError.message}). You can add it from your profile page.`
+          }
+        } else {
+          photoNotice = `Your account is ready, but the photo did not upload (${upload.error}). You can add it from your profile page.`
+        }
+      } else {
+        photoNotice = 'Your photo still needs uploading — add it from your profile page after you confirm your e-mail and sign in.'
+      }
     }
+
+    const notices = [
+      data.session ? null : 'Check your e-mail to confirm your account, then sign in.',
+      photoNotice,
+    ].filter(Boolean)
+    if (notices.length > 0) setNotice(notices.join(' '))
+
     setLoading(false)
     // Account created → go to the last page (Welcome screen). The ?welcome=1
     // flag keeps them on it even after a refresh or middleware round-trip.
@@ -458,15 +521,49 @@ export default function MusicianRegistrationPage() {
                 {step === 2 && (
                   <div>
                     <div className="flex items-start gap-4 sm:items-center sm:gap-6">
-                      <label className="flex h-[132px] w-[120px] shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-ocean-300 bg-white/70 px-2 text-center transition hover:border-ocean-500 focus-within:border-ocean-500 sm:h-[168px] sm:w-[164px]">
-                        <input type="file" accept="image/jpeg,image/png" className="sr-only" onChange={handlePhoto} />
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/mmm/pages/upload-photo.png" alt="" className="h-11 w-11 object-contain sm:h-14 sm:w-14" />
-                        <span className="font-poppins text-[10px] font-bold text-ocean-900 sm:text-[12px]">Upload Photo</span>
-                        <span className="font-poppins text-[8px] leading-tight text-ocean-900/50 sm:text-[10px]">
-                          {photoName ?? 'JPG, PNG (max 5MB)'}
-                        </span>
-                      </label>
+                      <div className="shrink-0">
+                        <label className="flex h-[132px] w-[120px] cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border-2 border-ocean-300 bg-white/70 px-2 text-center transition hover:border-ocean-500 focus-within:border-ocean-500 sm:h-[168px] sm:w-[164px]">
+                          <input
+                            type="file"
+                            accept={ACCEPT_ATTRIBUTE}
+                            className="sr-only"
+                            onChange={handlePhoto}
+                            aria-label="Upload a profile photo (JPG or PNG, up to 5 MB)"
+                          />
+                          {photoPreview ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img src={photoPreview} alt="Your selected profile photo" className="h-full w-full object-cover" />
+                          ) : (
+                            <>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src="/mmm/pages/upload-photo.png" alt="" className="h-11 w-11 object-contain sm:h-14 sm:w-14" />
+                              <span className="font-poppins text-[10px] font-bold text-ocean-900 sm:text-[12px]">Upload Photo</span>
+                              <span className="font-poppins text-[8px] leading-tight text-ocean-900/50 sm:text-[10px]">
+                                JPG, PNG (max 5MB)
+                              </span>
+                            </>
+                          )}
+                        </label>
+                        {photoFile && (
+                          <div className="mt-1.5 w-[120px] sm:w-[164px]">
+                            <p className="truncate font-poppins text-[9px] text-ocean-900/70 sm:text-[10px]" title={photoFile.name}>
+                              {photoFile.name}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={clearPhoto}
+                              className="mt-0.5 font-poppins text-[9px] font-bold text-ocean-700 underline transition hover:text-ocean-900 sm:text-[10px]"
+                            >
+                              Remove photo
+                            </button>
+                          </div>
+                        )}
+                        {photoError && (
+                          <p className="mt-1.5 w-[120px] font-poppins text-[9px] leading-tight text-red-700 sm:w-[164px] sm:text-[10px]">
+                            {photoError}
+                          </p>
+                        )}
+                      </div>
                       <div className="min-w-0">
                         <p className="font-poppins text-[11px] text-ocean-900 sm:text-[13px]">Step 2 of 5</p>
                         <h2 className="font-garamond text-[26px] font-bold leading-none text-ocean-900 sm:text-[44px] lg:text-[50.8px]">

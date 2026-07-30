@@ -36,12 +36,99 @@ export type HumanCheckValue = {
   token: string | null
 }
 
-function makeChallenge() {
-  // Small addition problems only — readable for older or less technical users,
-  // which matters because activities directors fill this in too.
-  const a = Math.floor(Math.random() * 5) + 2
-  const b = Math.floor(Math.random() * 5) + 2
-  return { a, b, answer: a + b }
+type Challenge = {
+  /** Question shown to the person. */
+  prompt: string
+  /** Accepted replies, compared case-insensitively after trimming. */
+  answers: string[]
+  /** Drives the on-screen keyboard on phones. */
+  kind: 'number' | 'text'
+}
+
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve']
+
+/** Numbers accept digits or the spelled-out word — kinder to older users. */
+function numberAnswer(n: number) {
+  return NUMBER_WORDS[n] ? [String(n), NUMBER_WORDS[n]] : [String(n)]
+}
+
+const pick = <T,>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)]
+
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const
+const INSTRUMENT_WORDS = ['piano', 'guitar', 'violin', 'flute', 'drum'] as const
+const NON_INSTRUMENT_WORDS = ['table', 'window', 'pillow', 'ladder', 'teapot'] as const
+const SPELLING_WORDS = ['MUSIC', 'PIANO', 'HEART', 'SONG'] as const
+const SOLFEGE = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Ti'] as const
+
+/**
+ * The challenge pool. Everything here is answerable without math beyond single
+ * digits or any special knowledge — activities directors and older volunteers
+ * fill this in too, so nothing tricky, no puzzles, no image CAPTCHAs.
+ */
+const GENERATORS: Array<() => Challenge> = [
+  // Addition
+  () => {
+    const a = Math.floor(Math.random() * 5) + 2
+    const b = Math.floor(Math.random() * 5) + 2
+    return { prompt: `What is ${a} + ${b}?`, answers: numberAnswer(a + b), kind: 'number' }
+  },
+  // Subtraction — always a positive result
+  () => {
+    const a = Math.floor(Math.random() * 5) + 5
+    const b = Math.floor(Math.random() * 4) + 1
+    return { prompt: `What is ${a} − ${b}?`, answers: numberAnswer(a - b), kind: 'number' }
+  },
+  // Count the letters in a short, familiar word
+  () => {
+    const word = pick(SPELLING_WORDS)
+    return {
+      prompt: `How many letters are in the word ${word}?`,
+      answers: numberAnswer(word.length),
+      kind: 'number',
+    }
+  },
+  // Type a word back
+  () => {
+    const word = pick(SPELLING_WORDS)
+    return { prompt: `Please type the word ${word}.`, answers: [word], kind: 'text' }
+  },
+  // Which one is an instrument
+  () => {
+    const instrument = pick(INSTRUMENT_WORDS)
+    const others = [...NON_INSTRUMENT_WORDS].sort(() => Math.random() - 0.5).slice(0, 2)
+    const options = [instrument, ...others].sort(() => Math.random() - 0.5)
+    return {
+      prompt: `Which of these is a musical instrument — ${options.join(', ')}?`,
+      answers: [instrument],
+      kind: 'text',
+    }
+  },
+  // Day that follows
+  () => {
+    const i = Math.floor(Math.random() * WEEKDAYS.length)
+    const next = WEEKDAYS[(i + 1) % WEEKDAYS.length]
+    return { prompt: `Which day comes after ${WEEKDAYS[i]}?`, answers: [next], kind: 'text' }
+  },
+  // Finish the scale — Do, Re, __
+  () => {
+    const i = Math.floor(Math.random() * (SOLFEGE.length - 2))
+    return {
+      prompt: `Finish the musical scale: ${SOLFEGE[i]}, ${SOLFEGE[i + 1]}, ___?`,
+      answers: [SOLFEGE[i + 2]],
+      kind: 'text',
+    }
+  },
+]
+
+const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, ' ')
+
+/** Picks a challenge, avoiding an immediate repeat of the current prompt. */
+function makeChallenge(previous?: Challenge): Challenge {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const next = pick(GENERATORS)()
+    if (!previous || next.prompt !== previous.prompt) return next
+  }
+  return pick(GENERATORS)()
 }
 
 export function HumanCheck({ onChange }: { onChange: (v: HumanCheckValue) => void }) {
@@ -89,7 +176,9 @@ export function HumanCheck({ onChange }: { onChange: (v: HumanCheckValue) => voi
   }, [usingTurnstile])
 
   // ---- Report status upward ----
-  const cleared = usingTurnstile ? Boolean(token) : reply.trim() === String(challenge.answer)
+  const cleared = usingTurnstile
+    ? Boolean(token)
+    : challenge.answers.some((a) => normalize(a) === normalize(reply)) && reply.trim() !== ''
 
   useEffect(() => {
     const fastEnoughToBeABot = (Date.now() - mountedAt) / 1000 < MIN_SECONDS_ON_FORM
@@ -126,24 +215,25 @@ export function HumanCheck({ onChange }: { onChange: (v: HumanCheckValue) => voi
         <div className="rounded-xl border border-ocean-300 bg-white px-4 py-3.5">
           <p className="font-poppins text-[10.7px] font-bold text-ocean-900">Quick check — are you human?</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <span className="font-poppins text-[13px] text-ocean-900">
-              What is {challenge.a} + {challenge.b}?
-            </span>
+            <span className="font-poppins text-[13px] text-ocean-900">{challenge.prompt}</span>
             <label className="sr-only" htmlFor="mmm-human-check">
-              What is {challenge.a} plus {challenge.b}?
+              {challenge.prompt}
             </label>
             <input
               id="mmm-human-check"
               value={reply}
               onChange={(e) => setReply(e.target.value)}
-              inputMode="numeric"
-              maxLength={3}
-              className="w-20 rounded-lg border border-ocean-300 px-3 py-1.5 text-center font-poppins text-[13px] text-ocean-900 focus:border-ocean-500 focus:outline-none focus:ring-1 focus:ring-ocean-400"
+              inputMode={challenge.kind === 'number' ? 'numeric' : 'text'}
+              autoComplete="off"
+              maxLength={challenge.kind === 'number' ? 8 : 16}
+              className={`rounded-lg border border-ocean-300 px-3 py-1.5 text-center font-poppins text-[13px] text-ocean-900 focus:border-ocean-500 focus:outline-none focus:ring-1 focus:ring-ocean-400 ${
+                challenge.kind === 'number' ? 'w-20' : 'w-32'
+              }`}
             />
             <button
               type="button"
               onClick={() => {
-                setChallenge(makeChallenge())
+                setChallenge((cur) => makeChallenge(cur))
                 setReply('')
               }}
               className="font-poppins text-[10.5px] font-bold text-ocean-700 underline transition hover:text-ocean-900"

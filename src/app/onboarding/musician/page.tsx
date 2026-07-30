@@ -1,8 +1,9 @@
 'use client'
 
-import { FormEvent, useState, useEffect } from 'react'
+import { ChangeEvent, FormEvent, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { ACCEPT_ATTRIBUTE, uploadProfilePhoto, validatePhoto } from '@/lib/mmm/profile-photo'
 
 const WEEKDAY_OPTIONS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const
 
@@ -24,6 +25,8 @@ export default function MusicianOnboardingPage() {
   const [hasOwnTransport, setHasOwnTransport] = useState(false)
   const [profileImageUrl, setProfileImageUrl] = useState('')
   const [youtubeChannelUrl, setYoutubeChannelUrl] = useState('')
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'invalid' | 'checking' | 'available' | 'taken'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -68,6 +71,38 @@ export default function MusicianOnboardingPage() {
 
   const parseCsv = (value: string) =>
     value.split(',').map((item) => item.trim()).filter(Boolean)
+
+  /**
+   * Uploads a chosen photo straight away — there is always a session here — and
+   * drops the resulting public URL into the field below, which saves with the form.
+   */
+  const handlePhotoFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    event.target.value = '' // allow re-picking the same file after an error
+    if (!file) return
+
+    const problem = validatePhoto(file)
+    if (problem) {
+      setPhotoError(problem)
+      return
+    }
+
+    setPhotoError(null)
+    setPhotoUploading(true)
+
+    const supabase = createSupabaseBrowserClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setPhotoError('Your session has expired — please sign in again to upload a photo.')
+      setPhotoUploading(false)
+      return
+    }
+
+    const upload = await uploadProfilePhoto(supabase, user.id, file)
+    if (upload.url) setProfileImageUrl(upload.url)
+    else setPhotoError(upload.error ?? 'The photo could not be uploaded. Please try again.')
+    setPhotoUploading(false)
+  }
 
   const normalizeUsername = (value: string) =>
     value
@@ -314,16 +349,49 @@ export default function MusicianOnboardingPage() {
             </label>
           </div>
 
-          <label className="block text-sm font-medium text-stone-800">
-            Profile photo URL <span className="text-xs font-normal text-stone-500">optional</span>
-            <input
-              type="url"
-              value={profileImageUrl}
-              onChange={(event) => setProfileImageUrl(event.target.value)}
-              placeholder="https://..."
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-amber-500 focus:ring"
-            />
-          </label>
+          <div className="space-y-2">
+            <p className="block text-sm font-medium text-stone-800">
+              Profile photo <span className="text-xs font-normal text-stone-500">optional</span>
+            </p>
+            <div className="flex items-center gap-3">
+              {profileImageUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={profileImageUrl}
+                  alt="Your profile photo"
+                  className="h-16 w-16 shrink-0 rounded-full border border-stone-300 object-cover"
+                />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-dashed border-stone-300 text-[10px] text-stone-400">
+                  No photo
+                </div>
+              )}
+              <div className="min-w-0">
+                <input
+                  type="file"
+                  accept={ACCEPT_ATTRIBUTE}
+                  onChange={handlePhotoFile}
+                  disabled={photoUploading}
+                  aria-label="Upload a profile photo (JPG or PNG, up to 5 MB)"
+                  className="block w-full text-sm text-stone-700 file:mr-3 file:rounded-md file:border-0 file:bg-stone-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-stone-800 hover:file:bg-stone-300 disabled:opacity-60"
+                />
+                <p className="mt-1 text-xs text-stone-500">
+                  {photoUploading ? 'Uploading…' : 'JPG or PNG, up to 5 MB. Remember to save below.'}
+                </p>
+              </div>
+            </div>
+            {photoError && <p className="text-xs text-red-700">{photoError}</p>}
+            <label className="block text-xs text-stone-500">
+              Or paste an image link
+              <input
+                type="url"
+                value={profileImageUrl}
+                onChange={(event) => setProfileImageUrl(event.target.value)}
+                placeholder="https://..."
+                className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none ring-amber-500 focus:ring"
+              />
+            </label>
+          </div>
 
           <label className="block text-sm font-medium text-stone-800">
             YouTube channel URL <span className="text-xs font-normal text-stone-500">optional — share your music with centers</span>
