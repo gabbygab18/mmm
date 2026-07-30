@@ -8,6 +8,7 @@ import { MarketingFooter } from '@/components/mmm/marketing-footer'
 import { PasswordField, PillGroup, SelectField, TextField } from '@/components/mmm/form-kit'
 import { BackButton, NextButton, StepHeading, StepTracker } from '@/components/mmm/registration-ui'
 import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
+import { friendlyAuthError } from '@/lib/mmm/auth-errors'
 import {
   GENRES,
   INSTRUMENTS,
@@ -633,7 +634,7 @@ export function MusicianWizard({ mode }: { mode: 'register' | 'onboarding' }) {
     })
 
     if (signUpError) {
-      setError(signUpError.message)
+      setError(friendlyAuthError(signUpError.message))
       setLoading(false)
       return
     }

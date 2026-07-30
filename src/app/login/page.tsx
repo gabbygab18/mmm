@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { AuthShell } from '@/components/auth-shell'
+import { friendlyAuthError } from '@/lib/mmm/auth-errors'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -36,7 +37,7 @@ export default function LoginPage() {
       const { error: signInError, data } = await supabase.auth.signInWithPassword({ email, password })
 
       if (signInError) {
-        setError(signInError.message)
+        setError(friendlyAuthError(signInError.message))
         setLoading(false)
         return
       }

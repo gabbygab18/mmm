@@ -8,6 +8,7 @@ import { MarketingFooter } from '@/components/mmm/marketing-footer'
 import { BackButton, NextButton, StepHeading, StepIcon, StepTracker } from '@/components/mmm/registration-ui'
 import { Field, PasswordField, PillGroup, SelectField, TextField, inputClass } from '@/components/mmm/form-kit'
 import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
+import { friendlyAuthError } from '@/lib/mmm/auth-errors'
 import { ProfilePhotoPicker } from '@/components/mmm/profile-photo-picker'
 import { uploadProfilePhoto } from '@/lib/mmm/profile-photo'
 import {
@@ -460,7 +461,7 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
     })
 
     if (signUpError) {
-      setError(signUpError.message)
+      setError(friendlyAuthError(signUpError.message))
       setLoading(false)
       return
     }

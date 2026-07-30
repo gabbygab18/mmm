@@ -5,6 +5,7 @@ import { FormEvent, ReactNode, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { AuthShell } from '@/components/auth-shell'
+import { friendlyAuthError } from '@/lib/mmm/auth-errors'
 
 type RoleOption = 'musician' | 'center_coordinator'
 
@@ -83,7 +84,7 @@ export default function SignupPage() {
     })
 
     if (signUpError) {
-      setError(signUpError.message)
+      setError(friendlyAuthError(signUpError.message))
       setLoading(false)
       return
     }
