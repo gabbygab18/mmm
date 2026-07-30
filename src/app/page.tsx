@@ -134,7 +134,9 @@ export default function Home() {
         style={{ background: 'linear-gradient(120deg, #faf4e7 0%, #eaf1f8 45%, #cfe0ef 100%)' }}
       >
         <div className="mx-auto max-w-[1200px] px-6 py-14 sm:px-8">
-          <h2 className="text-center font-poppins text-[18.2px] font-bold uppercase tracking-[0.12em] text-ocean-900">
+          {/* Same serif treatment as the other section headings, per the mock-up
+              — it was the odd one out as a small uppercase label. */}
+          <h2 className="text-center font-garamond text-[30px] font-bold text-ocean-900 sm:text-[38px]">
             How It Works
           </h2>
 

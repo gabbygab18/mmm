@@ -24,6 +24,8 @@ export function PageHero({
       phone band ratio, so below `sm` it replaces the layered composition. */
   mobileImage,
   notes,
+  /** Colour the staff artwork is painted in — a soft blue on the pale heroes. */
+  notesColor = 'rgba(70, 112, 165, 0.42)',
   children,
   /** Aspect utility classes, width / height. Mockup desktop sits near 2.46. */
   ratioClass = 'aspect-[1.5] sm:aspect-[1.9] lg:aspect-[2.46]',
@@ -40,6 +42,7 @@ export function PageHero({
   photoWidthSm?: string
   mobileImage?: string
   notes?: string
+  notesColor?: string
   children: ReactNode
   ratioClass?: string
   minHeight?: string
@@ -54,12 +57,22 @@ export function PageHero({
     <section className="relative isolate" style={{ backgroundColor: tailColor }}>
       <div className={`relative w-full overflow-hidden ${ratioClass} ${minHeight}`} style={{ background }}>
         {notes && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={notes}
-            alt=""
+          /* The staff artwork ships as near-white line art, which disappears on
+             a pale hero — in the design pack it reads as a soft blue. So it is
+             painted rather than placed: the PNG masks a brand-blue fill. */
+          <div
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-[16%] left-0 hidden w-[52%] max-w-none select-none opacity-70 sm:block"
+            className="pointer-events-none absolute bottom-[3%] left-0 hidden w-[56%] select-none sm:block"
+            style={{
+              aspectRatio: '1100 / 467',
+              backgroundColor: notesColor,
+              WebkitMaskImage: `url('${notes}')`,
+              maskImage: `url('${notes}')`,
+              WebkitMaskSize: '100% 100%',
+              maskSize: '100% 100%',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+            }}
           />
         )}
 

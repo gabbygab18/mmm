@@ -186,12 +186,14 @@ export default function AboutPage() {
 
       {/* ============ Be Part of the Mission ============ */}
       <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #1e5aa0 0%, #0f3b6b 100%)' }}>
+        {/* Same as the band above: drawn normally, not soft-light, so the staff
+            actually shows across the navy the way the design pack has it. */}
         <div
-          className="absolute inset-0 opacity-45 mix-blend-soft-light"
+          className="absolute inset-0 opacity-60"
           style={{
             backgroundImage: "url('/mmm/pages/about-notes-bottom.png')",
             backgroundRepeat: 'no-repeat',
-            backgroundSize: '1100px auto',
+            backgroundSize: '1600px auto',
             backgroundPosition: 'center bottom',
           }}
           aria-hidden="true"
