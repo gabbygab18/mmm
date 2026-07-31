@@ -62,7 +62,10 @@ export default function AboutPage() {
         heroImage="/mmm/pages/about-hero.png"
         heroAspect="1100 / 560"
         copyBand="62%"
-        copyWidth="max-w-[500px] text-center"
+        mobileHeroImage="/mmm/mobile/about-hero.png"
+        mobileHeroAspect="1 / 1"
+        mobileCopyBand="55%"
+        copyWidth="max-w-[64%] text-center sm:max-w-[500px]"
         tailColor="#4882bf"
       >
         <h1 className="landing-rise font-garamond text-[27px] font-semibold leading-[1.02] text-white drop-shadow-md sm:text-[40px] md:text-[50px] lg:text-[62px] xl:text-[79.9px]">
@@ -81,8 +84,10 @@ export default function AboutPage() {
           <span className="h-px flex-1 bg-white/70" />
         </div>
 
-        {/* Centred on the rule and allowed to run wider than it, as in the pack. */}
-        <p className="landing-rise landing-delay-2 mt-3 whitespace-nowrap font-poppins text-[13px] leading-snug text-white drop-shadow sm:text-[18px] md:text-[22px] lg:text-[29.8px]">
+        {/* Centred on the rule and allowed to run wider than it, as in the pack.
+            It only holds one line from `sm` up; on a phone there is not the
+            width for it and it is left to wrap. */}
+        <p className="landing-rise landing-delay-2 mt-3 font-poppins text-[13px] leading-snug text-white drop-shadow sm:whitespace-nowrap sm:text-[18px] md:text-[22px] lg:text-[29.8px]">
           The story behind
           <br />
           Margaret&apos;s Memorycare Music
@@ -138,30 +143,28 @@ export default function AboutPage() {
         <div className="relative mx-auto max-w-[1150px] px-6 py-16 sm:px-8">
           <h2 className="text-center font-garamond text-[30px] font-bold text-white sm:text-[42.6px]">Our Story</h2>
 
-          {/* The four-across row only from xl. At lg (1024px — iPad landscape)
-              four columns leave ~226px each, which crowds the outer two against
-              the section edges and breaks the headings mid-phrase, so tablets
-              keep the readable stacked list. */}
-          <ol className="relative mt-10 space-y-7 xl:mt-12 xl:grid xl:grid-cols-4 xl:gap-6 xl:space-y-0">
-            {/* Dotted connector: vertical while stacked, horizontal from xl up. */}
+          {/* Four across from lg (1024px) — the row is wanted on tablet-width
+              screens too, not only at xl. Below that it stays a stacked list. */}
+          <ol className="relative mt-10 space-y-7 lg:mt-12 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-y-0">
+            {/* Dotted connector: vertical while stacked, horizontal from lg up. */}
             <span
-              className="pointer-events-none absolute bottom-6 left-[26px] top-6 border-l-2 border-dotted border-white/40 xl:bottom-auto xl:left-[12.5%] xl:right-[12.5%] xl:top-[44px] xl:border-l-0 xl:border-t-2"
+              className="pointer-events-none absolute bottom-6 left-[26px] top-6 border-l-2 border-dotted border-white/40 lg:bottom-auto lg:left-[12.5%] lg:right-[12.5%] lg:top-[44px] lg:border-l-0 lg:border-t-2"
               aria-hidden="true"
             />
             {STORY.map((node) => (
               <li
                 key={node.title.join(' ')}
-                className="relative flex items-start gap-4 xl:flex-col xl:items-center xl:gap-0 xl:text-center"
+                className="relative flex items-start gap-4 lg:flex-col lg:items-center lg:gap-0 lg:text-center"
               >
-                <span className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full bg-ocean-700/40 xl:h-[88px] xl:w-[88px] xl:bg-transparent">
+                <span className="flex h-[54px] w-[54px] shrink-0 items-center justify-center rounded-full bg-ocean-700/40 lg:h-[88px] lg:w-[88px] lg:bg-transparent">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={node.icon} alt="" className="max-h-[34px] w-auto object-contain xl:max-h-[80px]" />
+                  <img src={node.icon} alt="" className="max-h-[34px] w-auto object-contain lg:max-h-[80px]" />
                 </span>
-                <div className="min-w-0 flex-1 pt-1 xl:pt-0">
-                  <h3 className="font-garamond text-[17px] font-bold leading-tight text-white sm:text-[20px] xl:mt-4 xl:text-[25.2px]">
+                <div className="min-w-0 flex-1 pt-1 lg:pt-0">
+                  <h3 className="font-garamond text-[17px] font-bold leading-tight text-white sm:text-[20px] lg:mt-4 lg:text-[22px] xl:text-[25.2px]">
                     {node.title.join(' ')}
                   </h3>
-                  <p className="mt-1 font-poppins text-[11px] leading-snug text-white/95 sm:text-[12.5px] xl:mx-auto xl:mt-3 xl:max-w-[260px] xl:text-[13.8px]">
+                  <p className="mt-1 font-poppins text-[11px] leading-snug text-white/95 sm:text-[12.5px] lg:mx-auto lg:mt-3 lg:max-w-[260px] lg:text-[12.8px] xl:text-[13.8px]">
                     {node.body}
                   </p>
                 </div>

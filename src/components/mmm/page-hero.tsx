@@ -43,6 +43,11 @@ export function PageHero({
   copyBand = '58%',
   /** Band shape, clipping the export just below its wave. */
   heroAspect = '1100 / 560',
+  /** Phone-shaped export of the same hero, used below `sm`. The desktop bands
+      are wide and put the copy across the photograph on a narrow screen. */
+  mobileHeroImage,
+  mobileHeroAspect,
+  mobileCopyBand,
 }: {
   photo?: string
   photoAlt?: string
@@ -62,6 +67,9 @@ export function PageHero({
   heroImage?: string
   copyBand?: string
   heroAspect?: string
+  mobileHeroImage?: string
+  mobileHeroAspect?: string
+  mobileCopyBand?: string
 }) {
   const centered = align === 'center'
 
@@ -76,15 +84,31 @@ export function PageHero({
             page's own sections cover that area, so the band is clipped just
             below the sweep. Without the clip the hero was ~1500px tall and left
             an enormous gap before the content. */}
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: heroAspect }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={heroImage}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 block w-full select-none"
-          />
-          <div className="absolute inset-x-0 top-0 flex items-center" style={{ height: copyBand }}>
+        {/* Band shape and copy band are carried as custom properties so both
+            can change at `sm` — an inline aspectRatio cannot hold a breakpoint,
+            and the phone export is a different shape from the wide one. */}
+        <div
+          className="relative w-full overflow-hidden aspect-[var(--hero-ar-m)] sm:aspect-[var(--hero-ar)]"
+          style={
+            {
+              '--hero-ar-m': mobileHeroAspect ?? heroAspect,
+              '--hero-ar': heroAspect,
+              '--copy-band-m': mobileCopyBand ?? copyBand,
+              '--copy-band': copyBand,
+            } as React.CSSProperties
+          }
+        >
+          <picture>
+            {mobileHeroImage && <source srcSet={mobileHeroImage} media="(max-width: 639px)" />}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={heroImage}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 block w-full select-none"
+            />
+          </picture>
+          <div className="absolute inset-x-0 top-0 flex h-[var(--copy-band-m)] items-center sm:h-[var(--copy-band)]">
             <div className="mx-auto w-full max-w-[1200px] px-5 sm:px-8">
               <div className={`${copyWidth} ${centered ? 'mx-auto text-center' : ''}`}>{children}</div>
             </div>
