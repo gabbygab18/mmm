@@ -51,12 +51,9 @@ export default function FaqPage() {
 
       {/* ============ Hero ============ */}
       <PageHero
-        photo="/mmm/pages/hero-photo-faq.png"
-        photoAlt=""
-        photoWidth="35%"
-        mobileImage="/mmm/mobile/faq-bg.png"
-        ratioClass="aspect-[2.0] sm:aspect-[2.4] lg:aspect-[3.4]"
-        background="linear-gradient(100deg, #b6d0ef 0%, #a5c5e9 32%, #a4c9f7 60%, #9dc4f2 100%)"
+        heroImage="/mmm/pages/faq-hero.png"
+        heroAspect="1100 / 355"
+        copyBand="46%"
         copyWidth="max-w-[640px]"
         tailColor="#0f3b6b"
       >

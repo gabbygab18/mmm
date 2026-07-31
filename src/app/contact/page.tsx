@@ -79,9 +79,9 @@ export default function ContactPage() {
 
       {/* ============ Hero ============ */}
       <PageHero
-        mobileImage="/mmm/mobile/contact-bg.png"
-        ratioClass="aspect-[2.2] sm:aspect-[2.6] lg:aspect-[3.2]"
-        background="linear-gradient(180deg, #dcebfb 0%, #b6d1ec 60%, #a8c8e8 100%)"
+        heroImage="/mmm/pages/contact-hero.png"
+        heroAspect="1100 / 390"
+        copyBand="55%"
         copyWidth="max-w-[900px]"
         align="center"
         tailColor="#b6d1ec"

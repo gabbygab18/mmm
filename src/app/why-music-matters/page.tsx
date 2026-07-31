@@ -74,12 +74,9 @@ export default function WhyMusicMattersPage() {
 
       {/* ============ Hero ============ */}
       <PageHero
-        photo="/mmm/pages/hero-photo-wmm.png"
-        photoAlt="A volunteer musician playing guitar for a memory care resident"
-        photoWidth="58%"
-        ratioClass="aspect-[1.45] sm:aspect-[1.9] lg:aspect-[2.4]"
-        photoWidthSm="46%"
-        background="linear-gradient(100deg, #8bb4e0 0%, #9dbde3 32%, #a6c1de 60%, #93b8e0 100%)"
+        heroImage="/mmm/pages/wmm-hero.png"
+        heroAspect="1100 / 545"
+        copyBand="52%"
         copyWidth="max-w-[470px]"
         tailColor="#1e5aa0"
       >

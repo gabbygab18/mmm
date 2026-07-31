@@ -9,8 +9,8 @@ import { ReactNode } from 'react'
  * band is assembled here from background, music-staff artwork, photo cutout and
  * the drawn light sweep.
  *
- * The light sweep along the lower edge is drawn as SVG rather than dropped in
- * as the exported PNG — see the comment at the element itself.
+ * The light streak along the lower edge is the design pack's own artwork —
+ * see the comment at the element itself.
  *
  * The band gets shorter (wider ratio) as the viewport grows, so copy keeps room
  * to breathe on phones and tablets instead of colliding with the photo.
@@ -37,6 +37,12 @@ export function PageHero({
   align = 'left',
   /** Colour of the section below, so the wave blends into it. */
   tailColor = 'transparent',
+  /** The design pack's composed hero export — used whole when given. */
+  heroImage,
+  /** How much of that export's height the copy is centred within. */
+  copyBand = '58%',
+  /** Band shape, clipping the export just below its wave. */
+  heroAspect = '1100 / 560',
 }: {
   photo?: string
   photoAlt?: string
@@ -53,11 +59,45 @@ export function PageHero({
   copyWidth?: string
   align?: 'left' | 'center'
   tailColor?: string
+  heroImage?: string
+  copyBand?: string
+  heroAspect?: string
 }) {
   const centered = align === 'center'
 
+  // The design pack also ships each hero as one composed, transparent export —
+  // photo, staff artwork and the light streak already in place, with the wave's
+  // dark side left transparent so the section colour shows through. When one is
+  // given it is used whole: no layering here can match a hand-composed sweep.
+  if (heroImage) {
+    return (
+      <section className="relative isolate z-20" style={{ backgroundColor: tailColor }}>
+        {/* The export runs on past the wave into a tall block of flat navy — the
+            page's own sections cover that area, so the band is clipped just
+            below the sweep. Without the clip the hero was ~1500px tall and left
+            an enormous gap before the content. */}
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: heroAspect }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={heroImage}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 block w-full select-none"
+          />
+          <div className="absolute inset-x-0 top-0 flex items-center" style={{ height: copyBand }}>
+            <div className="mx-auto w-full max-w-[1200px] px-5 sm:px-8">
+              <div className={`${copyWidth} ${centered ? 'mx-auto text-center' : ''}`}>{children}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
-    <section className="relative isolate" style={{ backgroundColor: tailColor }}>
+    // z-20: the streak below hangs past this section, and without a stacking
+    // order the next section's background paints straight over it.
+    <section className="relative isolate z-20" style={{ backgroundColor: tailColor }}>
       <div className={`relative w-full overflow-hidden ${ratioClass} ${minHeight}`} style={{ background }}>
         {bokeh && (
           /* Soft out-of-focus lights across the upper band, as drawn in the
@@ -133,61 +173,28 @@ export function PageHero({
           </>
         )}
 
-        <div className="relative mx-auto flex h-full max-w-[1200px] items-center px-5 sm:px-8">
+        <div className="relative z-20 mx-auto flex h-full max-w-[1200px] items-center px-5 sm:px-8">
           <div className={`${copyWidth} ${centered ? 'mx-auto text-center' : ''}`}>{children}</div>
         </div>
       </div>
 
-      {/* Light sweep along the hero's lower edge.
-          Drawn rather than dropped in as a PNG. The exported streak was a
-          1099x792 canvas that was mostly empty, so at full width it became a
-          ~920px transparent sheet whose glow filter washed out the hero and the
-          section beneath it. An SVG has no empty canvas to scale, stays sharp at
-          any width, and costs a fraction of the bytes.
-
-          Two passes: a wide blurred sweep for the halo, a thin one for the
-          bright core, both fading out at either end. */}
-      <div
-        className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[30%] translate-y-1/2 select-none ${
+      {/* Light streak — the design pack's own artwork (streak-band.png, a
+          1099x350 export whose glow fills the canvas).
+          It sits OUTSIDE the band on purpose: in the mock-ups the wave is the
+          transition between the photo band and the section beneath, so it has
+          to cross that edge. Inside the band the section's clipping sliced it
+          off flat. Its height is set rather than its width — scaling by width
+          made the sweep taller than the hero itself. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/mmm/streak-band.png"
+        alt=""
+        aria-hidden="true"
+        className={`landing-wave-glow pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[104px] w-full translate-y-[62%] select-none object-fill sm:h-[150px] lg:h-[196px] ${
           mobileImage ? 'hidden sm:block' : ''
         }`}
-        aria-hidden="true"
-      >
-        <svg viewBox="0 0 1200 200" preserveAspectRatio="none" className="h-full w-full">
-          <defs>
-            <linearGradient id="mmm-sweep-fade" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
-              <stop offset="16%" stopColor="#eaf4ff" stopOpacity="0.5" />
-              <stop offset="50%" stopColor="#ffffff" stopOpacity="0.95" />
-              <stop offset="84%" stopColor="#eaf4ff" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-            </linearGradient>
-            <filter id="mmm-sweep-halo" x="-10%" y="-120%" width="120%" height="340%">
-              <feGaussianBlur stdDeviation="16" />
-            </filter>
-            <filter id="mmm-sweep-core" x="-10%" y="-120%" width="120%" height="340%">
-              <feGaussianBlur stdDeviation="2.5" />
-            </filter>
-          </defs>
-          <path
-            d="M0 150 C 320 52, 880 52, 1200 118"
-            fill="none"
-            stroke="url(#mmm-sweep-fade)"
-            strokeWidth="78"
-            strokeLinecap="round"
-            filter="url(#mmm-sweep-halo)"
-            opacity="0.8"
-          />
-          <path
-            d="M0 150 C 320 52, 880 52, 1200 118"
-            fill="none"
-            stroke="url(#mmm-sweep-fade)"
-            strokeWidth="16"
-            strokeLinecap="round"
-            filter="url(#mmm-sweep-core)"
-          />
-        </svg>
-      </div>
+      />
+
     </section>
   )
 }

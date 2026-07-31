@@ -48,12 +48,14 @@ export default function Home() {
           style={{ backgroundImage: "url('/mmm/home-hero.png')", backgroundPosition: 'center 30%' }}
           aria-hidden="true"
         />
-        {/* Left tint so the headline stays legible */}
+        {/* Left tint so the headline stays legible. Kept light: the mock-up shows
+            the photograph clearly behind the words — at 0.82 the singer and half
+            the room were washed out to navy. */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(100deg, rgba(7,37,68,0.82) 0%, rgba(9,44,86,0.45) 34%, rgba(9,44,86,0.10) 58%, rgba(9,44,86,0) 75%)',
+              'linear-gradient(100deg, rgba(7,37,68,0.52) 0%, rgba(9,44,86,0.26) 34%, rgba(9,44,86,0.06) 58%, rgba(9,44,86,0) 75%)',
           }}
           aria-hidden="true"
         />
@@ -63,16 +65,20 @@ export default function Home() {
           style={{ backgroundImage: "url('/mmm/notes-bg.png')", backgroundSize: '900px auto', backgroundPosition: 'left -60px bottom' }}
           aria-hidden="true"
         />
-        {/* Light streak wave along the bottom edge */}
+        {/* Light streak wave along the bottom edge.
+            The export is a 1099x792 canvas with the glow across its middle, so
+            scaling it by width made it ~1350px tall and the section's clipping
+            sliced the sweep off flat. Its height is set instead, so the whole
+            sweep sits inside the band above the next section. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/mmm/streak.png"
           alt=""
           aria-hidden="true"
-          className="landing-wave-glow pointer-events-none absolute bottom-0 left-1/2 w-[130%] max-w-none -translate-x-1/2 translate-y-[35%] select-none"
+          className="landing-wave-glow pointer-events-none absolute bottom-0 left-1/2 h-[210px] w-[130%] max-w-none -translate-x-1/2 select-none object-fill sm:h-[260px] lg:h-[300px]"
         />
 
-        <div className="relative mx-auto flex min-h-[560px] max-w-[1200px] flex-col justify-center px-6 py-20 sm:px-8 lg:min-h-[640px]">
+        <div className="relative mx-auto flex min-h-[620px] max-w-[1200px] flex-col justify-center px-6 pb-40 pt-20 sm:px-8 lg:min-h-[720px] lg:pb-48">
           <h1 className="landing-rise max-w-[640px] font-garamond text-[44px] font-semibold leading-[1.05] text-white drop-shadow-md sm:text-[58px] lg:text-[67px]">
             Bringing Music to Memory Care
           </h1>

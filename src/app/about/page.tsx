@@ -56,14 +56,9 @@ export default function AboutPage() {
 
       {/* ============ Hero ============ */}
       <PageHero
-        photo="/mmm/pages/hero-photo-about.png"
-        photoAlt="Margaret Roscoe with her son Michael"
-        photoWidth="50%"
-        notes="/mmm/pages/about-notes-top.png"
-        bokeh
-        mobileImage="/mmm/mobile/about-hero.png"
-        ratioClass="aspect-[1.69] sm:aspect-[1.9] lg:aspect-[2.46]"
-        background="linear-gradient(100deg, #82aeda 0%, #a1c0e2 32%, #adc2dc 60%, #9dbcdd 100%)"
+        heroImage="/mmm/pages/about-hero.png"
+        heroAspect="1100 / 560"
+        copyBand="42%"
         copyWidth="max-w-[560px]"
         tailColor="#4882bf"
       >
