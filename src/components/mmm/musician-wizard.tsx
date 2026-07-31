@@ -36,7 +36,15 @@ const STEP_LABELS = [
 ]
 
 const PERFORMANCE_TYPES = PERFORMANCE_TYPE_OPTIONS
+
 const STEP2_PERFORMANCE_TYPES = ['Solo', 'Duo', 'Small Group', 'Large Group'] as const
+
+/**
+ * Lists an admin curates under Categories. Passed in from the server so the
+ * wizard stays a client component; the constants above are the fallback, so a
+ * call site that does not pass them behaves exactly as before.
+ */
+export type WizardOptionLists = Record<string, string[]>
 
 // ---------- Step 4 (Availability) — updated layout ----------
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -184,7 +192,15 @@ const normalizeUsername = (value: string) =>
 
 type HandleStatus = 'idle' | 'invalid' | 'checking' | 'available' | 'taken'
 
-export function MusicianWizard({ mode }: { mode: 'register' | 'onboarding' }) {
+export function MusicianWizard({
+  mode,
+  optionLists,
+}: {
+  mode: 'register' | 'onboarding'
+  optionLists?: WizardOptionLists
+}) {
+  const instrumentOptions = optionLists?.instrument?.length ? optionLists.instrument : [...INSTRUMENTS]
+  const genreOptions = optionLists?.genre?.length ? optionLists.genre : [...GENRES]
   const isOnboarding = mode === 'onboarding'
   const firstStep = isOnboarding ? 2 : 1
 
@@ -630,6 +646,9 @@ export function MusicianWizard({ mode }: { mode: 'register' | 'onboarding' }) {
           human_verification_token: human.token,
           registration,
         },
+        // Where the confirmation link lands. /auth/confirm sets the session
+        // server-side, so they arrive signed in and carry on into onboarding.
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Fonboarding%2Fmusician`,
       },
     })
 
@@ -1034,7 +1053,7 @@ export function MusicianWizard({ mode }: { mode: 'register' | 'onboarding' }) {
                           label="Primary Instrument"
                           value={primaryInstrument}
                           onChange={setPrimaryInstrument}
-                          options={INSTRUMENTS}
+                          options={instrumentOptions}
                           placeholder="Select your primary instrument"
                         />
                         <Field label="Other Instruments (Optional)">
@@ -1051,7 +1070,7 @@ export function MusicianWizard({ mode }: { mode: 'register' | 'onboarding' }) {
                       <div className="space-y-5">
                         <PillGroup
                           label="Genres You Play"
-                          options={GENRES}
+                          options={genreOptions}
                           selected={genres}
                           onToggle={(v) => toggleInList(setGenres, v)}
                         />

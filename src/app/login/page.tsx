@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { AuthShell } from '@/components/auth-shell'
+import { PasswordInput } from '@/components/mmm/password-input'
 import { friendlyAuthError } from '@/lib/mmm/auth-errors'
 
 export default function LoginPage() {
@@ -99,8 +100,7 @@ export default function LoginPage() {
 
         <label className="block font-poppins text-[8.3px] font-medium text-ocean-900 lg:text-[10.7px]">
           Password
-          <input
-            type="password"
+          <PasswordInput
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             disabled={loading}

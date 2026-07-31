@@ -1,6 +1,5 @@
-'use client'
-
 import { FacilityWizard } from '@/components/mmm/facility-wizard'
+import { getSiteOptionLists } from '@/lib/mmm/site-options'
 
 /**
  * Finish setting up a community after the account already exists — someone who
@@ -11,6 +10,7 @@ import { FacilityWizard } from '@/components/mmm/facility-wizard'
  * Step 5 writes straight to centers / center_locations (no signup to do).
  */
 
-export default function CenterOnboardingPage() {
-  return <FacilityWizard mode="onboarding" />
+export default async function CenterOnboardingPage() {
+  const optionLists = await getSiteOptionLists()
+  return <FacilityWizard mode="onboarding" optionLists={optionLists} />
 }

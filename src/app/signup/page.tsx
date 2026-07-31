@@ -5,6 +5,7 @@ import { FormEvent, ReactNode, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { AuthShell } from '@/components/auth-shell'
+import { PasswordInput } from '@/components/mmm/password-input'
 import { friendlyAuthError } from '@/lib/mmm/auth-errors'
 
 type RoleOption = 'musician' | 'center_coordinator'
@@ -80,6 +81,9 @@ export default function SignupPage() {
       password,
       options: {
         data: { role },
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(
+          role === 'musician' ? '/onboarding/musician' : '/onboarding/center',
+        )}`,
       },
     })
 
@@ -89,9 +93,10 @@ export default function SignupPage() {
       return
     }
 
+    // No session means e-mail confirmation is switched on and the account is
+    // waiting on the link. Hand over to /verify-email, which can resend it.
     if (!data.session) {
-      setMessage('Account created. Check your email to confirm, then sign in.')
-      setLoading(false)
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`)
       return
     }
 
@@ -185,9 +190,8 @@ export default function SignupPage() {
 
         <label className="block font-poppins text-[8.3px] font-medium text-ocean-900 lg:text-[10.7px]">
           Password
-          <input
-            type="password"
-            value={password}
+          <PasswordInput
+                        value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
             minLength={8}

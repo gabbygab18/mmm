@@ -34,6 +34,11 @@ export function friendlyAuthError(message: string | null | undefined): string {
     return 'Please choose a password with at least 8 characters.'
   }
 
+  // The account exists but the confirmation link has not been clicked yet.
+  if (lower.includes('email not confirmed') || lower.includes('not_confirmed')) {
+    return 'Please confirm your e-mail address first — check your inbox for the link we sent when you signed up.'
+  }
+
   if (lower.includes('invalid login credentials')) {
     return 'That e-mail address and password do not match. Please check them and try again.'
   }

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
 import { PageHero } from '@/components/mmm/page-hero'
+import { Lines } from '@/components/mmm/lines'
+import { getSiteContent } from '@/lib/mmm/site-content'
 
 export const metadata: Metadata = {
   title: "About | Margaret's MemoryCare Music",
@@ -49,7 +51,9 @@ const PILLARS = [
   },
 ]
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const t = await getSiteContent()
+
   return (
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
@@ -69,9 +73,7 @@ export default function AboutPage() {
         tailColor="#4882bf"
       >
         <h1 className="landing-rise font-garamond text-[27px] font-semibold leading-[1.02] text-white drop-shadow-md sm:text-[40px] md:text-[50px] lg:text-[62px] xl:text-[79.9px]">
-          Every Song
-          <br />
-          Has a Story.
+          <Lines text={t('about.hero.title')} />
         </h1>
 
         {/* Rule · heart · rule, as drawn in the design pack. The heart carried
@@ -88,9 +90,7 @@ export default function AboutPage() {
             It only holds one line from `sm` up; on a phone there is not the
             width for it and it is left to wrap. */}
         <p className="landing-rise landing-delay-2 mt-3 font-poppins text-[13px] leading-snug text-white drop-shadow sm:whitespace-nowrap sm:text-[18px] md:text-[22px] lg:text-[29.8px]">
-          The story behind
-          <br />
-          Margaret&apos;s Memorycare Music
+          <Lines text={t('about.hero.body')} />
         </p>
       </PageHero>
 
@@ -141,7 +141,7 @@ export default function AboutPage() {
       {/* ============ Our Story ============ */}
       <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #2f6ba8 0%, #1e5aa0 100%)' }}>
         <div className="relative mx-auto max-w-[1150px] px-6 py-16 sm:px-8">
-          <h2 className="text-center font-garamond text-[30px] font-bold text-white sm:text-[42.6px]">Our Story</h2>
+          <h2 className="text-center font-garamond text-[30px] font-bold text-white sm:text-[42.6px]">{t('about.story.title')}</h2>
 
           {/* Four across from lg (1024px) — the row is wanted on tablet-width
               screens too, not only at xl. Below that it stays a stacked list. */}

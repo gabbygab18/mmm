@@ -10,6 +10,9 @@ const PUBLIC_PATHS = [
   // them to /login and the recovery code in the URL would be lost.
   '/forgot-password',
   '/reset-password',
+  // E-mail confirmation: the link is opened by someone with no session yet.
+  '/verify-email',
+  '/auth/confirm',
   '/get-started',
   '/education',
   '/about',

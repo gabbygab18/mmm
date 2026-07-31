@@ -2,6 +2,7 @@
 
 import { FormEvent, useState, useTransition } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { PasswordInput } from '@/components/mmm/password-input'
 import { updateEmailNotificationsAction, deleteAccountAction } from './actions'
 
 function passwordStrength(pw: string): { score: number; label: string } {
@@ -120,9 +121,8 @@ export function AccountSettingsForm({
         <form onSubmit={handlePasswordChange} className="mt-5 space-y-4">
           <label className="block text-sm font-semibold text-stone-700">
             New password
-            <input
-              type="password"
-              value={newPassword}
+            <PasswordInput
+                            value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
               minLength={8}
@@ -133,9 +133,8 @@ export function AccountSettingsForm({
           </label>
           <label className="block text-sm font-semibold text-stone-700">
             Confirm new password
-            <input
-              type="password"
-              value={confirmPassword}
+            <PasswordInput
+                            value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={8}

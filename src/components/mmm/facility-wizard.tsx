@@ -56,7 +56,20 @@ const normalizeUsername = (value: string) =>
     .replace(/^_+|_+$/g, '')
     .slice(0, 30)
 
-export function FacilityWizard({ mode }: { mode: Mode }) {
+export function FacilityWizard({
+  mode,
+  optionLists,
+}: {
+  mode: Mode
+  /** Lists curated by an admin under Categories; the constants are the fallback. */
+  optionLists?: Record<string, string[]>
+}) {
+  const jobTitleOptions = optionLists?.director_job_title?.length
+    ? optionLists.director_job_title
+    : [...DIRECTOR_JOB_TITLES]
+  const performanceLocationOptions = optionLists?.performance_location?.length
+    ? optionLists.performance_location
+    : [...PERFORMANCE_LOCATIONS]
   const isOnboarding = mode === 'onboarding'
   const firstStep = isOnboarding ? 2 : 1
 
@@ -457,6 +470,9 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
           human_verification_token: human.token,
           registration: registrationPayload(),
         },
+        // Where the confirmation link lands. /auth/confirm sets the session
+        // server-side, so they arrive signed in and carry on into onboarding.
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Fonboarding%2Fcenter`,
       },
     })
 
@@ -866,7 +882,7 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
                         options={CONTACT_METHODS}
                         placeholder="Select contact method"
                       />
-                      <SelectField label="Job Title" value={jobTitle} onChange={setJobTitle} options={DIRECTOR_JOB_TITLES} placeholder="Select job title" />
+                      <SelectField label="Job Title" value={jobTitle} onChange={setJobTitle} options={jobTitleOptions} placeholder="Select job title" />
                     </div>
                     {error && <p className="mt-4 text-center font-poppins text-[11px] font-medium text-red-600">{error}</p>}
                     <div className="mt-8 flex items-center justify-between">
@@ -893,7 +909,7 @@ export function FacilityWizard({ mode }: { mode: Mode }) {
                       <PillGroup label="Preferred Days" options={DAYS_OF_WEEK} selected={preferredDays} onToggle={toggleDay} />
                       <SelectField label="Ideal Frequency" value={frequency} onChange={setFrequency} options={VISIT_FREQUENCY} placeholder="Select frequency" />
                       <SelectField label="Preferred Time" value={preferredTime} onChange={setPreferredTime} options={TIME_OF_DAY} placeholder="Select time of day" />
-                      <SelectField label="Preferred Performance Location" value={performanceLocation} onChange={setPerformanceLocation} options={PERFORMANCE_LOCATIONS} placeholder="Select location" />
+                      <SelectField label="Preferred Performance Location" value={performanceLocation} onChange={setPerformanceLocation} options={performanceLocationOptions} placeholder="Select location" />
                       <SelectField label="Preferred Length" value={preferredLength} onChange={setPreferredLength} options={PERFORMANCE_LENGTH} placeholder="Select duration" />
                       <Field label="Additional Notes (Optional)" htmlFor="facility-notes">
                         <textarea

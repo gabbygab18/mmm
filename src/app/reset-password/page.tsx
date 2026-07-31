@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { AuthShell } from '@/components/auth-shell'
+import { PasswordInput } from '@/components/mmm/password-input'
 import { friendlyResetError, RESET_LINK_EXPIRED } from '@/lib/mmm/auth-errors'
 
 /**
@@ -191,9 +192,8 @@ export default function ResetPasswordPage() {
           <form onSubmit={handleSubmit} className="mt-7 space-y-5">
             <label className={labelClass}>
               New Password
-              <input
-                type="password"
-                value={password}
+              <PasswordInput
+                                value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 disabled={saving}
                 required
@@ -205,9 +205,8 @@ export default function ResetPasswordPage() {
 
             <label className={labelClass}>
               Confirm New Password
-              <input
-                type="password"
-                value={confirm}
+              <PasswordInput
+                                value={confirm}
                 onChange={(event) => setConfirm(event.target.value)}
                 disabled={saving}
                 required

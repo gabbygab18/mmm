@@ -1,6 +1,5 @@
-'use client'
-
 import { MusicianWizard } from '@/components/mmm/musician-wizard'
+import { getSiteOptionLists } from '@/lib/mmm/site-options'
 
 /**
  * Finish setting up a musician profile after the account already exists —
@@ -12,6 +11,7 @@ import { MusicianWizard } from '@/components/mmm/musician-wizard'
  * straight to the musicians row (no signup to do).
  */
 
-export default function MusicianOnboardingPage() {
-  return <MusicianWizard mode="onboarding" />
+export default async function MusicianOnboardingPage() {
+  const optionLists = await getSiteOptionLists()
+  return <MusicianWizard mode="onboarding" optionLists={optionLists} />
 }

@@ -1,6 +1,5 @@
-'use client'
-
 import { FacilityWizard } from '@/components/mmm/facility-wizard'
+import { getSiteOptionLists } from '@/lib/mmm/site-options'
 
 /**
  * Facility Registration — 5-step wizard (approved design pack, July 2026):
@@ -16,6 +15,7 @@ import { FacilityWizard } from '@/components/mmm/facility-wizard'
  * the same wizard from step 2 at /onboarding/center — see FacilityWizard.
  */
 
-export default function FacilityRegistrationPage() {
-  return <FacilityWizard mode="register" />
+export default async function FacilityRegistrationPage() {
+  const optionLists = await getSiteOptionLists()
+  return <FacilityWizard mode="register" optionLists={optionLists} />
 }

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
 import { PageHero } from '@/components/mmm/page-hero'
+import { Lines } from '@/components/mmm/lines'
+import { getSiteContent } from '@/lib/mmm/site-content'
 
 export const metadata: Metadata = {
   title: "Why Music Matters | Margaret's MemoryCare Music",
@@ -67,7 +69,9 @@ const TOPICS = [
   },
 ]
 
-export default function WhyMusicMattersPage() {
+export default async function WhyMusicMattersPage() {
+  const t = await getSiteContent()
+
   return (
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
@@ -81,13 +85,10 @@ export default function WhyMusicMattersPage() {
         tailColor="#1e5aa0"
       >
         <h1 className="landing-rise font-garamond text-[26px] font-semibold leading-[1.02] text-white drop-shadow-md sm:text-[38px] md:text-[48px] lg:text-[68.5px]">
-          Why Music
-          <br />
-          Matters
+          <Lines text={t('wmm.hero.title')} />
         </h1>
         <p className="landing-rise landing-delay-1 mt-3 font-poppins text-[11.5px] leading-snug text-white drop-shadow sm:text-[15px] md:text-[17px] lg:text-[20.9px]">
-          Music reaches places words cannot. For individuals living with dementia and memory loss, music can unlock
-          memories, lift spirits, and create moments of joy and connection.
+          <Lines text={t('wmm.hero.body')} />
         </p>
       </PageHero>
 
@@ -95,11 +96,11 @@ export default function WhyMusicMattersPage() {
       <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #1e5aa0 0%, #0f3b6b 100%)' }}>
         <div className="relative mx-auto max-w-[1200px] px-6 py-16 sm:px-8">
           <h2 className="text-center font-garamond text-[32px] font-bold text-white sm:text-[48.6px]">
-            Explore the Science and Impact of Music
+            <Lines text={t('wmm.explore.title')} />
           </h2>
           {/* Wide enough to keep the line unbroken on desktop, as in the pack. */}
           <p className="mx-auto mt-3 max-w-[1100px] text-center font-poppins text-[15px] leading-relaxed text-white/95 sm:text-[20.9px]">
-            Learn how music can transform lives, strengthen connections, and support brain health.
+            <Lines text={t('wmm.explore.body')} />
           </p>
 
           {/* auto-rows-fr: every tile the same height, not just the ones sharing

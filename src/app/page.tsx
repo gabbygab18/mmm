@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
+import { Lines } from '@/components/mmm/lines'
+import { getSiteContent } from '@/lib/mmm/site-content'
 
 /**
  * Homepage — "Bringing Music to Memory Care" (approved design, July 2026 pack).
@@ -47,7 +49,9 @@ const cardTitleClass =
   'mt-4 flex min-h-[54px] max-w-[215px] items-center justify-center font-garamond text-[20px] font-bold leading-tight'
 const cardBodyClass = 'mt-1 min-h-[38px] max-w-[215px] font-poppins text-[11.4px] leading-relaxed'
 
-export default function Home() {
+export default async function Home() {
+  const t = await getSiteContent()
+
   return (
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
@@ -92,11 +96,10 @@ export default function Home() {
 
         <div className="relative mx-auto flex min-h-[620px] max-w-[1200px] flex-col justify-center px-6 pb-40 pt-20 sm:px-8 lg:min-h-[720px] lg:pb-48">
           <h1 className="landing-rise max-w-[640px] font-garamond text-[44px] font-semibold leading-[1.05] text-white drop-shadow-md sm:text-[58px] lg:text-[67px]">
-            Bringing Music to Memory Care
+            <Lines text={t('home.hero.title')} />
           </h1>
           <p className="landing-rise landing-delay-1 mt-6 max-w-[520px] font-poppins text-[16px] leading-relaxed text-white drop-shadow sm:text-[19.7px]">
-            Connecting volunteer musicians with memory care communities throughout Palm Beach County, creating
-            meaningful moments through live music at no cost.
+            <Lines text={t('home.hero.body')} />
           </p>
 
           <div className="landing-rise landing-delay-2 mt-9">
@@ -155,7 +158,7 @@ export default function Home() {
           {/* Same serif treatment as the other section headings, per the mock-up
               — it was the odd one out as a small uppercase label. */}
           <h2 className="text-center font-garamond text-[30px] font-bold text-ocean-900 sm:text-[38px]">
-            How It Works
+            {t('home.how.title')}
           </h2>
 
           <div className="mt-10 grid items-start gap-10 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-6">
@@ -186,9 +189,9 @@ export default function Home() {
       {/* ============ Choose Your Path ============ */}
       <section id="choose-your-path" style={{ background: 'linear-gradient(180deg, #10416f 0%, #0a2f5a 100%)' }}>
         <div className="mx-auto max-w-[1080px] px-6 py-16 sm:px-8">
-          <h2 className="text-center font-garamond text-[30px] font-bold text-white sm:text-[38px]">Choose Your Path</h2>
+          <h2 className="text-center font-garamond text-[30px] font-bold text-white sm:text-[38px]">{t('home.path.title')}</h2>
           <p className="mx-auto mt-2 max-w-[560px] text-center font-poppins text-[13.8px] leading-relaxed text-white/90">
-            Volunteer your music, or bring live performances to your residents.
+            <Lines text={t('home.path.body')} />
           </p>
           <div className="mt-10 grid gap-8 md:grid-cols-2">
           {/* Musician card */}
@@ -208,17 +211,15 @@ export default function Home() {
                   copy and buttons line up across the pair, as in the design
                   pack — the community title runs to two lines and without the
                   reserved height everything below it sat a line lower. */}
-              <h3 className={cardTitleClass + ' text-ocean-900'}>I&apos;m a Musician</h3>
+              <h3 className={cardTitleClass + ' text-ocean-900'}>{t('home.path.musician.title')}</h3>
               <p className={cardBodyClass + ' text-ocean-900'}>
-                Share your gift.
-                <br />
-                Become a volunteer.
+                <Lines text={t('home.path.musician.body')} />
               </p>
               <Link
                 href="/register/musician"
                 className="mt-5 rounded-lg border-[1.5px] border-ocean-800 px-6 py-2.5 font-poppins text-[12.2px] font-bold uppercase tracking-[0.12em] text-ocean-900 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
               >
-                Join as Musician
+                {t('home.path.musician.cta')}
               </Link>
             </div>
           </div>
@@ -237,16 +238,16 @@ export default function Home() {
               {/* Shadowed: the photo shows through the wash now, so the white
                   copy needs its own separation from the busier areas. */}
               <h3 className={cardTitleClass + ' text-[#faf4e7] [text-shadow:0_1px_6px_rgba(7,37,68,0.65)]'}>
-                I&apos;m a Memory Care Community
+                <Lines text={t('home.path.community.title')} />
               </h3>
               <p className={cardBodyClass + ' text-white [text-shadow:0_1px_5px_rgba(7,37,68,0.6)]'}>
-                Bring meaningful live performances to your residents
+                <Lines text={t('home.path.community.body')} />
               </p>
               <Link
                 href="/register/facility"
                 className="mt-5 rounded-lg bg-[#faf4e7] px-6 py-2.5 font-poppins text-[12.2px] font-bold uppercase tracking-[0.12em] text-ocean-900 shadow transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                Register Your Facility
+                {t('home.path.community.cta')}
               </Link>
             </div>
           </div>
@@ -273,12 +274,12 @@ export default function Home() {
           <img src="/mmm/icon-heart-clef.png" alt="" className="h-36 w-auto shrink-0 object-contain lg:h-44" />
 
           <div className="max-w-[420px] text-center lg:text-left">
-            <h2 className="font-garamond text-[30.1px] font-bold text-white">Why Music Matters</h2>
+            <h2 className="font-garamond text-[30.1px] font-bold text-white">{t('home.wmm.title')}</h2>
             <p className="mt-3 font-poppins text-[13.8px] leading-relaxed text-white/95">
-              Music has a unique ability to reach people living with dementia and memory loss.
+              <Lines text={t('home.wmm.body1')} />
             </p>
             <p className="mt-3 font-poppins text-[13.8px] leading-relaxed text-white/95">
-              Research has shown that familiar songs can:
+              <Lines text={t('home.wmm.body2')} />
             </p>
           </div>
 

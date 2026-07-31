@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
+import { Lines } from '@/components/mmm/lines'
+import { getSiteContent } from '@/lib/mmm/site-content'
 
 export const metadata: Metadata = {
   title: "How It Works | Margaret's MemoryCare Music",
@@ -86,7 +88,9 @@ function PathColumn({
   )
 }
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  const t = await getSiteContent()
+
   return (
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
@@ -113,11 +117,10 @@ export default function HowItWorksPage() {
         <div className="relative sm:absolute sm:inset-0 sm:flex sm:items-center">
           <div className="mx-auto max-w-[860px] px-6 py-16 text-center sm:px-8 sm:py-0">
             <h1 className="landing-rise font-garamond text-[30px] font-bold text-ocean-900 sm:text-[32px] md:text-[40px] lg:text-[52px] xl:text-[58px]">
-              How It Works
+              <Lines text={t('how.hero.title')} />
             </h1>
             <p className="landing-rise landing-delay-1 mx-auto mt-3 max-w-[660px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[13.5px] md:text-[16px] lg:text-[20px] xl:text-[22px]">
-              We make it simple to bring the joy of live music to memory care communities. Two easy paths. One
-              meaningful mission.
+              <Lines text={t('how.hero.body')} />
             </p>
           </div>
         </div>
