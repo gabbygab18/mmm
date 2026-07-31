@@ -44,6 +44,12 @@ export function MarketingFooter({ variant = 'simple' }: { variant?: 'full' | 'si
 
   return (
     <footer id="contact" className="bg-ocean-900">
+      {/* Rule between the "Why Music Matters" band and the footer — it is drawn
+          in the design pack and was missing here. Inset to the content width
+          rather than full-bleed, as in the pack. */}
+      <div className="mx-auto max-w-[1200px] px-6 sm:px-8">
+        <div className="h-px bg-white/45" aria-hidden="true" />
+      </div>
       <div
         className="relative overflow-hidden"
         style={{
@@ -53,7 +59,10 @@ export function MarketingFooter({ variant = 'simple' }: { variant?: 'full' | 'si
           backgroundSize: '520px auto',
         }}
       >
-        <div className="mx-auto grid max-w-[1200px] gap-10 px-6 py-12 sm:px-8 md:grid-cols-[1.3fr_1fr_0.9fr_0.9fr]">
+        {/* Equal tracks for the three text columns, with the socials centred in
+            its own — the design pack sits "Follow Us" midway between Quick
+            Links and the legal links rather than hard against either. */}
+        <div className="mx-auto grid max-w-[1200px] gap-10 px-6 py-12 sm:px-8 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
           {/* Brand */}
           <div className="flex items-start gap-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -84,7 +93,7 @@ export function MarketingFooter({ variant = 'simple' }: { variant?: 'full' | 'si
           </div>
 
           {/* Socials */}
-          <div>
+          <div className="md:justify-self-center">
             <h3 className="font-poppins text-[13.8px] font-bold uppercase tracking-[0.12em] text-white">Follow Us</h3>
             <div className="mt-4 flex items-center gap-3">
               {SOCIALS.map((s) => (

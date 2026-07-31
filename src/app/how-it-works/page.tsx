@@ -91,36 +91,35 @@ export default function HowItWorksPage() {
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
 
-      {/* ============ Hero — two photos framing the promise ============ */}
+      {/* ============ Hero — the design pack's composed band ============
+          Guitarist, cream centre and the nurse with a resident, exported as one
+          image. The two card photos that used to be cropped in at either edge
+          were the wrong pictures. From `sm` up the export runs at its own
+          ratio and the copy is laid over it; on phones it is too wide to read
+          that way, so there it sits behind the copy instead.
+
+          The export also carries ~2.5% of cream at its left edge and ~4% at its
+          right; left as-is those showed as pale gutters beside the band, so it
+          is scaled up and nudged until the photographs reach both page edges. */}
       <section className="relative overflow-hidden bg-[#faf4e7]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/mmm/mobile/how-hero.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover sm:hidden"
+          className="absolute inset-0 h-full w-full max-w-none select-none object-cover sm:relative sm:ml-[-2.7%] sm:h-auto sm:w-[107.1%] sm:object-fill"
         />
-        <div className="absolute inset-y-0 left-0 hidden w-1/3 sm:block sm:w-[28%]" aria-hidden="true">
-          <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: "url('/mmm/card-musician.png')" }} />
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(90deg, rgba(250,244,231,0) 35%, rgba(250,244,231,0.92) 100%)' }}
-          />
-        </div>
-        <div className="absolute inset-y-0 right-0 hidden w-1/3 sm:block sm:w-[28%]" aria-hidden="true">
-          <div className="h-full w-full bg-cover bg-center" style={{ backgroundImage: "url('/mmm/card-community.png')" }} />
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(270deg, rgba(250,244,231,0) 35%, rgba(250,244,231,0.92) 100%)' }}
-          />
-        </div>
 
-        <div className="relative mx-auto max-w-[760px] px-6 py-16 text-center sm:px-8 sm:py-20">
-          <h1 className="landing-rise font-garamond text-[34px] font-bold text-ocean-900 sm:text-[41px]">How It Works</h1>
-          <p className="landing-rise landing-delay-1 mx-auto mt-4 max-w-[560px] font-poppins text-[15px] leading-relaxed text-ocean-900 sm:text-[19.1px]">
-            We make it simple to bring the joy of live music to memory care communities. Two easy paths. One meaningful
-            mission.
-          </p>
+        <div className="relative sm:absolute sm:inset-0 sm:flex sm:items-center">
+          <div className="mx-auto max-w-[860px] px-6 py-16 text-center sm:px-8 sm:py-0">
+            <h1 className="landing-rise font-garamond text-[30px] font-bold text-ocean-900 sm:text-[32px] md:text-[40px] lg:text-[52px] xl:text-[58px]">
+              How It Works
+            </h1>
+            <p className="landing-rise landing-delay-1 mx-auto mt-3 max-w-[660px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[13.5px] md:text-[16px] lg:text-[20px] xl:text-[22px]">
+              We make it simple to bring the joy of live music to memory care communities. Two easy paths. One
+              meaningful mission.
+            </p>
+          </div>
         </div>
       </section>
 

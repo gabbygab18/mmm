@@ -7,7 +7,6 @@ import {
   EduDetailHero,
   EduH2,
   EduBodyTitle,
-  EduNavyBand,
   EduFaqList,
   EduOrgTable,
   EduRefLinks,
@@ -171,28 +170,33 @@ export default function VolunteerResourcesPage() {
             </div>
           </EduCard>
 
-          {/* Helpful Communication Tips (navy DO / DON'T) */}
-          <EduNavyBand className="mt-8">
+          {/* Helpful Communication Tips (DO / DON'T)
+              No filled panel here, per the review — just the ruled frame over
+              the body blue, with each list centred under its own heading. */}
+          <div className="mt-8 rounded-[26px] border-2 border-[#9dc2e8]/75 px-6 py-9 sm:px-10 sm:py-11">
             <EduBodyTitle>Helpful Communication Tips</EduBodyTitle>
             <div className="mt-7 grid gap-8 sm:grid-cols-2 sm:divide-x sm:divide-white/20">
-              <div className="sm:pr-8">
-                <h3 className="text-center font-poppins text-[16px] font-bold uppercase tracking-[0.12em] text-white sm:text-[18px]">Do</h3>
-                <ul className="mt-4 list-disc space-y-2 pl-6">
-                  {DO.map((i) => (
-                    <li key={i} className="font-poppins text-[14px] text-white/95 sm:text-[16px]">{i}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="sm:pl-8">
-                <h3 className="text-center font-poppins text-[16px] font-bold uppercase tracking-[0.12em] text-white sm:text-[18px]">Don&rsquo;t</h3>
-                <ul className="mt-4 list-disc space-y-2 pl-6">
-                  {DONT.map((i) => (
-                    <li key={i} className="font-poppins text-[14px] text-white/95 sm:text-[16px]">{i}</li>
-                  ))}
-                </ul>
-              </div>
+              {(
+                [
+                  { heading: 'Do', items: DO },
+                  { heading: 'Don’t', items: DONT },
+                ] as const
+              ).map((col) => (
+                <div key={col.heading} className="flex flex-col items-center text-center sm:px-8">
+                  <h3 className="font-poppins text-[16px] font-bold uppercase tracking-[0.12em] text-white sm:text-[18px]">
+                    {col.heading}
+                  </h3>
+                  <ul className="mt-4 list-disc space-y-2 pl-6 text-left">
+                    {col.items.map((i) => (
+                      <li key={i} className="font-poppins text-[14px] text-white/95 sm:text-[16px]">
+                        {i}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
-          </EduNavyBand>
+          </div>
 
           {/* FAQ */}
           <div className="mt-14">

@@ -131,9 +131,9 @@ export default function ScienceOfMusicPage() {
             {/* Did You Know? */}
             <EduNavyBand withStaff>
               <div className="flex items-center justify-center gap-3">
-                <svg className="h-8 w-8 text-yellow-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .9 1.6h5.2c.1-.6.4-1.2.9-1.6A6 6 0 0 0 12 3z" />
-                </svg>
+                {/* The pack's own bulb export. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/mmm/pages/edu/sci-bulb.png" alt="" aria-hidden="true" className="h-9 w-9 shrink-0 object-contain sm:h-11 sm:w-11" />
                 <h2 className="text-center font-garamond text-[26px] font-bold text-white sm:text-[35.7px]">Did You Know?</h2>
               </div>
               <div className="mt-8 grid gap-8 text-center sm:grid-cols-3">

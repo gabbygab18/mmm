@@ -95,7 +95,7 @@ export default function UnderstandingMemoryDementiaPage() {
             </EduCard>
 
             {/* Helpful Tips */}
-            <EduNavyBand>
+            <EduNavyBand withStaff>
               <div className="grid gap-8 md:grid-cols-2 md:items-center">
                 <div>
                   <h2 className="font-garamond text-[26px] font-bold text-white sm:text-[35.7px]">Helpful Tips</h2>
@@ -109,10 +109,17 @@ export default function UnderstandingMemoryDementiaPage() {
                 </div>
 
                 {/* Bookmark box */}
-                <div className="relative overflow-hidden rounded-2xl px-7 py-7 shadow-lg" style={{ background: 'linear-gradient(150deg, #fbf6ea 0%, #eef2f6 100%)' }}>
-                  <svg className="absolute left-6 top-0 h-9 w-7 text-ocean-300" viewBox="0 0 24 30" fill="currentColor" aria-hidden="true">
-                    <path d="M4 0h16v26l-8-5-8 5z" />
-                  </svg>
+                {/* Card fill and bookmark both taken from the pack's export —
+                    the cream warms towards the right rather than cooling to
+                    grey-blue, and the ribbon is the drawn one. */}
+                <div className="relative overflow-hidden rounded-2xl px-7 py-7 shadow-lg" style={{ background: 'linear-gradient(100deg, #fffefc 0%, #fffcf5 55%, #fff9ed 100%)' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/mmm/pages/edu/memory-bookmark.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute left-6 top-0 h-10 w-auto select-none object-contain"
+                  />
                   <h3 className="mt-6 font-poppins text-[18px] font-bold text-ocean-800 sm:text-[20px]">Music Creates Connection</h3>
                   <p className="mt-2 font-poppins text-[15px] leading-relaxed text-ocean-900 sm:text-[19.8px]">
                     Instead of asking, &ldquo;Do you remember?&rdquo; Music allows people to simply experience joy

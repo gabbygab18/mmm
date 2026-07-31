@@ -196,12 +196,13 @@ export default function ContactPage() {
                 href="mailto:info@margaretsmemorycaremusic.org"
               />
 
-              <div className="rounded-2xl border border-ocean-300/50 bg-ocean-900 px-7 py-7 shadow-xl">
-                <h3 className="font-garamond text-[24px] font-bold text-white sm:text-[25.8px]">Follow us</h3>
-                <p className="mt-1 font-poppins text-[15px] leading-snug text-white/90 sm:text-[21.1px]">
+              {/* Squarer, centred card with a ruled frame, as drawn in the pack. */}
+              <div className="rounded-2xl border-2 border-[#9dc2e8]/70 bg-ocean-900 px-7 py-10 text-center shadow-xl sm:px-10 sm:py-14">
+                <h3 className="font-garamond text-[30px] font-bold text-white sm:text-[40px]">Follow us</h3>
+                <p className="mx-auto mt-3 max-w-[330px] font-poppins text-[15px] leading-snug text-white/90 sm:text-[19px]">
                   Stay connected and see how music is making a difference.
                 </p>
-                <div className="mt-5 flex items-center gap-5">
+                <div className="mt-8 flex items-center justify-center gap-5">
                   {SOCIALS.map((s) => (
                     <a
                       key={s.label}

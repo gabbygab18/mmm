@@ -54,12 +54,15 @@ export default function AboutPage() {
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
 
-      {/* ============ Hero ============ */}
+      {/* ============ Hero ============
+          copyWidth is held narrow so the rule below the headline runs to the
+          width of "Has a Story.", as it does in the pack — at 560px it ran
+          well past the words. */}
       <PageHero
         heroImage="/mmm/pages/about-hero.png"
         heroAspect="1100 / 560"
-        copyBand="42%"
-        copyWidth="max-w-[560px]"
+        copyBand="62%"
+        copyWidth="max-w-[500px] text-center"
         tailColor="#4882bf"
       >
         <h1 className="landing-rise font-garamond text-[27px] font-semibold leading-[1.02] text-white drop-shadow-md sm:text-[40px] md:text-[50px] lg:text-[62px] xl:text-[79.9px]">
@@ -68,15 +71,18 @@ export default function AboutPage() {
           Has a Story.
         </h1>
 
+        {/* Rule · heart · rule, as drawn in the design pack. The heart carried
+            the size of a bullet before and read as a stray dot. */}
         <div className="landing-rise landing-delay-1 mt-3 flex items-center gap-3 sm:mt-5" aria-hidden="true">
           <span className="h-px flex-1 bg-white/70" />
-          <svg className="h-4 w-4 text-ocean-800" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 20s-7-4.5-7-9.2A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7 2.8C19 15.5 12 20 12 20z" />
+          <svg className="h-5 w-5 shrink-0 text-ocean-800 drop-shadow-sm sm:h-7 sm:w-7" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21s-7.5-4.7-7.5-10A4.5 4.5 0 0 1 12 8.4 4.5 4.5 0 0 1 19.5 11c0 5.3-7.5 10-7.5 10z" />
           </svg>
           <span className="h-px flex-1 bg-white/70" />
         </div>
 
-        <p className="landing-rise landing-delay-2 mt-3 font-poppins text-[13px] leading-snug text-white drop-shadow sm:text-[18px] md:text-[22px] lg:text-[29.8px]">
+        {/* Centred on the rule and allowed to run wider than it, as in the pack. */}
+        <p className="landing-rise landing-delay-2 mt-3 whitespace-nowrap font-poppins text-[13px] leading-snug text-white drop-shadow sm:text-[18px] md:text-[22px] lg:text-[29.8px]">
           The story behind
           <br />
           Margaret&apos;s Memorycare Music

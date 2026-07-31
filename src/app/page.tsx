@@ -35,6 +35,18 @@ const BENEFITS = [
   { icon: '/mmm/icon-anxiety.png', label: 'Reduce Anxiety' },
 ]
 
+/**
+ * Shared "Choose Your Path" card typography — see the note at the musician card.
+ *
+ * The widths are deliberately tight: in the pack the community title breaks as
+ * "I'm a Memory Care / Community" and its body as two lines, which is what puts
+ * both cards on the same rhythm. Given room to sit on one line each, the card
+ * ran short and stopped lining up with the musician card beside it.
+ */
+const cardTitleClass =
+  'mt-4 flex min-h-[54px] max-w-[215px] items-center justify-center font-garamond text-[20px] font-bold leading-tight'
+const cardBodyClass = 'mt-1 min-h-[38px] max-w-[215px] font-poppins text-[11.4px] leading-relaxed'
+
 export default function Home() {
   return (
     <main className="bg-ocean-900 font-sans">
@@ -186,12 +198,18 @@ export default function Home() {
               style={{ backgroundImage: "url('/mmm/card-musician.png')" }}
               aria-hidden="true"
             />
-            <div className="absolute inset-0 bg-[#faf4e7]/80" aria-hidden="true" />
+            {/* Thin enough that the guitarist reads through, as in the pack —
+                at 0.8 the photo was all but gone. */}
+            <div className="absolute inset-0 bg-[#faf4e7]/[0.62]" aria-hidden="true" />
             <div className="relative flex flex-col items-center px-8 py-10 text-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/mmm/icon-note.png" alt="" className="h-16 w-16 object-contain" />
-              <h3 className="mt-4 font-garamond text-[20px] font-bold text-ocean-900">I&apos;m a Musician</h3>
-              <p className="mt-1 font-poppins text-[11.4px] leading-relaxed text-ocean-900">
+              {/* The two cards share these heading / body boxes so the titles,
+                  copy and buttons line up across the pair, as in the design
+                  pack — the community title runs to two lines and without the
+                  reserved height everything below it sat a line lower. */}
+              <h3 className={cardTitleClass + ' text-ocean-900'}>I&apos;m a Musician</h3>
+              <p className={cardBodyClass + ' text-ocean-900'}>
                 Share your gift.
                 <br />
                 Become a volunteer.
@@ -212,14 +230,16 @@ export default function Home() {
               style={{ backgroundImage: "url('/mmm/card-community.png')" }}
               aria-hidden="true"
             />
-            <div className="absolute inset-0 bg-ocean-500/70" aria-hidden="true" />
+            <div className="absolute inset-0 bg-ocean-500/[0.58]" aria-hidden="true" />
             <div className="relative flex flex-col items-center px-8 py-10 text-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/mmm/icon-facility.png" alt="" className="h-16 w-16 object-contain" />
-              <h3 className="mt-4 font-garamond text-[20px] font-bold leading-tight text-[#faf4e7]">
+              {/* Shadowed: the photo shows through the wash now, so the white
+                  copy needs its own separation from the busier areas. */}
+              <h3 className={cardTitleClass + ' text-[#faf4e7] [text-shadow:0_1px_6px_rgba(7,37,68,0.65)]'}>
                 I&apos;m a Memory Care Community
               </h3>
-              <p className="mt-1 font-poppins text-[11.4px] leading-relaxed text-white">
+              <p className={cardBodyClass + ' text-white [text-shadow:0_1px_5px_rgba(7,37,68,0.6)]'}>
                 Bring meaningful live performances to your residents
               </p>
               <Link
@@ -240,9 +260,12 @@ export default function Home() {
         className="relative overflow-hidden"
         style={{ background: 'linear-gradient(180deg, #0a2f5a 0%, #072544 100%)' }}
       >
+        {/* Staff artwork runs the full width of the band in the pack, clef at
+            the far left through to the notes at the right edge — pinned to a
+            fixed pixel width it only covered part of the section. */}
         <div
           className="absolute inset-0 opacity-30 mix-blend-screen"
-          style={{ backgroundImage: "url('/mmm/notes-bg.png')", backgroundRepeat: 'no-repeat', backgroundSize: '1100px auto', backgroundPosition: 'left -80px top 20px' }}
+          style={{ backgroundImage: "url('/mmm/notes-bg.png')", backgroundRepeat: 'no-repeat', backgroundSize: '100% auto', backgroundPosition: 'center' }}
           aria-hidden="true"
         />
         <div className="relative mx-auto flex max-w-[1200px] flex-col items-center gap-10 px-6 py-14 sm:px-8 lg:flex-row lg:gap-14">

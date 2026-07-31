@@ -233,12 +233,11 @@ export default function FamilyResourcesPage() {
             <p className="mt-4 font-poppins text-[16px] font-bold text-white sm:text-[18px]">Try these:</p>
             <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               {ACTIVITIES.map((a) => (
-                <div key={a.label} className="relative overflow-hidden rounded-xl shadow-lg">
+                // The exports already carry their own caption, so no label is
+                // drawn over them — the two sets of words were overlapping.
+                <div key={a.label} className="overflow-hidden rounded-xl shadow-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={a.img} alt={a.label} className="aspect-[5/3] w-full object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ocean-950/85 to-transparent px-2.5 pb-2 pt-6">
-                    <span className="font-poppins text-[11.5px] font-bold leading-tight text-white sm:text-[12.5px]">{a.label}</span>
-                  </div>
+                  <img src={a.img} alt={a.label} className="block h-auto w-full" />
                 </div>
               ))}
             </div>

@@ -53,7 +53,7 @@ export default function FaqPage() {
       <PageHero
         heroImage="/mmm/pages/faq-hero.png"
         heroAspect="1100 / 355"
-        copyBand="46%"
+        copyBand="100%"
         copyWidth="max-w-[640px]"
         tailColor="#0f3b6b"
       >

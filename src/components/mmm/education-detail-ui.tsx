@@ -18,7 +18,13 @@ import { ReactNode } from 'react'
 
 export const EDU_BODY_BG = 'linear-gradient(180deg, #4c7bb0 0%, #3a689f 45%, #2c5788 100%)'
 const CARD_BG = 'linear-gradient(135deg, #ffffff 0%, #eef4fa 55%, #d9e6f4 100%)'
-const NAVY_BAND_BG = 'linear-gradient(160deg, #123f6e 0%, #0d3360 55%, #082846 100%)'
+/**
+ * Feature-panel fill. The pack runs these dark at the top-left and opens out to
+ * a lighter steel blue on the right — flat navy read as a hole in the page.
+ */
+const NAVY_BAND_BG = 'linear-gradient(105deg, #082a4e 0%, #103a67 42%, #235c94 100%)'
+/** The pack's pale hairline frame, shared by every panel and table. */
+export const EDU_FRAME = 'border-2 border-[#9dc2e8]/75'
 
 /** Photo banner + cream title band. Content (blue body) follows on the page. */
 export function EduDetailHero({
@@ -73,7 +79,13 @@ export function EduCard({ children, className = '' }: { children: ReactNode; cla
   )
 }
 
-/** Deep-navy feature band (Did You Know / Brain Areas / Helpful Tips). */
+/**
+ * Deep-navy feature band (Did You Know / Brain Areas / Helpful Tips).
+ *
+ * Every one of these panels is drawn with a pale hairline frame in the design
+ * pack — it was missing here, which is what made the bands read as flat blocks
+ * of navy against the blue body.
+ */
 export function EduNavyBand({
   children,
   className = '',
@@ -84,7 +96,10 @@ export function EduNavyBand({
   withStaff?: boolean
 }) {
   return (
-    <div className={`relative overflow-hidden rounded-[26px] px-6 py-9 shadow-xl sm:px-10 sm:py-11 ${className}`} style={{ background: NAVY_BAND_BG }}>
+    <div
+      className={`relative overflow-hidden rounded-[26px] ${EDU_FRAME} px-6 py-9 shadow-xl sm:px-10 sm:py-11 ${className}`}
+      style={{ background: NAVY_BAND_BG }}
+    >
       {withStaff && (
         <div
           className="pointer-events-none absolute inset-0 bg-repeat-x opacity-20 mix-blend-screen"
@@ -201,7 +216,14 @@ export function EduRefLinks({ links, className = '' }: { links: string[]; classN
   )
 }
 
-/** Helpful-Organizations table — navy card, header row, linked org names. */
+/**
+ * Helpful-Organizations table — navy card, header row, linked org names.
+ *
+ * Drawn as a framed table in the design pack: a pale hairline around the whole
+ * card, a ruled header band, and every row ruled edge to edge. The names are
+ * set in the body face like the rest of the table rather than as underlined
+ * serif links, which is what made this read as a list of links before.
+ */
 export function EduOrgTable({
   rightHeader,
   rows,
@@ -211,10 +233,10 @@ export function EduOrgTable({
 }) {
   return (
     <div
-      className="mt-7 overflow-hidden rounded-[22px] px-4 py-2 shadow-xl sm:px-8 sm:py-4"
-      style={{ background: 'linear-gradient(160deg, #123f6e 0%, #0d3360 55%, #082846 100%)' }}
+      className={`mt-7 overflow-hidden rounded-[22px] ${EDU_FRAME} shadow-xl`}
+      style={{ background: NAVY_BAND_BG }}
     >
-      <div className="grid grid-cols-2 border-b border-white/25 py-4">
+      <div className="grid grid-cols-2 border-b-2 border-[#9dc2e8]/70 bg-black/15 px-4 py-4 sm:px-8">
         <p className="text-center font-poppins text-[13px] font-bold uppercase tracking-[0.1em] text-white sm:text-[15px]">
           Organization
         </p>
@@ -225,13 +247,15 @@ export function EduOrgTable({
       {rows.map((r, i) => (
         <div
           key={r.name}
-          className={`grid grid-cols-2 items-center gap-3 py-4 ${i < rows.length - 1 ? 'border-b border-white/12' : ''}`}
+          className={`grid grid-cols-2 items-center gap-3 px-4 py-4 sm:px-8 ${
+            i < rows.length - 1 ? 'border-b border-[#9dc2e8]/45' : ''
+          }`}
         >
           <a
             href={r.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-1 text-center font-garamond text-[17px] font-medium text-white underline decoration-white/30 underline-offset-4 transition hover:text-ocean-100 hover:decoration-white sm:text-[22px]"
+            className="px-1 text-center font-poppins text-[13px] font-medium leading-snug text-white transition hover:text-ocean-100 hover:underline sm:text-[16px]"
           >
             {r.name}
           </a>

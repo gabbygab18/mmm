@@ -76,7 +76,7 @@ export default function WhyMusicMattersPage() {
       <PageHero
         heroImage="/mmm/pages/wmm-hero.png"
         heroAspect="1100 / 545"
-        copyBand="52%"
+        copyBand="100%"
         copyWidth="max-w-[470px]"
         tailColor="#1e5aa0"
       >
@@ -97,11 +97,14 @@ export default function WhyMusicMattersPage() {
           <h2 className="text-center font-garamond text-[32px] font-bold text-white sm:text-[48.6px]">
             Explore the Science and Impact of Music
           </h2>
-          <p className="mx-auto mt-3 max-w-[860px] text-center font-poppins text-[15px] leading-relaxed text-white/95 sm:text-[20.9px]">
+          {/* Wide enough to keep the line unbroken on desktop, as in the pack. */}
+          <p className="mx-auto mt-3 max-w-[1100px] text-center font-poppins text-[15px] leading-relaxed text-white/95 sm:text-[20.9px]">
             Learn how music can transform lives, strengthen connections, and support brain health.
           </p>
 
-          <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* auto-rows-fr: every tile the same height, not just the ones sharing
+              a row — the copy runs to three lines in some and two in others. */}
+          <ul className="mt-12 grid auto-rows-fr gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {TOPICS.map((topic) => (
               <li key={topic.title}>
                 <Link

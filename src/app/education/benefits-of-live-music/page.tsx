@@ -56,16 +56,25 @@ export default function BenefitsOfLiveMusicPage() {
 
           {/* Quote band */}
           <div
-            className="relative mt-8 overflow-hidden rounded-[26px] px-8 py-10 shadow-xl sm:px-16 sm:py-12"
-            style={{ background: 'linear-gradient(150deg, #17457a 0%, #0d3360 100%)' }}
+            className="relative mt-8 overflow-hidden rounded-[26px] border-2 border-[#9dc2e8]/75 px-14 py-12 shadow-xl sm:px-24 sm:py-14"
+            style={{ background: 'linear-gradient(105deg, #082a4e 0%, #103a67 42%, #235c94 100%)' }}
           >
-            <span className="pointer-events-none absolute left-4 top-2 font-garamond text-[80px] leading-none text-white/25 sm:left-8 sm:text-[110px]" aria-hidden="true">
+            {/* The marks flank the line at mid height in the pack rather than
+                sitting in the corners of the panel. `top-1/2` with a nudge
+                down: the glyph's ink sits in the upper half of its em box. */}
+            <span
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-[62%] font-garamond text-[70px] leading-none text-[#c5d8ec]/70 sm:left-7 sm:text-[110px]"
+              aria-hidden="true"
+            >
               &ldquo;
             </span>
-            <span className="pointer-events-none absolute bottom-[-18px] right-4 font-garamond text-[80px] leading-none text-white/25 sm:right-8 sm:text-[110px]" aria-hidden="true">
+            <span
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-[38%] font-garamond text-[70px] leading-none text-[#c5d8ec]/70 sm:right-7 sm:text-[110px]"
+              aria-hidden="true"
+            >
               &rdquo;
             </span>
-            <p className="relative mx-auto max-w-[820px] text-center font-garamond text-[24px] font-semibold leading-snug text-white sm:text-[35.7px]">
+            <p className="relative mx-auto max-w-[900px] text-center font-garamond text-[27px] font-semibold leading-snug text-white sm:text-[44px]">
               Music provides a way to connect, even after verbal communication has become difficult.
             </p>
           </div>
