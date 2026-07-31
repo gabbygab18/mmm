@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
-import { PageHero } from '@/components/mmm/page-hero'
 import { Field, TextField, inputClass, labelClass } from '@/components/mmm/form-kit'
 import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
 import { SOCIAL_URLS } from '@/lib/mmm/social'
@@ -77,30 +76,34 @@ export default function ContactPage() {
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
 
-      {/* ============ Hero ============ */}
-      <PageHero
-        heroImage="/mmm/pages/contact-hero.png"
-        heroAspect="1100 / 390"
-        copyBand="55%"
-        copyWidth="max-w-[900px]"
-        align="center"
-        tailColor="#b6d1ec"
-      >
-        <h1 className="landing-rise font-garamond text-[26px] font-bold leading-tight text-white [text-shadow:0_2px_10px_rgba(10,47,90,0.55)] sm:text-[40px] lg:text-[56px] xl:text-[65.9px]">
-          We&apos;d Love to Hear from You!
-        </h1>
-        <p className="landing-rise landing-delay-1 mx-auto mt-3 max-w-[720px] font-poppins text-[12.5px] leading-relaxed text-ocean-900 sm:text-[15px] lg:text-[17.3px]">
-          Whether you&apos;re a musician who wants to volunteer or a facility looking to bring live music to your
-          residents, we&apos;re here to help.
-        </p>
-      </PageHero>
+      {/* ============ Hero + form + contact details ============
+          One band, as drawn in the mockup: the design pack's contact swoosh
+          runs behind the headline and on down past the top of the form card.
+          Its lower half is transparent, so it settles onto the navy page
+          colour instead of needing a gradient to fake the transition. The
+          artwork is stretched to the band rather than scaled by its own
+          ratio — at full width that would push the wave a thousand pixels
+          down the page, which is what left the huge empty gap here. */}
+      <section className="relative isolate">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 select-none bg-[url('/mmm/pages/contact-hero.png')] bg-[length:100%_100%] bg-top bg-no-repeat"
+          style={{ height: 'clamp(260px, 34vw, 560px)' }}
+        />
 
-      {/* ============ Form + contact details ============ */}
-      <section
-        className="relative -mt-6 sm:-mt-10 lg:-mt-16"
-        style={{ background: 'linear-gradient(180deg, #a8c8e8 0%, #7fa8d8 40%, #0a2f5a 100%)' }}
-      >
-        <div className="mx-auto grid max-w-[1200px] items-start gap-10 px-5 pb-14 pt-8 sm:px-8 sm:pb-16 lg:grid-cols-2 lg:gap-14 lg:pt-10">
+        <div className="mx-auto max-w-[1200px] px-5 pt-10 text-center sm:px-8 sm:pt-12 lg:pt-14">
+          {/* White, as drawn — the swoosh is pale under the centre of the line,
+              so the shadow does the lifting. */}
+          <h1 className="landing-rise font-garamond text-[26px] font-bold leading-tight text-white [text-shadow:0_2px_12px_rgba(10,47,90,0.75)] sm:text-[40px] lg:text-[56px] xl:text-[65.9px]">
+            We&apos;d Love to Hear from You!
+          </h1>
+          <p className="landing-rise landing-delay-1 mx-auto mt-3 max-w-[720px] font-poppins text-[12.5px] leading-relaxed text-ocean-900 sm:text-[15px] lg:text-[17.3px]">
+            Whether you&apos;re a musician who wants to volunteer or a facility looking to bring live music to your
+            residents, we&apos;re here to help.
+          </p>
+        </div>
+
+        <div className="mx-auto grid max-w-[1200px] items-start gap-10 px-5 pb-14 pt-9 sm:px-8 sm:pb-16 sm:pt-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-16 lg:pt-14">
           {/* ---- Send us a message ---- */}
           <div className="rounded-2xl border-2 border-ocean-900 bg-[#faf4e7] px-4 py-7 shadow-2xl sm:rounded-3xl sm:px-8 sm:py-9 lg:px-10">
             <h2 className="text-center font-garamond text-[26px] font-bold text-ocean-900 sm:text-[25.8px]">
@@ -177,7 +180,7 @@ export default function ContactPage() {
           </div>
 
           {/* ---- Get in touch ---- */}
-          <div className="lg:pt-6">
+          <div className="lg:pt-8">
             <h2 className="text-center font-garamond text-[26px] font-bold text-white sm:text-[34px] lg:text-[45px]">Get in Touch!</h2>
             <p className="mx-auto mt-2 max-w-[420px] text-center font-poppins text-[13.5px] leading-snug text-white sm:text-[17px] lg:text-[21.1px]">
               We&apos;d love to connect and answer any questions you may have.
