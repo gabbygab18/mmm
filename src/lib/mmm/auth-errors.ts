@@ -48,3 +48,43 @@ export function friendlyAuthError(message: string | null | undefined): string {
 
   return raw || 'Something went wrong. Please try again.'
 }
+
+/** Copy for a reset link that cannot be used — expired, already spent, or tampered with. */
+export const RESET_LINK_EXPIRED =
+  'That reset link has expired or has already been used. Please request a new one below.'
+
+/**
+ * Password-reset wording. The generic messages above are written for sign-up
+ * and sign-in — a send failure there means "your account was not created",
+ * which is nonsense when someone is trying to get back into an account they
+ * already have.
+ */
+export function friendlyResetError(message: string | null | undefined): string {
+  const raw = (message ?? '').trim()
+  const lower = raw.toLowerCase()
+
+  if (lower.includes('sending recovery email') || lower.includes('error sending')) {
+    return `We could not send the reset e-mail. This is a problem on our side — please e-mail ${SUPPORT_EMAIL} and we will get you back into your account.`
+  }
+
+  if (lower.includes('email rate limit') || lower.includes('over_email_send_rate_limit')) {
+    return 'Several reset e-mails have gone out already. Please wait a few minutes before asking for another.'
+  }
+
+  // GoTrue reports a spent or timed-out recovery link as otp_expired /
+  // access_denied, and as a plain "invalid or has expired" on the older flow.
+  if (
+    lower.includes('otp_expired') ||
+    lower.includes('access_denied') ||
+    lower.includes('expired') ||
+    (lower.includes('invalid') && (lower.includes('link') || lower.includes('token') || lower.includes('code')))
+  ) {
+    return RESET_LINK_EXPIRED
+  }
+
+  if (lower.includes('should be different from the old password')) {
+    return 'Please choose a password you have not used on this account before.'
+  }
+
+  return friendlyAuthError(raw)
+}

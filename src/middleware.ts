@@ -5,6 +5,11 @@ const PUBLIC_PATHS = [
   '/',
   '/login',
   '/signup',
+  // Both halves of password recovery. /reset-password is reached from an e-mail
+  // by someone who is, by definition, signed out — guarding it would bounce
+  // them to /login and the recovery code in the URL would be lost.
+  '/forgot-password',
+  '/reset-password',
   '/get-started',
   '/education',
   '/about',

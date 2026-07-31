@@ -110,6 +110,15 @@ export default function LoginPage() {
           />
         </label>
 
+        <div className="-mt-2 text-right">
+          <Link
+            href="/forgot-password"
+            className="font-poppins text-[8.3px] font-medium text-ocean-700 underline-offset-2 transition hover:text-ocean-600 hover:underline lg:text-[10.7px]"
+          >
+            Forgot your password?
+          </Link>
+        </div>
+
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-poppins text-[8.3px] font-medium text-red-700 lg:text-[10.7px]">
             {error}
