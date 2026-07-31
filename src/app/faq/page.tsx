@@ -53,8 +53,9 @@ export default function FaqPage() {
       <PageHero
         heroImage="/mmm/pages/faq-hero.png"
         heroAspect="1100 / 355"
-        copyBand="100%"
-        copyWidth="max-w-[640px]"
+        copyBand="76%"
+        copyWidth="max-w-[720px]"
+        align="center"
         tailColor="#0f3b6b"
       >
         <h1 className="landing-rise font-garamond text-[22px] font-bold leading-tight text-white drop-shadow-md sm:text-[32px] md:text-[40px] lg:text-[52px]">
@@ -111,18 +112,10 @@ export default function FaqPage() {
           </ul>
         </div>
 
-        {/* ---- Still have questions ---- */}
+        {/* ---- Still have questions ----
+             The staff artwork that sat across the lower right of this band was
+             dropped at the client's request. */}
         <div className="relative overflow-hidden">
-          <div
-            className="absolute inset-0 opacity-50 mix-blend-soft-light"
-            style={{
-              backgroundImage: "url('/mmm/pages/faq-notes.png')",
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '1100px auto',
-              backgroundPosition: 'center bottom',
-            }}
-            aria-hidden="true"
-          />
           <div className="relative mx-auto flex max-w-[1150px] flex-col items-center justify-between gap-6 px-6 pb-16 sm:px-8 lg:flex-row">
             <div className="text-center lg:text-left">
               <h2 className="font-garamond text-[30px] font-bold text-white sm:text-[42.6px]">Still have questions?</h2>

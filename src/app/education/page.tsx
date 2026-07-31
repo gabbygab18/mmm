@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
+import { PageHero } from '@/components/mmm/page-hero'
 
 /**
  * First-Time Education — prepares volunteer musicians before their first performance
@@ -144,32 +145,30 @@ export default function EducationPage() {
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
 
-      {/* ============ Hero ============ */}
-      <section className="relative overflow-hidden">
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(105deg, #4f7fb5 0%, #7fa8d8 40%, #b3d0ee 70%, #d9e8f7 100%)' }}
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-y-0 right-0 w-[52%] bg-cover bg-left md:w-1/2"
-          style={{
-            backgroundImage: "url('/mmm/edu-hero.png')",
-            maskImage: 'linear-gradient(to right, transparent 0%, black 40%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 40%)',
-          }}
-          aria-hidden="true"
-        />
-        <div className="relative mx-auto max-w-[1150px] px-5 py-10 sm:px-8 sm:py-16">
-          <h1 className="landing-rise max-w-[720px] font-garamond text-[34px] font-semibold leading-tight text-white drop-shadow-md sm:text-[56px] lg:text-[65.9px]">
-            First-Time Education
-          </h1>
-          <p className="landing-rise landing-delay-1 mt-4 max-w-[340px] font-poppins text-[15px] leading-relaxed text-ocean-950 sm:max-w-[560px] sm:text-[19.5px]">
-            Thank you for volunteering your music and your heart. Complete these short lessons to help you feel confident
-            and prepared for your first performance.
-          </p>
-        </div>
-      </section>
+      {/* ============ Hero ============
+          edu-hero.png is the pack's whole composed band — pale gradient, the
+          guitarist at the right and the light sweep, with the area below the
+          sweep left transparent. It was being used as a background on the right
+          half only, cropped and masked, so the banner read as a bare gradient
+          with a sliver of photo. Used whole here, over the lessons blue. */}
+      <PageHero
+        heroImage="/mmm/edu-hero.png"
+        heroAspect="1100 / 330"
+        copyBand="66%"
+        copyWidth="max-w-[720px]"
+        mobileHeroImage="/mmm/mobile/edu-hero.png"
+        mobileHeroAspect="1100 / 430"
+        mobileCopyBand="58%"
+        tailColor="#10416f"
+      >
+        <h1 className="landing-rise font-garamond text-[30px] font-semibold leading-tight text-white drop-shadow-md sm:text-[46px] lg:text-[65.9px]">
+          First-Time Education
+        </h1>
+        <p className="landing-rise landing-delay-1 mt-4 max-w-[560px] font-poppins text-[12px] leading-relaxed text-ocean-950 sm:text-[15px] lg:text-[19.5px]">
+          Thank you for volunteering your music and your heart. Complete these short lessons to help you feel confident
+          and prepared for your first performance.
+        </p>
+      </PageHero>
 
       {/* ============ Lessons ============ */}
       <div

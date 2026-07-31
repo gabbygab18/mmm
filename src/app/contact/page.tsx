@@ -91,7 +91,7 @@ export default function ContactPage() {
           style={{ height: 'clamp(260px, 34vw, 560px)' }}
         />
 
-        <div className="mx-auto max-w-[1200px] px-5 pt-10 text-center sm:px-8 sm:pt-12 lg:pt-14">
+        <div className="mx-auto max-w-[1200px] px-5 pt-6 text-center sm:px-8 sm:pt-8 lg:pt-9">
           {/* White, as drawn — the swoosh is pale under the centre of the line,
               so the shadow does the lifting. */}
           <h1 className="landing-rise font-garamond text-[26px] font-bold leading-tight text-white [text-shadow:0_2px_12px_rgba(10,47,90,0.75)] sm:text-[40px] lg:text-[56px] xl:text-[65.9px]">
