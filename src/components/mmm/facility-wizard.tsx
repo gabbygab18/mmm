@@ -9,6 +9,7 @@ import { BackButton, NextButton, StepHeading, StepIcon, StepTracker } from '@/co
 import { Field, PasswordField, PillGroup, SelectField, TextField, inputClass } from '@/components/mmm/form-kit'
 import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
 import { friendlyAuthError } from '@/lib/mmm/auth-errors'
+import { notifyApplicationReceivedAction } from '@/app/register/actions'
 import { ProfilePhotoPicker } from '@/components/mmm/profile-photo-picker'
 import { uploadProfilePhoto } from '@/lib/mmm/profile-photo'
 import {
@@ -485,6 +486,8 @@ export function FacilityWizard({
     if (!data.session) {
       setAwaitingConfirmation(true)
       setNotice('Check your e-mail to confirm your account, then sign in.')
+    } else if (data.user) {
+      notifyApplicationReceivedAction(data.user.id, facilityName.trim(), 'facility').catch(() => {})
     }
     setLoading(false)
     setDone(true)
@@ -576,6 +579,11 @@ export function FacilityWizard({
       return
     }
 
+    // Onboarding's account was created via the plain /signup form, which never
+    // gets a chance to fire this — this profile-completion step is the first
+    // point they're both authenticated and have a name to put in the email.
+    notifyApplicationReceivedAction(user.id, facilityName.trim(), 'facility').catch(() => {})
+
     setLoading(false)
     setDone(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -637,7 +645,8 @@ export function FacilityWizard({
                 </h2>
                 {isOnboarding ? (
                   <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[16.1px]">
-                    Your community profile is complete. Musicians nearby can now find you and send performance offers.
+                    Your community profile is complete and now awaiting admin approval. We&apos;ll email you as soon
+                    as you&apos;re approved and ready to start receiving performance offers.
                   </p>
                 ) : (
                   <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[13.2px] leading-relaxed text-ocean-900">

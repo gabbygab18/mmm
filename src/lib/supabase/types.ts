@@ -9,6 +9,7 @@ export type Database = {
         | 'event_completed'
         | 'event_cancelled'
         | 'account_approved'
+        | 'application_received'
       request_status: 'initiated' | 'matched' | 'accepted' | 'completed' | 'cancelled'
     }
     Tables: {
