@@ -7,8 +7,21 @@
  * - getRecipientEmail: Fetch email from auth.users
  */
 
+import { Resend } from 'resend'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { Database } from './supabase/types'
+
+// Provisioned in Vercel (Production + Preview) alongside RESEND_API_KEY —
+// the verified sending address lives there, not hardcoded here, since it
+// depends on whichever domain is actually verified in Resend.
+const EMAIL_FROM = process.env.EMAIL_FROM_ADDRESS
+  ? `Margaret’s MemoryCare Music <${process.env.EMAIL_FROM_ADDRESS}>`
+  : null
+const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO || undefined
+
+// Lazy: constructing Resend without a key throws, and this module loads even
+// in environments (local dev, tests) that never send mail.
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 export type AlertType = Database['public']['Enums']['alert_type']
 export type RequestStatus = Database['public']['Enums']['request_status']
@@ -180,9 +193,27 @@ export async function notifyUser(payload: NotifyPayload) {
     })
     console.log(`[notifyUser] Email logged=${emailLogged} for user=${payload.userId}`)
 
-    // TODO (Sprint 6): Send via Resend after verified sender domain is configured.
-    // For now, logging intent is sufficient and keeps in-app alerts independent from email delivery.
-    console.log(`[notifyUser] Email queued for user=${payload.userId}, to=${payload.recipientEmail}`)
+    if (!resend || !EMAIL_FROM) {
+      console.log(`[notifyUser] RESEND_API_KEY or EMAIL_FROM_ADDRESS not set — skipping actual send to ${payload.recipientEmail}`)
+      return
+    }
+
+    const { error: sendError } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: payload.recipientEmail,
+      replyTo: EMAIL_REPLY_TO,
+      subject: payload.subject,
+      text: payload.body,
+    })
+
+    if (sendError) {
+      // In-app alert and the log row already exist — a failed send here means
+      // the user still sees it in-app, just not in their inbox.
+      console.error(`[notifyUser] Resend send failed for user=${payload.userId}:`, sendError)
+      return
+    }
+
+    console.log(`[notifyUser] Email sent for user=${payload.userId}, to=${payload.recipientEmail}`)
   } catch (e) {
     console.error(`[notifyUser] Error:`, e)
   }

@@ -29,6 +29,7 @@ async function setApproved(table: 'musicians' | 'centers', id: string, approved:
     const isMusician = table === 'musicians'
     const name = before.name || 'there'
     const recipientEmail = await getRecipientEmail(before.user_id)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
     await notifyUser({
       userId: before.user_id,
@@ -40,8 +41,8 @@ async function setApproved(table: 'musicians' | 'centers', id: string, approved:
       recipientEmail,
       subject: "You're approved — welcome to Margaret's MemoryCare Music",
       body: isMusician
-        ? `Hi ${name},\n\nGreat news — your musician account has been approved by our team. Facilities near you can now discover your profile and send you performance requests.\n\nSign in to your dashboard to review your availability and get ready for your first request:\nhttps://margaretsmusicmemorycare.org/dashboard\n\nThank you for volunteering your time and talent.\n\n— Margaret's MemoryCare Music`
-        : `Hi ${name},\n\nGreat news — your facility account has been approved by our team. Volunteer musicians near you can now discover your community and send performance offers.\n\nSign in to your dashboard to review your details:\nhttps://margaretsmusicmemorycare.org/dashboard\n\nThank you for partnering with us to bring live music to your residents.\n\n— Margaret's MemoryCare Music`,
+        ? `Hi ${name},\n\nGreat news — your musician account has been approved by our team. Facilities near you can now discover your profile and send you performance requests.\n\nSign in to your dashboard to review your availability and get ready for your first request:\n${appUrl}/dashboard\n\nThank you for volunteering your time and talent.\n\n— Margaret's MemoryCare Music`
+        : `Hi ${name},\n\nGreat news — your facility account has been approved by our team. Volunteer musicians near you can now discover your community and send performance offers.\n\nSign in to your dashboard to review your details:\n${appUrl}/dashboard\n\nThank you for partnering with us to bring live music to your residents.\n\n— Margaret's MemoryCare Music`,
     })
   }
 
