@@ -1,0 +1,13 @@
+-- 20260517029000 tried to CREATE OR REPLACE get_distance_miles(TEXT, TEXT), but
+-- Postgres treats VARCHAR and TEXT as distinct signatures for overload purposes —
+-- so it created a second, ambiguous overload instead of replacing the original
+-- get_distance_miles(VARCHAR, VARCHAR) from 20260516001000. Harmless for the
+-- get_nearby_* callers (their zip_code columns are VARCHAR(5), an exact match,
+-- so Postgres never had to choose), but any direct RPC call is ambiguous
+-- (PGRST203) since PostgREST's untyped JSON args can't disambiguate.
+--
+-- Keep the later plpgsql version (it was the intended "optimize" pass) and
+-- drop the original SQL one — VARCHAR implicitly casts to TEXT, so callers
+-- passing VARCHAR(5) columns keep working unambiguously against the sole
+-- remaining function.
+DROP FUNCTION IF EXISTS public.get_distance_miles(VARCHAR, VARCHAR);

@@ -104,7 +104,6 @@ export function FacilityWizard({
   const [handle, setHandle] = useState('')
   const [handleStatus, setHandleStatus] = useState<'idle' | 'invalid' | 'checking' | 'available' | 'taken'>('idle')
   const [residentCount, setResidentCount] = useState('')
-  const [supportsTransport, setSupportsTransport] = useState(false)
   const [photoUrl, setPhotoUrl] = useState('')
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
@@ -228,7 +227,6 @@ export function FacilityWizard({
           setCity(location.city ?? '')
           if (location.state) setState(location.state)
           setZip(location.zip_code ?? '')
-          setSupportsTransport(location.supports_transport ?? false)
           setResidentCount(location.resident_count != null ? String(location.resident_count) : '')
           setLocationHandle(location.username ?? '')
           setLocationPhotoUrl(location.location_image_url ?? '')
@@ -561,7 +559,6 @@ export function FacilityWizard({
       state: state || null,
       zip_code: zip.trim(),
       phone: facilityPhone.trim() || null,
-      supports_transport: supportsTransport,
       resident_count: residentCount.trim() ? Number(residentCount.trim()) : null,
     }
     // Both are nullable, so only write them when there is something to write —
@@ -820,16 +817,6 @@ export function FacilityWizard({
                               )}
                             </p>
                           </div>
-
-                          <label className="flex items-start gap-2 font-poppins text-[10.7px] text-ocean-900">
-                            <input
-                              type="checkbox"
-                              checked={supportsTransport}
-                              onChange={(e) => setSupportsTransport(e.target.checked)}
-                              className="mt-0.5 h-4 w-4 rounded border-ocean-400 text-ocean-700 focus:ring-ocean-500"
-                            />
-                            <span>We can help with transport or parking for visiting musicians.</span>
-                          </label>
 
                           <div className="grid gap-5 sm:grid-cols-2">
                             <Field label="Community Photo (Optional)">
