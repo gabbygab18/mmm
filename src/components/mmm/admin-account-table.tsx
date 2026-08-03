@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { EmptyState } from '@/components/mmm/dashboard-ui'
 
@@ -12,6 +14,7 @@ import { EmptyState } from '@/components/mmm/dashboard-ui'
 
 export type AdminAccountRow = {
   id: string
+  userId: string
   name: string
   /** Second line under the name: ZIP for musicians, resident count for facilities. */
   detail: string
@@ -32,10 +35,12 @@ function formatJoined(value: string) {
 export function AdminAccountTable({
   rows,
   action,
+  removeAction,
   emptyMessage,
 }: {
   rows: AdminAccountRow[]
   action: (formData: FormData) => Promise<void>
+  removeAction: (formData: FormData) => Promise<void>
   emptyMessage: string
 }) {
   if (rows.length === 0) return <EmptyState message={emptyMessage} />
@@ -81,16 +86,38 @@ export function AdminAccountTable({
               {row.approved ? 'Approved' : 'Awaiting review'}
             </span>
 
-            <form action={action}>
-              <input type="hidden" name="id" value={row.id} />
-              <input type="hidden" name="approved" value={String(row.approved)} />
-              <button
-                type="submit"
-                className="rounded-lg border border-ocean-800/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900 transition hover:bg-ocean-900/5"
+            {!row.deletedAt && (
+              <form action={action}>
+                <input type="hidden" name="id" value={row.id} />
+                <input type="hidden" name="approved" value={String(row.approved)} />
+                <button
+                  type="submit"
+                  className="rounded-lg border border-ocean-800/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900 transition hover:bg-ocean-900/5"
+                >
+                  {row.approved ? 'Disable' : 'Approve'}
+                </button>
+              </form>
+            )}
+
+            {!row.deletedAt && (
+              <form
+                action={removeAction}
+                onSubmit={(e) => {
+                  if (!window.confirm(`Remove ${row.name}'s account? This cancels their requests and permanently disables sign-in.`)) {
+                    e.preventDefault()
+                  }
+                }}
               >
-                {row.approved ? 'Disable' : 'Approve'}
-              </button>
-            </form>
+                <input type="hidden" name="id" value={row.id} />
+                <input type="hidden" name="userId" value={row.userId} />
+                <button
+                  type="submit"
+                  className="rounded-lg border border-rose-600/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-rose-700 transition hover:bg-rose-600/5"
+                >
+                  Remove
+                </button>
+              </form>
+            )}
           </div>
         </li>
       ))}

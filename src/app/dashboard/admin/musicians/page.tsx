@@ -3,12 +3,13 @@ import { redirect } from 'next/navigation'
 import { getCurrentUserRole } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { AdminAccountTable, type AdminAccountRow } from '@/components/mmm/admin-account-table'
-import { toggleMusicianApprovalAction } from '../accounts/actions'
+import { toggleMusicianApprovalAction, removeMusicianAccountAction } from '../accounts/actions'
 
 export const metadata = { title: "Musicians | Margaret's MemoryCare Music" }
 
 type Row = {
   id: string
+  user_id: string
   name: string
   zip_code: string | null
   profile_complete: boolean
@@ -39,7 +40,7 @@ export default async function AdminMusiciansPage({
   const supabase = await createSupabaseServerClient()
   let query = supabase
     .from('musicians')
-    .select('id, name, zip_code, profile_complete, approved, created_at, deleted_at, username')
+    .select('id, user_id, name, zip_code, profile_complete, approved, created_at, deleted_at, username')
   if (pendingOnly) query = query.eq('approved', false).is('deleted_at', null)
 
   const { data } = await query.order('created_at', { ascending: false }).limit(250)
@@ -47,6 +48,7 @@ export default async function AdminMusiciansPage({
 
   const rows: AdminAccountRow[] = musicians.map((m) => ({
     id: m.id,
+    userId: m.user_id,
     name: m.name || 'Unnamed musician',
     detail: m.zip_code ? `ZIP ${m.zip_code}` : 'No service area set',
     profileComplete: m.profile_complete,
@@ -90,6 +92,7 @@ export default async function AdminMusiciansPage({
         <AdminAccountTable
           rows={rows}
           action={toggleMusicianApprovalAction}
+          removeAction={removeMusicianAccountAction}
           emptyMessage={pendingOnly ? 'No musicians are awaiting review.' : 'No musicians have registered yet.'}
         />
       </div>
