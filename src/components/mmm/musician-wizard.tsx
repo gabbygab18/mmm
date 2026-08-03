@@ -772,7 +772,7 @@ export function MusicianWizard({
                 <p className="mx-auto mt-3 max-w-[480px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[16.1px]">
                   {isOnboarding
                     ? 'Your musician profile is complete. Memory care communities near you can now find you and send performance requests.'
-                    : "Thank you for registering as a volunteer musician. You're now part of a community that brings joy, connection, and meaningful moments to memory care residents."}
+                    : "Thank you for registering as a volunteer musician. Your account is now awaiting admin approval — we'll email you as soon as you're approved and ready to start receiving performance requests."}
                 </p>
                 {notice && (
                   <p className="mt-3 rounded-lg bg-ocean-100 px-4 py-2 font-poppins text-[12px] font-medium text-ocean-800">{notice}</p>

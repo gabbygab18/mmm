@@ -636,7 +636,7 @@ export function FacilityWizard({
                 <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[16.1px]">
                   {isOnboarding
                     ? 'Your community profile is complete. Musicians nearby can now find you and send performance offers.'
-                    : "Your facility has been successfully registered. We're excited to partner with you to bring the joy of live music to your residents."}
+                    : "Your facility has been registered and is now awaiting admin approval. We'll email you as soon as you're approved and ready to start receiving performance offers."}
                 </p>
                 {notice && (
                   <p className="mt-3 rounded-lg bg-ocean-100 px-4 py-2 font-poppins text-[12px] font-medium text-ocean-800">{notice}</p>
@@ -669,7 +669,7 @@ export function FacilityWizard({
                       <p className="mt-1 font-poppins text-[10.5px] font-bold leading-relaxed text-ocean-900">
                         {awaitingConfirmation
                           ? "We've sent a confirmation e-mail — open it to activate your account, then sign in."
-                          : 'Your community is registered and you are signed in. Head to your dashboard to add a photo and review your details.'}
+                          : "You're signed in and your community is registered, but still awaiting admin approval. We'll email you once it's approved — meanwhile, head to your dashboard to add a photo and review your details."}
                       </p>
                     </div>
                   </div>

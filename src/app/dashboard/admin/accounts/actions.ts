@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getCurrentUserRole } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
+import { notifyUser, getRecipientEmail } from '@/lib/notifications'
 
 /**
  * Approve / disable an account, shared by the Musicians and Facilities screens.
@@ -17,7 +18,32 @@ async function setApproved(table: 'musicians' | 'centers', id: string, approved:
   if (role !== 'admin') return
 
   const supabase = await createSupabaseServerClient()
+
+  const { data: before } = await supabase.from(table).select('user_id, name, approved').eq('id', id).maybeSingle()
+
   await supabase.from(table).update({ approved }).eq('id', id)
+
+  // Only the false → true transition is a fresh approval worth an email —
+  // re-saving an already-approved row, or disabling one, should stay silent.
+  if (approved && before && !before.approved && before.user_id) {
+    const isMusician = table === 'musicians'
+    const name = before.name || 'there'
+    const recipientEmail = await getRecipientEmail(before.user_id)
+
+    await notifyUser({
+      userId: before.user_id,
+      alertType: 'account_approved',
+      title: 'Your account has been approved!',
+      message: isMusician
+        ? "You're approved! Facilities near you can now find you and send performance requests."
+        : "You're approved! Musicians near you can now find you and send performance offers.",
+      recipientEmail,
+      subject: "You're approved — welcome to Margaret's MemoryCare Music",
+      body: isMusician
+        ? `Hi ${name},\n\nGreat news — your musician account has been approved by our team. Facilities near you can now discover your profile and send you performance requests.\n\nSign in to your dashboard to review your availability and get ready for your first request:\nhttps://margaretsmusicmemorycare.org/dashboard\n\nThank you for volunteering your time and talent.\n\n— Margaret's MemoryCare Music`
+        : `Hi ${name},\n\nGreat news — your facility account has been approved by our team. Volunteer musicians near you can now discover your community and send performance offers.\n\nSign in to your dashboard to review your details:\nhttps://margaretsmusicmemorycare.org/dashboard\n\nThank you for partnering with us to bring live music to your residents.\n\n— Margaret's MemoryCare Music`,
+    })
+  }
 
   revalidatePath('/dashboard/admin')
   revalidatePath('/dashboard/admin/musicians')

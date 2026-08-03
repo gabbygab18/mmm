@@ -23,8 +23,8 @@ export default async function AccountSettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold text-stone-900">Account Settings</h1>
-      <p className="mt-1 text-sm text-stone-500">{user.email}</p>
+      <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Account Settings</h1>
+      <p className="mt-1 font-poppins text-[12.5px] text-ocean-900/70">{user.email}</p>
 
       {photoTable && (
         <div className="mt-8">

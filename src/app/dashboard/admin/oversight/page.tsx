@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { DASH_ICONS, StatCard, WelcomeBanner } from '@/components/mmm/dashboard-ui'
+import { toggleMusicianApprovalAction, toggleCenterApprovalAction } from '../accounts/actions'
 
 type RequestStatus = 'initiated' | 'matched' | 'accepted' | 'completed' | 'cancelled'
 
@@ -93,32 +94,6 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const musicianStatusView = (params.musicianStatus ?? '').trim() // '' | 'pending' | 'all'
   const centerStatusView = (params.centerStatus ?? '').trim()
   const statusFilterSet = new Set<RequestStatus>(statusFilters)
-
-  async function toggleMusicianApproval(formData: FormData) {
-    'use server'
-
-    const musicianId = String(formData.get('musician_id') ?? '')
-    const approved = String(formData.get('approved') ?? '') === 'true'
-
-    if (!musicianId) return
-
-    const supabase = await createSupabaseServerClient()
-    await supabase.from('musicians').update({ approved: !approved }).eq('id', musicianId)
-    revalidatePath('/dashboard/admin/oversight')
-  }
-
-  async function toggleCenterApproval(formData: FormData) {
-    'use server'
-
-    const centerId = String(formData.get('center_id') ?? '')
-    const approved = String(formData.get('approved') ?? '') === 'true'
-
-    if (!centerId) return
-
-    const supabase = await createSupabaseServerClient()
-    await supabase.from('centers').update({ approved: !approved }).eq('id', centerId)
-    revalidatePath('/dashboard/admin/oversight')
-  }
 
   async function createMusicianFlag(formData: FormData) {
     'use server'
@@ -653,8 +628,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <form action={toggleMusicianApproval}>
-                      <input type="hidden" name="musician_id" value={musician.id} />
+                    <form action={toggleMusicianApprovalAction}>
+                      <input type="hidden" name="id" value={musician.id} />
                       <input type="hidden" name="approved" value={String(musician.approved)} />
                       <button
                         type="submit"
@@ -743,8 +718,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <form action={toggleCenterApproval}>
-                      <input type="hidden" name="center_id" value={center.id} />
+                    <form action={toggleCenterApprovalAction}>
+                      <input type="hidden" name="id" value={center.id} />
                       <input type="hidden" name="approved" value={String(center.approved)} />
                       <button
                         type="submit"

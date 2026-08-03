@@ -116,10 +116,10 @@ export function AccountSettingsForm({
     <div className="mt-8 space-y-10">
 
       {/* ── Change password ── */}
-      <section className="rounded-2xl border border-stone-200 bg-white p-6">
-        <h2 className="text-base font-bold text-stone-900">Change Password</h2>
+      <section className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-6">
+        <h2 className="font-garamond text-lg font-bold text-ocean-900">Change Password</h2>
         <form onSubmit={handlePasswordChange} className="mt-5 space-y-4">
-          <label className="block text-sm font-semibold text-stone-700">
+          <label className="block font-poppins text-[12.5px] font-semibold text-ocean-900/80">
             New password
             <PasswordInput
                             value={newPassword}
@@ -127,11 +127,11 @@ export function AccountSettingsForm({
               required
               minLength={8}
               autoComplete="new-password"
-              className="mt-1.5 w-full rounded-xl border border-stone-300 bg-stone-50 px-3.5 py-2.5 text-stone-900 outline-none ring-brand-500 transition focus:ring-2"
+              className="mt-1.5 w-full rounded-xl border border-ocean-300 bg-white px-3.5 py-2.5 font-poppins text-ocean-900 outline-none ring-ocean-500 transition focus:ring-2"
             />
             <PasswordStrength password={newPassword} />
           </label>
-          <label className="block text-sm font-semibold text-stone-700">
+          <label className="block font-poppins text-[12.5px] font-semibold text-ocean-900/80">
             Confirm new password
             <PasswordInput
                             value={confirmPassword}
@@ -139,21 +139,21 @@ export function AccountSettingsForm({
               required
               minLength={8}
               autoComplete="new-password"
-              className="mt-1.5 w-full rounded-xl border border-stone-300 bg-stone-50 px-3.5 py-2.5 text-stone-900 outline-none ring-brand-500 transition focus:ring-2"
+              className="mt-1.5 w-full rounded-xl border border-ocean-300 bg-white px-3.5 py-2.5 font-poppins text-ocean-900 outline-none ring-ocean-500 transition focus:ring-2"
             />
           </label>
 
           {passwordStatus === 'error' && (
-            <p className="text-sm font-medium text-red-600">{passwordError}</p>
+            <p className="font-poppins text-[12.5px] font-medium text-red-600">{passwordError}</p>
           )}
           {passwordStatus === 'success' && (
-            <p className="text-sm font-medium text-green-700">Password updated successfully.</p>
+            <p className="font-poppins text-[12.5px] font-medium text-green-700">Password updated successfully.</p>
           )}
 
           <button
             type="submit"
             disabled={passwordLoading}
-            className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
+            className="rounded-xl bg-ocean-800 px-5 py-2.5 font-poppins text-[12.5px] font-bold text-white transition hover:bg-ocean-700 disabled:opacity-60"
           >
             {passwordLoading ? 'Updating…' : 'Update password'}
           </button>
@@ -161,16 +161,16 @@ export function AccountSettingsForm({
       </section>
 
       {/* ── Email notifications ── */}
-      <section className="rounded-2xl border border-stone-200 bg-white p-6">
-        <h2 className="text-base font-bold text-stone-900">Email Notifications</h2>
-        <p className="mt-1 text-sm text-stone-500">
+      <section className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-6">
+        <h2 className="font-garamond text-lg font-bold text-ocean-900">Email Notifications</h2>
+        <p className="mt-1 font-poppins text-[12.5px] text-ocean-900/70">
           Control whether Margaret&apos;s MemoryCare Music sends you email notifications for
           scheduling activity (requests, confirmations, cancellations, completions).
         </p>
         <div className="mt-5 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-stone-800">Scheduling email notifications</p>
-            <p className="text-xs text-stone-500">
+            <p className="font-poppins text-[12.5px] font-semibold text-ocean-900">Scheduling email notifications</p>
+            <p className="font-poppins text-xs text-ocean-900/60">
               {emailNotifs ? 'You will receive emails for scheduling events.' : 'Email notifications are off. You will still receive in-app alerts.'}
             </p>
           </div>
@@ -180,8 +180,8 @@ export function AccountSettingsForm({
             aria-checked={emailNotifs}
             disabled={notifPending}
             onClick={() => handleNotifToggle(!emailNotifs)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-60 ${
-              emailNotifs ? 'bg-brand-600' : 'bg-stone-300'
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ocean-500 focus:ring-offset-2 disabled:opacity-60 ${
+              emailNotifs ? 'bg-ocean-800' : 'bg-ocean-200'
             }`}
           >
             <span
@@ -192,34 +192,34 @@ export function AccountSettingsForm({
           </button>
         </div>
         {notifStatus === 'success' && (
-          <p className="mt-3 text-xs font-medium text-green-700">Preference saved.</p>
+          <p className="mt-3 font-poppins text-xs font-medium text-green-700">Preference saved.</p>
         )}
         {notifStatus === 'error' && (
-          <p className="mt-3 text-xs font-medium text-red-600">Failed to save preference. Please try again.</p>
+          <p className="mt-3 font-poppins text-xs font-medium text-red-600">Failed to save preference. Please try again.</p>
         )}
       </section>
 
       {/* ── Danger zone: delete account ── */}
       <section className="rounded-2xl border border-red-200 bg-red-50 p-6">
-        <h2 className="text-base font-bold text-red-900">Delete Account</h2>
-        <p className="mt-1 text-sm text-red-700">
+        <h2 className="font-garamond text-lg font-bold text-red-900">Delete Account</h2>
+        <p className="mt-1 font-poppins text-[12.5px] text-red-700">
           Permanently removes your profile, availability, and personal information. Anonymized records
           of completed events are retained for platform integrity. This cannot be undone.
         </p>
         <form onSubmit={handleDelete} className="mt-5 space-y-4">
-          <label className="block text-sm font-semibold text-red-800">
+          <label className="block font-poppins text-[12.5px] font-semibold text-red-800">
             Type <span className="font-mono font-bold">delete my account</span> to confirm
             <input
               type="text"
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder="delete my account"
-              className="mt-1.5 w-full rounded-xl border border-red-300 bg-white px-3.5 py-2.5 text-stone-900 outline-none ring-red-400 transition focus:ring-2"
+              className="mt-1.5 w-full rounded-xl border border-red-300 bg-white px-3.5 py-2.5 font-poppins text-ocean-900 outline-none ring-red-400 transition focus:ring-2"
             />
           </label>
 
           {deleteError && (
-            <p className="text-sm font-medium text-red-700">{deleteError}</p>
+            <p className="font-poppins text-[12.5px] font-medium text-red-700">{deleteError}</p>
           )}
 
           <button
@@ -228,7 +228,7 @@ export function AccountSettingsForm({
               deleteLoading ||
               deleteConfirmText.trim().toLowerCase() !== 'delete my account'
             }
-            className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-xl bg-red-600 px-5 py-2.5 font-poppins text-[12.5px] font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {deleteLoading ? 'Deleting account…' : 'Delete my account'}
           </button>

@@ -53,10 +53,10 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
               setEditingId(null)
               setError('')
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+            className={`rounded-lg px-4 py-2 font-poppins text-[12.5px] font-medium transition ${
               k.kind === kind.kind
-                ? 'bg-brand-600 text-white shadow'
-                : 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
+                ? 'bg-ocean-800 text-white shadow'
+                : 'border border-ocean-800/50 bg-white text-ocean-900 hover:bg-ocean-900/5'
             }`}
           >
             {k.label}
@@ -64,8 +64,8 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
         ))}
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-stone-900">{kind.label}</h2>
+      <div className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-6 shadow-sm">
+        <h2 className="font-garamond text-lg font-bold text-ocean-900">{kind.label}</h2>
 
         <div className="mt-4 flex flex-wrap gap-2">
           <input
@@ -80,26 +80,26 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
             }}
             placeholder={`Add to ${kind.label.toLowerCase()}…`}
             disabled={pending}
-            className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none ring-brand-500 transition focus:ring-1 disabled:opacity-50"
+            className="min-w-0 flex-1 rounded-lg border border-ocean-300 bg-white px-3 py-2 font-poppins text-[12.5px] text-ocean-900 outline-none ring-ocean-500 transition focus:ring-1 disabled:opacity-50"
           />
           <button
             type="button"
             onClick={() => run(() => addOptionAction(kind.kind, draft), () => setDraft(''))}
             disabled={pending || !draft.trim()}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg bg-ocean-800 px-4 py-2 font-poppins text-[12.5px] font-semibold text-white transition hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Add
           </button>
         </div>
 
-        {error && <p className="mt-3 text-sm font-medium text-rose-700">{error}</p>}
+        {error && <p className="mt-3 font-poppins text-[12.5px] font-medium text-rose-700">{error}</p>}
 
         {items.length === 0 ? (
-          <p className="mt-6 text-sm text-stone-500">
+          <p className="mt-6 font-poppins text-[12.5px] text-ocean-900/60">
             Nothing stored yet — the forms are showing the built-in list. Adding one here takes over from it.
           </p>
         ) : (
-          <ul className="mt-6 divide-y divide-stone-200">
+          <ul className="mt-6 divide-y divide-ocean-200/70">
             {items.map((item, i) => (
               <li key={item.id} className="flex flex-wrap items-center gap-3 py-3">
                 <div className="flex flex-col">
@@ -108,7 +108,7 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
                     aria-label="Move up"
                     disabled={pending || i === 0}
                     onClick={() => run(() => moveOptionAction(item.id, 'up'))}
-                    className="px-1 text-xs text-stone-400 transition hover:text-stone-700 disabled:opacity-30"
+                    className="px-1 text-xs text-ocean-900/50 transition hover:text-ocean-900 disabled:opacity-30"
                   >
                     ▲
                   </button>
@@ -117,7 +117,7 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
                     aria-label="Move down"
                     disabled={pending || i === items.length - 1}
                     onClick={() => run(() => moveOptionAction(item.id, 'down'))}
-                    className="px-1 text-xs text-stone-400 transition hover:text-stone-700 disabled:opacity-30"
+                    className="px-1 text-xs text-ocean-900/50 transition hover:text-ocean-900 disabled:opacity-30"
                   >
                     ▼
                   </button>
@@ -131,7 +131,7 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
                       onChange={(e) => setEditingLabel(e.target.value)}
                       autoFocus
                       disabled={pending}
-                      className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm text-stone-800 outline-none ring-brand-500 focus:ring-1"
+                      className="min-w-0 flex-1 rounded-lg border border-ocean-300 bg-white px-3 py-1.5 font-poppins text-[12.5px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
                     />
                     <button
                       type="button"
@@ -139,14 +139,14 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
                         run(() => renameOptionAction(item.id, editingLabel), () => setEditingId(null))
                       }
                       disabled={pending || !editingLabel.trim()}
-                      className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                      className="rounded-lg bg-ocean-800 px-3 py-1.5 font-poppins text-[12.5px] font-medium text-white disabled:opacity-50"
                     >
                       Save
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
-                      className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700"
+                      className="rounded-lg border border-ocean-800/50 px-3 py-1.5 font-poppins text-[12.5px] font-medium text-ocean-900"
                     >
                       Cancel
                     </button>
@@ -154,8 +154,8 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
                 ) : (
                   <>
                     <span
-                      className={`min-w-0 flex-1 text-sm ${
-                        item.active ? 'text-stone-800' : 'text-stone-400 line-through'
+                      className={`min-w-0 flex-1 font-poppins text-[12.5px] ${
+                        item.active ? 'text-ocean-900' : 'text-ocean-900/40 line-through'
                       }`}
                     >
                       {item.label}
@@ -168,7 +168,7 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
                         setEditingLabel(item.label)
                       }}
                       disabled={pending}
-                      className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-50"
+                      className="rounded-lg border border-ocean-800/50 px-3 py-1.5 font-poppins text-[12.5px] font-medium text-ocean-900 transition hover:bg-ocean-900/5 disabled:opacity-50"
                     >
                       Rename
                     </button>
@@ -176,7 +176,7 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
                       type="button"
                       onClick={() => run(() => setOptionActiveAction(item.id, !item.active))}
                       disabled={pending}
-                      className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-50"
+                      className="rounded-lg border border-ocean-800/50 px-3 py-1.5 font-poppins text-[12.5px] font-medium text-ocean-900 transition hover:bg-ocean-900/5 disabled:opacity-50"
                     >
                       {item.active ? 'Hide' : 'Show'}
                     </button>
@@ -192,7 +192,7 @@ export function CategoriesManager({ kinds, rows }: { kinds: Kind[]; rows: SiteOp
                         }
                       }}
                       disabled={pending}
-                      className="rounded-lg border border-rose-200 px-3 py-1.5 text-sm font-medium text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                      className="rounded-lg border border-rose-600/60 px-3 py-1.5 font-poppins text-[12.5px] font-medium text-rose-700 transition hover:bg-rose-600/5 disabled:opacity-50"
                     >
                       Delete
                     </button>

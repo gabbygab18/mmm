@@ -56,10 +56,10 @@ export function ContentEditor({
             key={g.id}
             type="button"
             onClick={() => setActiveId(g.id)}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+            className={`rounded-lg px-4 py-2 font-poppins text-[12.5px] font-medium transition ${
               g.id === group.id
-                ? 'bg-brand-600 text-white shadow'
-                : 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
+                ? 'bg-ocean-800 text-white shadow'
+                : 'border border-ocean-800/50 bg-white text-ocean-900 hover:bg-ocean-900/5'
             }`}
           >
             {g.title}
@@ -67,13 +67,13 @@ export function ContentEditor({
         ))}
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-stone-900">{group.title}</h2>
+          <h2 className="font-garamond text-lg font-bold text-ocean-900">{group.title}</h2>
           <Link
             href={group.href}
             target="_blank"
-            className="text-sm font-medium text-brand-700 underline underline-offset-2 hover:text-brand-600"
+            className="font-poppins text-[12.5px] font-medium text-ocean-800 underline underline-offset-2 hover:text-ocean-600"
           >
             View page ↗
           </Link>
@@ -81,13 +81,13 @@ export function ContentEditor({
 
         {group.sections.map((section) => (
           <section key={section.title} className="mt-7">
-            <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-stone-500">{section.title}</h3>
+            <h3 className="font-poppins text-[11px] font-bold uppercase tracking-[0.08em] text-ocean-900/60">{section.title}</h3>
             <div className="mt-3 space-y-5">
               {section.fields.map((field) => {
                 const value = values[field.key] ?? ''
                 const changed = value.trim() !== field.default.trim()
                 return (
-                  <label key={field.key} className="block text-sm font-semibold text-stone-700">
+                  <label key={field.key} className="block font-poppins text-[12.5px] font-semibold text-ocean-900/80">
                     <span className="flex flex-wrap items-center gap-2">
                       {field.label}
                       {changed && (
@@ -103,7 +103,7 @@ export function ContentEditor({
                         onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
                         rows={3}
                         disabled={pending}
-                        className="mt-1.5 w-full resize-y rounded-xl border border-stone-300 bg-stone-50 px-3.5 py-2.5 font-normal text-stone-900 outline-none ring-brand-500 transition focus:ring-2 disabled:opacity-60"
+                        className="mt-1.5 w-full resize-y rounded-xl border border-ocean-300 bg-white px-3.5 py-2.5 font-poppins font-normal text-ocean-900 outline-none ring-ocean-500 transition focus:ring-2 disabled:opacity-60"
                       />
                     ) : (
                       <input
@@ -111,7 +111,7 @@ export function ContentEditor({
                         value={value}
                         onChange={(e) => setValues((v) => ({ ...v, [field.key]: e.target.value }))}
                         disabled={pending}
-                        className="mt-1.5 w-full rounded-xl border border-stone-300 bg-stone-50 px-3.5 py-2.5 font-normal text-stone-900 outline-none ring-brand-500 transition focus:ring-2 disabled:opacity-60"
+                        className="mt-1.5 w-full rounded-xl border border-ocean-300 bg-white px-3.5 py-2.5 font-poppins font-normal text-ocean-900 outline-none ring-ocean-500 transition focus:ring-2 disabled:opacity-60"
                       />
                     )}
 
@@ -119,7 +119,7 @@ export function ContentEditor({
                       <button
                         type="button"
                         onClick={() => setValues((v) => ({ ...v, [field.key]: field.default }))}
-                        className="mt-1 text-xs font-medium text-stone-500 underline underline-offset-2 hover:text-stone-700"
+                        className="mt-1 font-poppins text-xs font-medium text-ocean-900/60 underline underline-offset-2 hover:text-ocean-900"
                       >
                         Reset to original wording
                       </button>
@@ -136,12 +136,12 @@ export function ContentEditor({
             type="button"
             onClick={save}
             disabled={pending || !dirty}
-            className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg bg-ocean-800 px-5 py-2.5 font-poppins text-[12.5px] font-semibold text-white transition hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {pending ? 'Saving…' : 'Save changes'}
           </button>
-          {status === 'saved' && <span className="text-sm font-medium text-green-700">Saved — the page is updated.</span>}
-          {status === 'error' && <span className="text-sm font-medium text-rose-700">{error}</span>}
+          {status === 'saved' && <span className="font-poppins text-[12.5px] font-medium text-green-700">Saved — the page is updated.</span>}
+          {status === 'error' && <span className="font-poppins text-[12.5px] font-medium text-rose-700">{error}</span>}
         </div>
       </div>
     </div>

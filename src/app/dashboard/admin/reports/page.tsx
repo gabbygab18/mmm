@@ -27,15 +27,15 @@ async function countRows(
 function StatGrid({ title, tiles }: { title: string; tiles: Tile[] }) {
   return (
     <section className="mt-8">
-      <h2 className="text-sm font-bold uppercase tracking-[0.08em] text-stone-500">{title}</h2>
+      <h2 className="font-poppins text-[11px] font-bold uppercase tracking-[0.08em] text-ocean-900/60">{title}</h2>
       <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {tiles.map((tile) => (
-          <div key={tile.label} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-stone-600">{tile.label}</p>
-            <p className="mt-1 text-3xl font-bold text-stone-900">
-              {tile.value === null ? <span className="text-base font-medium text-stone-400">unavailable</span> : tile.value}
+          <div key={tile.label} className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-5 shadow-sm">
+            <p className="font-poppins text-[12.5px] font-medium text-ocean-900/70">{tile.label}</p>
+            <p className="mt-1 font-garamond text-3xl font-bold text-ocean-900">
+              {tile.value === null ? <span className="font-poppins text-base font-medium text-ocean-900/50">unavailable</span> : tile.value}
             </p>
-            {tile.hint && <p className="mt-1 text-xs text-stone-500">{tile.hint}</p>}
+            {tile.hint && <p className="mt-1 font-poppins text-xs text-ocean-900/60">{tile.hint}</p>}
           </div>
         ))}
       </div>
@@ -96,8 +96,8 @@ export default async function AdminReportsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      <h1 className="text-2xl font-bold text-stone-900">Reports</h1>
-      <p className="mt-2 max-w-2xl text-sm text-stone-600">
+      <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Reports</h1>
+      <p className="mt-1 max-w-2xl font-poppins text-[12.5px] text-ocean-900/70">
         Live counts across the platform. Figures update as soon as the underlying records change.
       </p>
 
