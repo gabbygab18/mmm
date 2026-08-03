@@ -1,0 +1,99 @@
+import Link from 'next/link'
+import { EmptyState } from '@/components/mmm/dashboard-ui'
+
+/**
+ * Account list shared by the Musicians and Facilities screens.
+ *
+ * Both show the same thing — who signed up, whether their profile is finished,
+ * whether they are approved — so they share one table rather than two that
+ * drift apart. The approve/disable control is a plain form posting to a server
+ * action, so it works before JavaScript loads.
+ */
+
+export type AdminAccountRow = {
+  id: string
+  name: string
+  /** Second line under the name: ZIP for musicians, resident count for facilities. */
+  detail: string
+  profileComplete: boolean
+  approved: boolean
+  deletedAt: string | null
+  createdAt: string
+  /** Public profile, when there is one to link to. */
+  href?: string
+}
+
+function formatJoined(value: string) {
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(
+    new Date(value),
+  )
+}
+
+export function AdminAccountTable({
+  rows,
+  action,
+  emptyMessage,
+}: {
+  rows: AdminAccountRow[]
+  action: (formData: FormData) => Promise<void>
+  emptyMessage: string
+}) {
+  if (rows.length === 0) return <EmptyState message={emptyMessage} />
+
+  return (
+    <ul className="space-y-3">
+      {rows.map((row) => (
+        <li
+          key={row.id}
+          className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-ocean-200/70 bg-white px-4 py-3.5 shadow-sm"
+        >
+          <div className="min-w-0">
+            <p className="font-poppins text-[14px] font-semibold text-ocean-900">
+              {row.href ? (
+                <Link href={row.href} className="underline-offset-2 hover:underline">
+                  {row.name}
+                </Link>
+              ) : (
+                row.name
+              )}
+            </p>
+            <p className="font-poppins text-[11.5px] text-ocean-900/70">
+              {row.detail} · joined {formatJoined(row.createdAt)}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {row.deletedAt && (
+              <span className="rounded-full bg-rose-100 px-2.5 py-0.5 font-poppins text-[10.5px] font-medium text-rose-800">
+                Deleted
+              </span>
+            )}
+            {!row.profileComplete && (
+              <span className="rounded-full bg-stone-100 px-2.5 py-0.5 font-poppins text-[10.5px] font-medium text-stone-700">
+                Profile unfinished
+              </span>
+            )}
+            <span
+              className={`rounded-full px-2.5 py-0.5 font-poppins text-[10.5px] font-medium ${
+                row.approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+              }`}
+            >
+              {row.approved ? 'Approved' : 'Awaiting review'}
+            </span>
+
+            <form action={action}>
+              <input type="hidden" name="id" value={row.id} />
+              <input type="hidden" name="approved" value={String(row.approved)} />
+              <button
+                type="submit"
+                className="rounded-lg border border-ocean-800/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900 transition hover:bg-ocean-900/5"
+              >
+                {row.approved ? 'Disable' : 'Approve'}
+              </button>
+            </form>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}

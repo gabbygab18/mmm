@@ -1,874 +1,389 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
-import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
+import { getCurrentUserRole } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { DASH_ICONS, StatCard, WelcomeBanner } from '@/components/mmm/dashboard-ui'
+import { DASH_ICONS, EmptyState, Panel, StatCard, WelcomeBanner } from '@/components/mmm/dashboard-ui'
 
-type RequestStatus = 'initiated' | 'matched' | 'accepted' | 'completed' | 'cancelled'
+export const metadata = { title: "Admin Dashboard | Margaret's MemoryCare Music" }
 
-type AdminRequestRow = {
+/**
+ * Admin dashboard, per the approved design pack.
+ *
+ * Four status cards across the top, then Volunteer Hours · Platform Statistics
+ * · Upcoming Performances, and Top Musicians · Top Facilities · Recent
+ * Activity below.
+ *
+ * Two figures the design shows are not drawn here, because there is nothing
+ * behind them yet rather than because they were forgotten:
+ *
+ *   Avg. rating   there is no ratings table — ratings are Sprint 8, on hold
+ *                 post-MVP. A zero would read as "everyone rates us nothing".
+ *   Musician photos in Upcoming Performances — musicians.profile_image_url is
+ *                 read where set; the placeholder tile shows otherwise.
+ *
+ * Volunteer hours are derived from completed requests (end − start) rather than
+ * stored, so they need no new table and cannot drift from the bookings.
+ *
+ * The moderation console this page used to be still exists in full, at
+ * /dashboard/admin/oversight.
+ */
+
+type RequestRow = {
   id: string
-  status: RequestStatus
+  status: string
   requested_date: string
   requested_start_time: string | null
   requested_end_time: string | null
   musician_id: string | null
   center_location_id: string | null
   updated_at: string
-  created_at: string
 }
 
-type AdminSearchParams = {
-  musician?: string
-  center?: string
-  fromDate?: string
-  toDate?: string
-  status?: string | string[]
-  musicianStatus?: string
-  centerStatus?: string
+/** Length of one booking in hours, or 0 when the times were never filled in. */
+function hoursFor(row: Pick<RequestRow, 'requested_start_time' | 'requested_end_time'>) {
+  if (!row.requested_start_time || !row.requested_end_time) return 0
+  const toMinutes = (t: string) => {
+    const [h, m] = t.split(':').map(Number)
+    return h * 60 + (m || 0)
+  }
+  const minutes = toMinutes(row.requested_end_time) - toMinutes(row.requested_start_time)
+  return minutes > 0 ? minutes / 60 : 0
 }
 
-function formatDateLabel(value: string) {
-  const [year, month, day] = value.split('-').map(Number)
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(year, month - 1, day))
+const round1 = (n: number) => Math.round(n * 10) / 10
+
+function formatDate(value: string) {
+  const [y, m, d] = value.split('-').map(Number)
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(
+    new Date(y, m - 1, d),
+  )
 }
 
-function formatTimeLabel(value: string | null) {
+function formatTime(value: string | null) {
   if (!value) return 'TBD'
-  const [hoursString, minutesString] = value.split(':')
-  const hours = Number(hoursString)
-  const minutes = Number(minutesString)
-  const period = hours >= 12 ? 'PM' : 'AM'
-  const displayHours = hours % 12 || 12
-  return `${displayHours}:${`${minutes}`.padStart(2, '0')} ${period}`
+  const [hRaw, mRaw] = value.split(':')
+  const h = Number(hRaw)
+  const period = h >= 12 ? 'PM' : 'AM'
+  return `${h % 12 || 12}:${(mRaw ?? '00').padStart(2, '0')} ${period}`
 }
 
-function matchesFilter(value: string, query: string) {
-  if (!query) return true
-  return value.toLowerCase().includes(query.toLowerCase())
+/** One line of the Platform Statistics grid. */
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <p className="font-poppins text-[19px] font-bold text-ocean-900">{value}</p>
+      <p className="mt-0.5 font-poppins text-[8.5px] font-bold uppercase tracking-[0.12em] text-ocean-900/70">
+        {label}
+      </p>
+    </div>
+  )
 }
 
-function isValidStatus(value: string): value is RequestStatus {
-  return value === 'initiated' || value === 'accepted' || value === 'completed' || value === 'cancelled'
+/** Numbered leaderboard row, used by both Top Musicians and Top Facilities. */
+function RankRow({ rank, name, meta, value }: { rank: number; name: string; meta: string; value: string }) {
+  return (
+    <li className="flex items-center gap-3 py-2.5">
+      <span className="font-poppins text-[12px] font-bold text-ocean-900/60">{rank}</span>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ocean-100 text-ocean-800">
+        {DASH_ICONS.people}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-poppins text-[12.5px] font-semibold text-ocean-900">{name}</span>
+        <span className="block truncate font-poppins text-[10.5px] text-ocean-900/70">{meta}</span>
+      </span>
+      <span className="shrink-0 font-poppins text-[11.5px] font-semibold text-ocean-900">{value}</span>
+    </li>
+  )
 }
 
-function parseStatusFilters(value: string | string[] | undefined) {
-  const raw = Array.isArray(value) ? value : value ? [value] : []
-  return raw
-    .flatMap((entry) => entry.split(','))
-    .map((entry) => entry.trim())
-    .filter((entry): entry is RequestStatus => isValidStatus(entry))
-}
-
-const STATUS_STYLES: Record<RequestStatus, string> = {
-  initiated: 'bg-stone-100 text-stone-800',
-  matched: 'bg-stone-100 text-stone-800',
-  accepted: 'bg-emerald-100 text-emerald-800',
-  completed: 'bg-brand-100 text-brand-800',
-  cancelled: 'bg-rose-100 text-rose-800',
-}
-
-function getStatusLabel(status: RequestStatus) {
-  if (status === 'accepted') return 'scheduled'
-  if (status === 'matched') return 'initiated'
-  return status
-}
-
-export default async function AdminDashboardPage({ searchParams }: { searchParams: Promise<AdminSearchParams> }) {
+export default async function AdminDashboardPage() {
   const role = await getCurrentUserRole()
-  if (role !== 'admin') {
-    redirect('/dashboard')
-  }
-
-  const params = await searchParams
-  const musicianFilter = (params.musician ?? '').trim()
-  const centerFilter = (params.center ?? '').trim()
-  const fromDateFilter = (params.fromDate ?? '').trim()
-  const toDateFilter = (params.toDate ?? '').trim()
-  const statusFilters = parseStatusFilters(params.status)
-  const musicianStatusView = (params.musicianStatus ?? '').trim() // '' | 'pending' | 'all'
-  const centerStatusView = (params.centerStatus ?? '').trim()
-  const statusFilterSet = new Set<RequestStatus>(statusFilters)
-
-  async function toggleMusicianApproval(formData: FormData) {
-    'use server'
-
-    const musicianId = String(formData.get('musician_id') ?? '')
-    const approved = String(formData.get('approved') ?? '') === 'true'
-
-    if (!musicianId) return
-
-    const supabase = await createSupabaseServerClient()
-    await supabase.from('musicians').update({ approved: !approved }).eq('id', musicianId)
-    revalidatePath('/dashboard/admin')
-  }
-
-  async function toggleCenterApproval(formData: FormData) {
-    'use server'
-
-    const centerId = String(formData.get('center_id') ?? '')
-    const approved = String(formData.get('approved') ?? '') === 'true'
-
-    if (!centerId) return
-
-    const supabase = await createSupabaseServerClient()
-    await supabase.from('centers').update({ approved: !approved }).eq('id', centerId)
-    revalidatePath('/dashboard/admin')
-  }
-
-  async function createMusicianFlag(formData: FormData) {
-    'use server'
-
-    const user = await requireAuthenticatedUser()
-    const musicianId = String(formData.get('musician_id') ?? '')
-    const reason = String(formData.get('reason') ?? '').trim()
-
-    if (!musicianId || reason.length < 3) return
-
-    const supabase = await createSupabaseServerClient()
-    await supabase.from('moderation_flags').insert({
-      musician_id: musicianId,
-      reason,
-      status: 'open',
-      created_by_admin_user_id: user.id,
-    })
-
-    revalidatePath('/dashboard/admin')
-  }
-
-  async function createCenterFlag(formData: FormData) {
-    'use server'
-
-    const user = await requireAuthenticatedUser()
-    const centerId = String(formData.get('center_id') ?? '')
-    const reason = String(formData.get('reason') ?? '').trim()
-
-    if (!centerId || reason.length < 3) return
-
-    const supabase = await createSupabaseServerClient()
-    await supabase.from('moderation_flags').insert({
-      center_id: centerId,
-      reason,
-      status: 'open',
-      created_by_admin_user_id: user.id,
-    })
-
-    revalidatePath('/dashboard/admin')
-  }
-
-  async function resolveFlag(formData: FormData) {
-    'use server'
-
-    const user = await requireAuthenticatedUser()
-    const flagId = String(formData.get('flag_id') ?? '')
-    const resolutionNotes = String(formData.get('resolution_notes') ?? '').trim()
-
-    if (!flagId) return
-
-    const supabase = await createSupabaseServerClient()
-    await supabase
-      .from('moderation_flags')
-      .update({
-        status: 'resolved',
-        resolution_notes: resolutionNotes || null,
-        resolved_by_admin_user_id: user.id,
-        resolved_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', flagId)
-
-    revalidatePath('/dashboard/admin')
-  }
-
-  async function updateRequestStatusByAdmin(formData: FormData) {
-    'use server'
-
-    const user = await requireAuthenticatedUser()
-    const requestId = String(formData.get('request_id') ?? '')
-    const nextStatus = String(formData.get('next_status') ?? '') as RequestStatus
-    const reason = String(formData.get('reason') ?? '').trim()
-
-    if (!requestId || !nextStatus) return
-
-    const supabase = await createSupabaseServerClient()
-
-    const { data: requestRow } = await supabase
-      .from('requests')
-      .select('id, status')
-      .eq('id', requestId)
-      .maybeSingle()
-
-    if (!requestRow) return
-
-    const now = new Date().toISOString()
-    const updates: Record<string, string> = { status: nextStatus, updated_at: now }
-
-    if (nextStatus === 'accepted') {
-      updates.accepted_at = now
-    }
-    if (nextStatus === 'completed') {
-      updates.completed_at = now
-    }
-    if (nextStatus === 'cancelled') {
-      updates.cancelled_at = now
-    }
-
-    await supabase.from('requests').update(updates).eq('id', requestId)
-    await supabase.from('request_status_history').insert({
-      request_id: requestId,
-      old_status: requestRow.status,
-      new_status: nextStatus,
-      changed_by_user_id: user.id,
-      reason: reason || 'Admin support intervention',
-    })
-
-    revalidatePath('/dashboard/admin')
-    revalidatePath('/dashboard/requests')
-    revalidatePath('/dashboard/schedule')
-  }
+  if (role !== 'admin') redirect('/dashboard')
 
   const supabase = await createSupabaseServerClient()
 
-  // Filter-independent overview counts. These must NOT depend on the search
-  // filters below, or the cards read 0 until you type a name. `head: true`
-  // fetches only the count, not the rows.
-  const [
-    { count: pendingMusicianCount },
-    { count: pendingCenterCount },
-    { count: totalUsersCount },
-  ] = await Promise.all([
-    supabase
-      .from('musicians')
-      .select('id', { count: 'exact', head: true })
-      .eq('approved', false)
-      .is('deleted_at', null),
-    supabase
-      .from('centers')
-      .select('id', { count: 'exact', head: true })
-      .eq('approved', false)
-      .is('deleted_at', null),
-    supabase.from('users').select('id', { count: 'exact', head: true }),
-  ])
-
-  const hasMusicianFilter = Boolean(musicianFilter)
-  const hasCenterFilter = Boolean(centerFilter)
-
-  type ModMusician = { id: string; name: string; zip_code: string; profile_complete: boolean; approved: boolean; created_at: string; deleted_at: string | null }
-  type ModCenter = { id: string; name: string; resident_count: number | null; profile_complete: boolean; approved: boolean; created_at: string; deleted_at: string | null }
-
-  const loadMusicians = hasMusicianFilter || musicianStatusView === 'pending' || musicianStatusView === 'all'
-  const loadCenters = hasCenterFilter || centerStatusView === 'pending' || centerStatusView === 'all'
-
-  let musicians: ModMusician[] = []
-  if (loadMusicians) {
-    let query = supabase
-      .from('musicians')
-      .select('id, name, zip_code, profile_complete, approved, created_at, deleted_at')
-    if (musicianFilter) query = query.ilike('name', `%${musicianFilter}%`)
-    if (musicianStatusView === 'pending') query = query.eq('approved', false).is('deleted_at', null)
-    const { data } = await query.order('created_at', { ascending: false }).limit(250)
-    musicians = (data ?? []) as ModMusician[]
-  }
-
-  let centers: ModCenter[] = []
-  if (loadCenters) {
-    let query = supabase
-      .from('centers')
-      .select('id, name, resident_count, profile_complete, approved, created_at, deleted_at')
-    if (centerFilter) query = query.ilike('name', `%${centerFilter}%`)
-    if (centerStatusView === 'pending') query = query.eq('approved', false).is('deleted_at', null)
-    const { data } = await query.order('created_at', { ascending: false }).limit(250)
-    centers = (data ?? []) as ModCenter[]
-  }
-
-  const [{ data: flags }, { data: requests }, { data: completedRequestsData }] = await Promise.all([
-    supabase
-      .from('moderation_flags')
-      .select('id, musician_id, center_id, reason, status, resolution_notes, created_at, resolved_at')
-      .order('created_at', { ascending: false })
-      .limit(80),
-    supabase
-      .from('requests')
-      .select('id, status, requested_date, requested_start_time, requested_end_time, musician_id, center_location_id, created_at, updated_at')
-      .order('updated_at', { ascending: false })
-      .limit(60),
-    supabase
-      .from('requests')
-      .select('id, status, requested_date, requested_start_time, requested_end_time, musician_id, center_location_id, created_at, updated_at')
-      .eq('status', 'completed')
-      .order('requested_date', { ascending: false })
-      .limit(250),
-  ])
-
-  const requestRows = (requests ?? []) as AdminRequestRow[]
-  const completedEventRows = (completedRequestsData ?? []) as AdminRequestRow[]
-  const musicianIds = Array.from(
-    new Set([...requestRows, ...completedEventRows].map((row) => row.musician_id).filter(Boolean) as string[])
-  )
-  const locationIds = Array.from(
-    new Set([...requestRows, ...completedEventRows].map((row) => row.center_location_id).filter(Boolean) as string[])
-  )
-
-  const { data: requestMusicians } = musicianIds.length
-    ? await supabase.from('musicians').select('id, name').in('id', musicianIds)
-    : { data: [] as { id: string; name: string }[] }
-
-  const { data: requestLocations } = locationIds.length
-    ? await supabase.from('center_locations').select('id, name, center_id').in('id', locationIds)
-    : { data: [] as { id: string; name: string; center_id: string }[] }
-
-  const centerIds = Array.from(new Set((requestLocations ?? []).map((row) => row.center_id)))
-  const { data: requestCenters } = centerIds.length
-    ? await supabase.from('centers').select('id, name').in('id', centerIds)
-    : { data: [] as { id: string; name: string }[] }
-
-  const musicianNameById = new Map((requestMusicians ?? []).map((row) => [row.id, row.name]))
-  const locationById = new Map((requestLocations ?? []).map((row) => [row.id, row]))
-  const centerNameById = new Map((requestCenters ?? []).map((row) => [row.id, row.name]))
-
-  const openFlags = (flags ?? []).filter((row) => row.status === 'open')
-
-  const musicianOptions = Array.from(new Set((requestMusicians ?? []).map((row) => row.name))).sort((a, b) => a.localeCompare(b)).slice(0, 250)
-  const centerOptions = Array.from(new Set((requestCenters ?? []).map((row) => row.name))).sort((a, b) => a.localeCompare(b)).slice(0, 250)
-
-  const matchesSharedEventFilters = (request: AdminRequestRow) => {
-    const musicianName = request.musician_id ? musicianNameById.get(request.musician_id) ?? '' : ''
-    const location = request.center_location_id ? locationById.get(request.center_location_id) : null
-    const centerName = location ? centerNameById.get(location.center_id) ?? '' : ''
-    const musicianMatches = matchesFilter(musicianName, musicianFilter)
-    const centerMatches = matchesFilter(centerName, centerFilter)
-    const fromDateMatches = !fromDateFilter || request.requested_date >= fromDateFilter
-    const toDateMatches = !toDateFilter || request.requested_date <= toDateFilter
-
-    return musicianMatches && centerMatches && fromDateMatches && toDateMatches
-  }
-
-  const filteredOversightRequests = requestRows.filter((request) => {
-    if (!matchesSharedEventFilters(request)) return false
-    if (statusFilterSet.size === 0) return true
-    return statusFilterSet.has(request.status)
-  })
-
-  const hasAnyUnifiedFilter = Boolean(
-    musicianFilter || centerFilter || fromDateFilter || toDateFilter || statusFilters.length > 0
-  )
-  const hasAnyAccountFilter = loadMusicians || loadCenters
-
-  // Summary counts for the branded overview tiles.
-  const filteredMusicians = musicians ?? []
-  const filteredCenters = centers ?? []
-
-  const openFlagsByMusicianId = new Map<string, typeof openFlags>()
-  const openFlagsByCenterId = new Map<string, typeof openFlags>()
-
-  for (const flag of openFlags) {
-    if (flag.musician_id) {
-      const current = openFlagsByMusicianId.get(flag.musician_id) ?? []
-      current.push(flag)
-      openFlagsByMusicianId.set(flag.musician_id, current)
-    }
-
-    if (flag.center_id) {
-      const current = openFlagsByCenterId.get(flag.center_id) ?? []
-      current.push(flag)
-      openFlagsByCenterId.set(flag.center_id, current)
-    }
-  }
-
-  const displayedOversightRequests = hasAnyUnifiedFilter ? filteredOversightRequests : []
-
-  const buildFilterHref = (overrides: {
-    musician?: string | null
-    center?: string | null
-    fromDate?: string | null
-    toDate?: string | null
-    statuses?: RequestStatus[] | null
-  }) => {
-    const nextMusician = overrides.musician === undefined ? musicianFilter : overrides.musician ?? ''
-    const nextCenter = overrides.center === undefined ? centerFilter : overrides.center ?? ''
-    const nextFromDate = overrides.fromDate === undefined ? fromDateFilter : overrides.fromDate ?? ''
-    const nextToDate = overrides.toDate === undefined ? toDateFilter : overrides.toDate ?? ''
-    const nextStatuses = overrides.statuses === undefined ? statusFilters : overrides.statuses ?? []
-
-    const query = new URLSearchParams()
-    if (nextMusician) query.set('musician', nextMusician)
-    if (nextCenter) query.set('center', nextCenter)
-    if (nextFromDate) query.set('fromDate', nextFromDate)
-    if (nextToDate) query.set('toDate', nextToDate)
-    for (const status of nextStatuses) {
-      query.append('status', status)
-    }
-
-    const queryString = query.toString()
-    return queryString ? `/dashboard/admin?${queryString}` : '/dashboard/admin'
-  }
-
   const today = new Date()
-  const thirtyDaysAgo = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000)
-  const toIsoDate = (value: Date) => value.toISOString().slice(0, 10)
+  const todayIso = today.toISOString().slice(0, 10)
+  const monthStart = `${todayIso.slice(0, 7)}-01`
+  const yearStart = `${todayIso.slice(0, 4)}-01-01`
 
-  const todayLabel = new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date())
+  const [
+    { count: pendingMusicians },
+    { count: pendingFacilities },
+    { count: todaysRequests },
+    { count: musicianCount },
+    { count: facilityCount },
+    { count: totalBookings },
+    { count: completedCount },
+    { count: cancelledCount },
+    { data: upcomingData },
+    { data: completedData },
+    { data: recentData },
+  ] = await Promise.all([
+    supabase.from('musicians').select('id', { count: 'exact', head: true }).eq('approved', false).is('deleted_at', null),
+    supabase.from('centers').select('id', { count: 'exact', head: true }).eq('approved', false).is('deleted_at', null),
+    supabase.from('requests').select('id', { count: 'exact', head: true }).eq('requested_date', todayIso),
+    supabase.from('musicians').select('id', { count: 'exact', head: true }).is('deleted_at', null),
+    supabase.from('centers').select('id', { count: 'exact', head: true }).is('deleted_at', null),
+    supabase.from('requests').select('id', { count: 'exact', head: true }),
+    supabase.from('requests').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+    supabase.from('requests').select('id', { count: 'exact', head: true }).eq('status', 'cancelled'),
+    supabase
+      .from('requests')
+      .select('id, status, requested_date, requested_start_time, requested_end_time, musician_id, center_location_id, updated_at')
+      .eq('status', 'accepted')
+      .gte('requested_date', todayIso)
+      .order('requested_date', { ascending: true })
+      .limit(5),
+    supabase
+      .from('requests')
+      .select('id, status, requested_date, requested_start_time, requested_end_time, musician_id, center_location_id, updated_at')
+      .eq('status', 'completed')
+      .gte('requested_date', yearStart)
+      .limit(500),
+    supabase
+      .from('requests')
+      .select('id, status, requested_date, requested_start_time, requested_end_time, musician_id, center_location_id, updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(6),
+  ])
+
+  const upcoming = (upcomingData ?? []) as RequestRow[]
+  const completed = (completedData ?? []) as RequestRow[]
+  const recent = (recentData ?? []) as RequestRow[]
+
+  // Names for every musician / location referenced above, in two queries.
+  const musicianIds = [...new Set([...upcoming, ...completed, ...recent].map((r) => r.musician_id).filter(Boolean))] as string[]
+  const locationIds = [...new Set([...upcoming, ...completed, ...recent].map((r) => r.center_location_id).filter(Boolean))] as string[]
+
+  const [{ data: musicianRows }, { data: locationRows }] = await Promise.all([
+    musicianIds.length
+      ? supabase.from('musicians').select('id, name, profile_image_url').in('id', musicianIds)
+      : Promise.resolve({ data: [] }),
+    // center_locations carries address + zip_code; there are no city/state columns.
+    locationIds.length
+      ? supabase.from('center_locations').select('id, name, address, zip_code').in('id', locationIds)
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const musicianById = new Map(
+    ((musicianRows ?? []) as { id: string; name: string; profile_image_url: string | null }[]).map((m) => [m.id, m]),
+  )
+  const locationById = new Map(
+    ((locationRows ?? []) as { id: string; name: string; address: string | null; zip_code: string | null }[]).map(
+      (l) => [l.id, l],
+    ),
+  )
+
+  // ── Volunteer hours, derived from completed bookings ──────────────────────
+  const hoursThisYear = completed.reduce((sum, r) => sum + hoursFor(r), 0)
+  const hoursThisMonth = completed
+    .filter((r) => r.requested_date >= monthStart)
+    .reduce((sum, r) => sum + hoursFor(r), 0)
+
+  // ── Leaderboards ──────────────────────────────────────────────────────────
+  const musicianHours = new Map<string, number>()
+  const facilityBookings = new Map<string, number>()
+  for (const r of completed) {
+    if (r.musician_id) musicianHours.set(r.musician_id, (musicianHours.get(r.musician_id) ?? 0) + hoursFor(r))
+    if (r.center_location_id)
+      facilityBookings.set(r.center_location_id, (facilityBookings.get(r.center_location_id) ?? 0) + 1)
+  }
+
+  const topMusicians = [...musicianHours.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
+  const topFacilities = [...facilityBookings.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
+
+  const bookings = totalBookings ?? 0
+  const completedPct = bookings ? Math.round(((completedCount ?? 0) / bookings) * 100) : 0
 
   return (
-    <section className="mx-auto max-w-[1240px] space-y-5">
+    <div className="space-y-6 px-4 py-6 sm:px-6">
       <WelcomeBanner
         title="Welcome back, Admin!"
         subtitle="Here’s what’s happening on Margaret’s Memorycare Music today."
-        aside={
-          <span className="inline-flex items-center gap-2 self-start rounded-xl bg-ocean-800 px-5 py-3 font-poppins text-[12.4px] font-semibold text-white shadow">
-            {DASH_ICONS.calendar}
-            {todayLabel}
-          </span>
-        }
       />
 
+      {/* ---- Status cards ---- */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={DASH_ICONS.people}
           title="Pending Musicians"
-          value={`${pendingMusicianCount ?? 0} awaiting review`}
-          eyebrow="Pending musicians"
+          value={`${pendingMusicians ?? 0} awaiting review`}
+          eyebrow="Pending Musicians"
           actionLabel="View all"
-          actionHref="/dashboard/admin?musicianStatus=pending#account-moderation"
+          actionHref="/dashboard/admin/musicians?status=pending"
         />
         <StatCard
           icon={DASH_ICONS.building}
           title="Pending Facilities"
-          value={`${pendingCenterCount ?? 0} awaiting review`}
-          eyebrow="Pending facilities"
+          value={`${pendingFacilities ?? 0} awaiting review`}
+          eyebrow="Pending Facilities"
           actionLabel="View all"
-          actionHref="/dashboard/admin?centerStatus=pending#account-moderation"
+          actionHref="/dashboard/admin/facilities?status=pending"
         />
         <StatCard
           icon={DASH_ICONS.calendar}
           title="Today’s Requests"
-          value={`${requestRows.length} in view`}
-          eyebrow="Today’s requests"
+          value={`${todaysRequests ?? 0} in view`}
+          eyebrow="Today’s Requests"
           actionLabel="View all"
-          actionHref="/dashboard/requests"
+          actionHref="/dashboard/admin/oversight"
         />
         <StatCard
           icon={DASH_ICONS.music}
-          title="Open Flags"
-          value={`${openFlags.length} to resolve`}
-          eyebrow="Needs attention"
+          title="Upcoming Performances"
+          value={`${upcoming.length} scheduled`}
+          eyebrow="Upcoming Performances"
           actionLabel="View all"
-          actionHref="/dashboard/admin?musicianStatus=all&centerStatus=all#account-moderation"
+          actionHref="/dashboard/schedule"
         />
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <a
-          href="/dashboard/admin/users"
-          className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-colors hover:border-brand-300 hover:bg-brand-50"
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Total accounts</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-900">{totalUsersCount ?? 0}</p>
-          <p className="mt-1 text-xs font-medium text-brand-700">Manage users →</p>
-        </a>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Open flags</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-900">{openFlags.length}</p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Recent requests</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-900">{requestRows.length}</p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Completed events</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-900">{completedEventRows.length}</p>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Event Filters</h2>
-        <p className="mt-1 text-xs text-stone-600">
-          Shared filters are applied to both Media Library and Request/Event Oversight. Status filters apply to Oversight only.
-        </p>
-
-        <form action="/dashboard/admin" className="mt-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 md:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <label htmlFor="admin-filter-musician" className="mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500">Musician</label>
-            <input
-              id="admin-filter-musician"
-              list="admin-filter-musicians"
-              type="text"
-              name="musician"
-              defaultValue={musicianFilter}
-              placeholder="Type a musician name"
-              className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="admin-filter-center" className="mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500">Center</label>
-            <input
-              id="admin-filter-center"
-              list="admin-filter-centers"
-              type="text"
-              name="center"
-              defaultValue={centerFilter}
-              placeholder="Type a center name"
-              className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="admin-filter-from-date" className="mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500">From date</label>
-            <input
-              id="admin-filter-from-date"
-              type="date"
-              name="fromDate"
-              defaultValue={fromDateFilter}
-              className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="admin-filter-to-date" className="mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500">To date</label>
-            <input
-              id="admin-filter-to-date"
-              type="date"
-              name="toDate"
-              defaultValue={toDateFilter}
-              className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm"
-            />
-          </div>
-
-          <div className="rounded border border-stone-200 bg-white p-3 md:col-span-2 lg:col-span-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">Oversight status filter</p>
-            <div className="mt-2 flex flex-wrap gap-3 text-sm text-stone-700">
-              {(['initiated', 'accepted', 'completed', 'cancelled'] as RequestStatus[]).map((status) => (
-                <label key={status} className="inline-flex items-center gap-2">
-                  <input type="checkbox" name="status" value={status} defaultChecked={statusFilterSet.has(status)} className="h-4 w-4" />
-                  <span className="capitalize">{getStatusLabel(status)}</span>
-                </label>
-              ))}
+      {/* ---- Hours · statistics · upcoming ---- */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_minmax(0,1.3fr)]">
+        <Panel title="Volunteer Hours">
+          <div className="space-y-5">
+            <div>
+              <p className="font-poppins text-[8.5px] font-bold uppercase tracking-[0.12em] text-ocean-900/70">
+                This month
+              </p>
+              <p className="mt-1 font-poppins text-[22px] font-bold text-ocean-900">{round1(hoursThisMonth)}</p>
+            </div>
+            <div className="border-t border-ocean-300/70 pt-4">
+              <p className="font-poppins text-[8.5px] font-bold uppercase tracking-[0.12em] text-ocean-900/70">
+                This year
+              </p>
+              <p className="mt-1 font-poppins text-[22px] font-bold text-ocean-900">{round1(hoursThisYear)}</p>
             </div>
           </div>
+        </Panel>
 
-          <div className="flex flex-wrap items-center gap-2 lg:col-span-2 lg:justify-end">
-            <button
-              type="submit"
-              className="rounded border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
-            >
-              Apply filters
-            </button>
-            <a
-              href="/dashboard/admin"
-              className="rounded border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
-            >
-              Clear all
-            </a>
+        <Panel title="Platform Statistics">
+          <div className="grid grid-cols-3 gap-y-5">
+            <Stat value={String(musicianCount ?? 0)} label="Musicians" />
+            <Stat value={String(facilityCount ?? 0)} label="Facilities" />
+            <Stat value={String(bookings)} label="Total Bookings" />
+            <Stat value={`${completedPct}%`} label="Completed" />
+            <Stat value={String(cancelledCount ?? 0)} label="Cancelled" />
           </div>
-        </form>
+        </Panel>
 
-        <datalist id="admin-filter-musicians">
-          {musicianOptions.map((name) => (
-            <option key={name} value={name} />
-          ))}
-        </datalist>
-
-        <datalist id="admin-filter-centers">
-          {centerOptions.map((name) => (
-            <option key={name} value={name} />
-          ))}
-        </datalist>
-
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-semibold uppercase tracking-wide text-stone-500">Quick actions</span>
-          <a href={buildFilterHref({ statuses: ['completed'] })} className="rounded-full border border-stone-300 px-2.5 py-1 font-medium text-stone-700 hover:bg-stone-100">
-            Completed only
-          </a>
-          <a href={buildFilterHref({ statuses: ['cancelled'] })} className="rounded-full border border-stone-300 px-2.5 py-1 font-medium text-stone-700 hover:bg-stone-100">
-            Cancelled only
-          </a>
-          <a
-            href={buildFilterHref({ fromDate: toIsoDate(thirtyDaysAgo), toDate: toIsoDate(today), statuses: ['completed'] })}
-            className="rounded-full border border-stone-300 px-2.5 py-1 font-medium text-stone-700 hover:bg-stone-100"
-          >
-            Completed last 30 days
-          </a>
-          <a
-            href={buildFilterHref({ fromDate: null, toDate: null, statuses: [], musician: null, center: null })}
-            className="rounded-full border border-stone-300 px-2.5 py-1 font-medium text-stone-700 hover:bg-stone-100"
-          >
-            Reset filters
-          </a>
-        </div>
-      </div>
-
-      <div id="account-moderation" className="scroll-mt-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Account Moderation</h2>
-        {(musicianStatusView === 'pending' || centerStatusView === 'pending') && (
-          <p className="mt-1 text-xs font-medium text-brand-700">
-            Showing accounts awaiting review. <a href="/dashboard/admin" className="underline">Clear</a>
-          </p>
-        )}
-        {!hasAnyAccountFilter ? (
-          <p className="mt-3 text-sm text-stone-600">
-            Use “View all” on the cards above, or search by musician or center, to load accounts for moderation.
-          </p>
-        ) : filteredMusicians.length === 0 && filteredCenters.length === 0 ? (
-          <p className="mt-3 text-sm text-stone-600">
-            {musicianStatusView === 'pending' || centerStatusView === 'pending'
-              ? 'No accounts are awaiting review right now.'
-              : 'No account records matched the current filters.'}
-          </p>
-        ) : (
-          <ul className="mt-4 space-y-4">
-            {filteredMusicians.map((musician) => {
-              const accountFlags = openFlagsByMusicianId.get(musician.id) ?? []
-
-              return (
-                <li key={`musician-${musician.id}`} className="rounded-lg border border-stone-200 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-stone-900">{musician.name}</p>
-                      <p className="text-sm text-stone-600">Musician · ZIP {musician.zip_code}</p>
-                      <p className="text-xs text-stone-500">Profile complete: {musician.profile_complete ? 'Yes' : 'No'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {musician.deleted_at && (
-                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-800">
-                          Deleted
-                        </span>
+        <Panel title="Upcoming Performances" viewAllHref="/dashboard/schedule">
+          {upcoming.length === 0 ? (
+            <EmptyState message="No performances are scheduled yet." />
+          ) : (
+            <ul className="space-y-3">
+              {upcoming.slice(0, 3).map((r) => {
+                const location = r.center_location_id ? locationById.get(r.center_location_id) : undefined
+                const musician = r.musician_id ? musicianById.get(r.musician_id) : undefined
+                return (
+                  <li key={r.id} className="flex items-center gap-3 rounded-xl bg-white/70 p-2.5">
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-ocean-100 text-ocean-800">
+                      {musician?.profile_image_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={musician.profile_image_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        DASH_ICONS.music
                       )}
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          musician.approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {musician.approved ? 'Approved' : 'Disabled'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <form action={toggleMusicianApproval}>
-                      <input type="hidden" name="musician_id" value={musician.id} />
-                      <input type="hidden" name="approved" value={String(musician.approved)} />
-                      <button
-                        type="submit"
-                        className="rounded border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                      >
-                        {musician.approved ? 'Disable profile' : 'Re-enable profile'}
-                      </button>
-                    </form>
-                  </div>
-
-                  <form action={createMusicianFlag} className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
-                    <input type="hidden" name="musician_id" value={musician.id} />
-                    <input
-                      type="text"
-                      name="reason"
-                      required
-                      minLength={3}
-                      placeholder="Flag reason (internal only)"
-                      className="rounded border border-stone-300 px-3 py-2 text-sm"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100"
-                    >
-                      Add flag
-                    </button>
-                  </form>
-
-                  {accountFlags.length > 0 && (
-                    <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">Open moderation flags</p>
-                      <ul className="mt-2 space-y-2">
-                        {accountFlags.map((flag) => (
-                          <li key={flag.id} className="rounded border border-rose-200 bg-white p-2">
-                            <p className="text-sm text-rose-900">{flag.reason}</p>
-                            <p className="mt-1 text-xs text-rose-700">Opened {new Date(flag.created_at).toLocaleString()}</p>
-                            <form action={resolveFlag} className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-                              <input type="hidden" name="flag_id" value={flag.id} />
-                              <input
-                                type="text"
-                                name="resolution_notes"
-                                placeholder="Resolution notes (optional)"
-                                className="rounded border border-rose-300 px-3 py-2 text-sm"
-                              />
-                              <button
-                                type="submit"
-                                className="rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
-                              >
-                                Resolve
-                              </button>
-                            </form>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-
-            {filteredCenters.map((center) => {
-              const accountFlags = openFlagsByCenterId.get(center.id) ?? []
-
-              return (
-                <li key={`center-${center.id}`} className="rounded-lg border border-stone-200 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-stone-900">{center.name}</p>
-                      <p className="text-sm text-stone-600">Center · Residents: {center.resident_count ?? 'Unknown'}</p>
-                      <p className="text-xs text-stone-500">Profile complete: {center.profile_complete ? 'Yes' : 'No'}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {center.deleted_at && (
-                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-800">
-                          Deleted
-                        </span>
-                      )}
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          center.approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {center.approved ? 'Approved' : 'Disabled'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <form action={toggleCenterApproval}>
-                      <input type="hidden" name="center_id" value={center.id} />
-                      <input type="hidden" name="approved" value={String(center.approved)} />
-                      <button
-                        type="submit"
-                        className="rounded border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                      >
-                        {center.approved ? 'Disable profile' : 'Re-enable profile'}
-                      </button>
-                    </form>
-                  </div>
-
-                  <form action={createCenterFlag} className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
-                    <input type="hidden" name="center_id" value={center.id} />
-                    <input
-                      type="text"
-                      name="reason"
-                      required
-                      minLength={3}
-                      placeholder="Flag reason (internal only)"
-                      className="rounded border border-stone-300 px-3 py-2 text-sm"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100"
-                    >
-                      Add flag
-                    </button>
-                  </form>
-
-                  {accountFlags.length > 0 && (
-                    <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">Open moderation flags</p>
-                      <ul className="mt-2 space-y-2">
-                        {accountFlags.map((flag) => (
-                          <li key={flag.id} className="rounded border border-rose-200 bg-white p-2">
-                            <p className="text-sm text-rose-900">{flag.reason}</p>
-                            <p className="mt-1 text-xs text-rose-700">Opened {new Date(flag.created_at).toLocaleString()}</p>
-                            <form action={resolveFlag} className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-                              <input type="hidden" name="flag_id" value={flag.id} />
-                              <input
-                                type="text"
-                                name="resolution_notes"
-                                placeholder="Resolution notes (optional)"
-                                className="rounded border border-rose-300 px-3 py-2 text-sm"
-                              />
-                              <button
-                                type="submit"
-                                className="rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
-                              >
-                                Resolve
-                              </button>
-                            </form>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </div>
-
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Event Oversight and Media</h2>
-        <p className="mt-1 text-xs text-stone-600">
-          Filter to load matching events, update status when needed, and manage media on completed events in one place.
-        </p>
-        {displayedOversightRequests.length > 0 ? (
-          <ul className="mt-4 space-y-4">
-            {displayedOversightRequests.map((request) => {
-              const musicianName = request.musician_id ? musicianNameById.get(request.musician_id) ?? 'Unknown musician' : 'Unknown musician'
-              const location = request.center_location_id ? locationById.get(request.center_location_id) : null
-              const centerName = location ? centerNameById.get(location.center_id) ?? 'Unknown center' : 'Unknown center'
-              return (
-                <li key={request.id} className="rounded-lg border border-stone-200 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-stone-900">{musicianName} @ {centerName}</p>
-                      <p className="text-sm text-stone-600">
-                        {formatDateLabel(request.requested_date)} · {formatTimeLabel(request.requested_start_time)} - {formatTimeLabel(request.requested_end_time)}
-                      </p>
-                      <p className="text-xs text-stone-500">Updated {new Date(request.updated_at).toLocaleString()}</p>
-                    </div>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[request.status] ?? 'bg-stone-100 text-stone-800'}`}>
-                      {getStatusLabel(request.status)}
                     </span>
-                  </div>
-
-                  <form action={updateRequestStatusByAdmin} className="mt-3 grid gap-2 sm:grid-cols-[auto_1fr_auto]">
-                    <input type="hidden" name="request_id" value={request.id} />
-                    <select name="next_status" defaultValue={request.status} className="rounded border border-stone-300 px-2 py-2 text-sm">
-                      <option value="initiated">initiated</option>
-                      <option value="accepted">scheduled</option>
-                      <option value="completed">completed</option>
-                      <option value="cancelled">cancelled</option>
-                    </select>
-                    <input
-                      type="text"
-                      name="reason"
-                      placeholder="Reason (support note)"
-                      className="rounded border border-stone-300 px-3 py-2 text-sm"
-                    />
-                    <button
-                      type="submit"
-                      className="rounded border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                    >
-                      Apply status
-                    </button>
-                  </form>
-
-                </li>
-              )
-            })}
-          </ul>
-        ) : (
-          <p className="mt-3 text-sm text-stone-600">
-            {hasAnyUnifiedFilter
-              ? 'No events matched the current filters. Try widening the date range or removing one filter.'
-              : 'Apply at least one filter above to load matching events and media items.'}
-          </p>
-        )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-poppins text-[12.5px] font-bold text-ocean-900">
+                        {location?.name ?? 'Facility'}
+                      </p>
+                      <p className="truncate font-poppins text-[10.5px] text-ocean-900/70">
+                        {[location?.address, location?.zip_code].filter(Boolean).join(', ') ||
+                          'Location to be confirmed'}
+                      </p>
+                      <p className="truncate font-poppins text-[10.5px] text-ocean-900/70">
+                        {formatDate(r.requested_date)} | {formatTime(r.requested_start_time)} –{' '}
+                        {formatTime(r.requested_end_time)}
+                      </p>
+                      <p className="truncate font-poppins text-[10.5px] text-ocean-900/70">
+                        {musician?.name ?? 'Musician to be confirmed'}
+                      </p>
+                    </div>
+                    <span className="shrink-0 font-poppins text-[9px] font-bold uppercase tracking-[0.12em] text-ocean-900">
+                      Scheduled
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </Panel>
       </div>
-    </section>
+
+      {/* ---- Leaderboards · recent activity ---- */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)]">
+        <Panel title="Top Musicians by Hrs." viewAllHref="/dashboard/admin/musicians">
+          {topMusicians.length === 0 ? (
+            <EmptyState message="No completed performances yet." />
+          ) : (
+            <ul className="divide-y divide-ocean-200/70">
+              {topMusicians.map(([id, hours], i) => (
+                <RankRow
+                  key={id}
+                  rank={i + 1}
+                  name={musicianById.get(id)?.name ?? 'Musician'}
+                  meta="Hours performed"
+                  value={`${round1(hours)} hrs`}
+                />
+              ))}
+            </ul>
+          )}
+        </Panel>
+
+        <Panel title="Top Facilities by Bookings" viewAllHref="/dashboard/admin/facilities">
+          {topFacilities.length === 0 ? (
+            <EmptyState message="No completed bookings yet." />
+          ) : (
+            <ul className="divide-y divide-ocean-200/70">
+              {topFacilities.map(([id, count], i) => (
+                <RankRow
+                  key={id}
+                  rank={i + 1}
+                  name={locationById.get(id)?.name ?? 'Facility'}
+                  meta="Bookings"
+                  value={String(count)}
+                />
+              ))}
+            </ul>
+          )}
+        </Panel>
+
+        <Panel title="Recent Activity" viewAllHref="/dashboard/admin/oversight">
+          {recent.length === 0 ? (
+            <EmptyState message="Nothing has happened yet." />
+          ) : (
+            <ul className="divide-y divide-ocean-200/70">
+              {recent.slice(0, 4).map((r) => {
+                const location = r.center_location_id ? locationById.get(r.center_location_id) : undefined
+                return (
+                  <li key={r.id} className="py-2.5">
+                    <p className="font-poppins text-[12px] font-bold capitalize text-ocean-900">
+                      Booking {r.status}
+                    </p>
+                    <p className="font-poppins text-[10.5px] text-ocean-900/70">
+                      {location?.name ?? 'Facility'} · {formatDate(r.requested_date)}
+                    </p>
+                    <p className="font-poppins text-[10px] text-ocean-900/50">
+                      Updated {new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(r.updated_at))}
+                    </p>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </Panel>
+      </div>
+
+      <p className="font-poppins text-[11px] text-ocean-900/60">
+        Account moderation, event filters and media oversight live on the{' '}
+        <Link href="/dashboard/admin/oversight" className="font-semibold underline underline-offset-2">
+          oversight console
+        </Link>
+        .
+      </p>
+    </div>
   )
 }
-

@@ -39,19 +39,27 @@ const NAV: Record<string, NavItem[]> = {
     { href: '/dashboard/center', label: 'Dashboard', icon: 'dashboard' },
     { href: '/dashboard/schedule', label: 'Upcoming Performances', icon: 'performances' },
     { href: '/dashboard/requests', label: 'Requests', icon: 'bookings', prefix: true },
-    { href: '/dashboard/center/hours', label: 'Hours of Music', icon: 'hours' },
+    // "Hours of Music" pointed at /dashboard/center/hours, which has never
+    // existed — every facility user had a dead link here. Removed until the
+    // page is built.
     { href: '/education', label: 'Resources', icon: 'resources' },
     { href: '/dashboard/alerts', label: 'Notifications', icon: 'notifications' },
     { href: '/dashboard/account', label: 'Profile', icon: 'profile' },
   ],
   admin: [
+    // Order follows the approved design. Song Library, Performance Video and
+    // Analytics are drawn there too but have no page behind them yet, so they
+    // are left off rather than listed as dead ends.
     { href: '/dashboard/admin', label: 'Dashboard', icon: 'dashboard' },
+    { href: '/dashboard/admin/musicians', label: 'Musicians', icon: 'musicians', prefix: true },
+    { href: '/dashboard/admin/facilities', label: 'Facilities', icon: 'facilities', prefix: true },
     { href: '/dashboard/schedule', label: 'Bookings', icon: 'bookings' },
-    { href: '/dashboard/admin/reports', label: 'Reports', icon: 'dashboard' },
-    { href: '/dashboard/admin/categories', label: 'Categories', icon: 'settings' },
-    { href: '/dashboard/admin/content', label: 'Website Content', icon: 'education' },
+    { href: '/dashboard/admin/oversight', label: 'Oversight', icon: 'reports' },
     { href: '/education', label: 'Education Library', icon: 'education' },
     { href: '/dashboard/alerts', label: 'Announcement', icon: 'announcement' },
+    { href: '/dashboard/admin/reports', label: 'Reports', icon: 'analytics' },
+    { href: '/dashboard/admin/categories', label: 'Categories', icon: 'adminresources' },
+    { href: '/dashboard/admin/content', label: 'Website Content', icon: 'resources' },
     { href: '/dashboard/account', label: 'Settings', icon: 'settings' },
   ],
 }
