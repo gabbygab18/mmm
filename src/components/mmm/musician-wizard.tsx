@@ -211,6 +211,10 @@ export function MusicianWizard({
   const [notice, setNotice] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [initializing, setInitializing] = useState(isOnboarding)
+  /** True when they arrived here with a profile already saved — editing, not
+      applying for the first time, so the done screen must not re-claim
+      "awaiting approval" on an account that's already been approved. */
+  const [wasAlreadyComplete, setWasAlreadyComplete] = useState(false)
 
   // Onboarding-only fields — everything the old plain form collected that the
   // approved registration design does not ask a new visitor for.
@@ -313,6 +317,7 @@ export function MusicianWizard({
         .maybeSingle()
 
       if (musician) {
+        setWasAlreadyComplete(Boolean(musician.profile_complete))
         if (musician.first_name) setFirstName(musician.first_name)
         if (musician.last_name) setLastName(musician.last_name)
         setBio(musician.bio ?? '')
@@ -781,35 +786,43 @@ export function MusicianWizard({
                   </svg>
                 </div>
                 <h2 className="mt-6 font-garamond text-[36px] font-bold text-ocean-900 sm:text-[50.8px]">
-                  Application Received!
+                  {wasAlreadyComplete ? 'Profile Updated!' : 'Application Received!'}
                 </h2>
                 <p className="mx-auto mt-3 max-w-[480px] font-poppins text-[13.2px] leading-relaxed text-ocean-900">
-                  Thank you for registering as a volunteer musician with Margaret&apos;s Memorycare Music.
-                  <br />
-                  <br />
-                  Your application is currently being reviewed. We&apos;ll notify you by email as soon as
-                  it&apos;s approved so you can complete your volunteer onboarding and begin making a difference.
+                  {wasAlreadyComplete ? (
+                    'Your profile details have been saved.'
+                  ) : (
+                    <>
+                      Thank you for registering as a volunteer musician with Margaret&apos;s Memorycare Music.
+                      <br />
+                      <br />
+                      Your application is currently being reviewed. We&apos;ll notify you by email as soon as
+                      it&apos;s approved so you can complete your volunteer onboarding and begin making a difference.
+                    </>
+                  )}
                 </p>
                 {notice && (
                   <p className="mt-3 rounded-lg bg-ocean-100 px-4 py-2 font-poppins text-[12px] font-medium text-ocean-800">{notice}</p>
                 )}
-                <div
-                  className="mt-7 max-w-[440px] rounded-2xl px-6 py-5 text-left shadow"
-                  style={{ background: 'linear-gradient(100deg, #d9e8f7 0%, #b3d0ee 100%)' }}
-                >
-                  <h3 className="font-garamond text-[20px] font-bold text-ocean-900">Next Steps</h3>
-                  <ul className="mt-2 list-disc space-y-1 pl-4 font-poppins text-[10.5px] font-bold leading-relaxed text-ocean-900">
-                    <li>Application review</li>
-                    <li>Approval notification by email</li>
-                    <li>Complete the Education section</li>
-                    <li>Start accepting performance requests</li>
-                  </ul>
-                </div>
+                {!wasAlreadyComplete && (
+                  <div
+                    className="mt-7 max-w-[440px] rounded-2xl px-6 py-5 text-left shadow"
+                    style={{ background: 'linear-gradient(100deg, #d9e8f7 0%, #b3d0ee 100%)' }}
+                  >
+                    <h3 className="font-garamond text-[20px] font-bold text-ocean-900">Next Steps</h3>
+                    <ul className="mt-2 list-disc space-y-1 pl-4 font-poppins text-[10.5px] font-bold leading-relaxed text-ocean-900">
+                      <li>Application review</li>
+                      <li>Approval notification by email</li>
+                      <li>Complete the Education section</li>
+                      <li>Start accepting performance requests</li>
+                    </ul>
+                  </div>
+                )}
                 <Link
-                  href="/"
+                  href={wasAlreadyComplete ? '/dashboard/account' : '/'}
                   className="mt-8 rounded-md bg-ocean-800 px-7 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.16em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700"
                 >
-                  Go to Homepage
+                  {wasAlreadyComplete ? 'Back to Account Settings' : 'Go to Homepage'}
                 </Link>
               </div>
             ) : (

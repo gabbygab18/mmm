@@ -82,6 +82,10 @@ export function FacilityWizard({
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
   const [loading, setLoading] = useState(false)
   const [initializing, setInitializing] = useState(isOnboarding)
+  /** True when they arrived here with a profile already saved — editing, not
+      applying for the first time, so the done screen must not re-claim
+      "awaiting approval" on an account that's already been approved. */
+  const [wasAlreadyComplete, setWasAlreadyComplete] = useState(false)
 
   // Step 1 — Create Account (register mode only)
   const [firstName, setFirstName] = useState('')
@@ -193,6 +197,7 @@ export function FacilityWizard({
         .maybeSingle()
 
       if (center) {
+        setWasAlreadyComplete(Boolean(center.profile_complete))
         setFacilityName(center.name ?? '')
         setFacilityPhone(center.phone ?? '')
         setWebsite(center.website ?? '')
@@ -638,14 +643,20 @@ export function FacilityWizard({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/mmm/pages/reg-icon-heart.png" alt="" className="h-28 w-28 object-contain" />
                 <h2 className="mt-6 font-garamond text-[36px] font-bold text-ocean-900 sm:text-[50.8px]">
-                  Application Received!
+                  {wasAlreadyComplete ? 'Profile Updated!' : 'Application Received!'}
                 </h2>
                 <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[13.2px] leading-relaxed text-ocean-900">
-                  Thank you for registering your memory care community with Margaret&apos;s Memorycare Music.
-                  <br />
-                  <br />
-                  Your registration has been successfully submitted and is now awaiting approval. We&apos;ll review
-                  your information and notify you by email once your account has been approved.
+                  {wasAlreadyComplete ? (
+                    "Your community's details have been saved."
+                  ) : (
+                    <>
+                      Thank you for registering your memory care community with Margaret&apos;s Memorycare Music.
+                      <br />
+                      <br />
+                      Your registration has been successfully submitted and is now awaiting approval. We&apos;ll review
+                      your information and notify you by email once your account has been approved.
+                    </>
+                  )}
                 </p>
                 {notice && (
                   <p className="mt-3 rounded-lg bg-ocean-100 px-4 py-2 font-poppins text-[12px] font-medium text-ocean-800">{notice}</p>
@@ -653,8 +664,9 @@ export function FacilityWizard({
                 {/* Only claim an e-mail was sent when one really was — Supabase
                     sends the confirmation only when e-mail confirmation is on,
                     which is what leaves signUp without a session. Otherwise show
-                    the approved Next Steps card. */}
-                {awaitingConfirmation ? (
+                    the approved Next Steps card. Editing an already-complete
+                    profile skips both — there's nothing left to await. */}
+                {wasAlreadyComplete ? null : awaitingConfirmation ? (
                   <div
                     className="mt-7 flex max-w-[500px] items-center gap-5 rounded-2xl px-6 py-5 text-left shadow"
                     style={{ background: 'linear-gradient(100deg, #b3d0ee 0%, #d9e8f7 100%)' }}
@@ -687,10 +699,10 @@ export function FacilityWizard({
                   </div>
                 )}
                 <Link
-                  href="/"
+                  href={wasAlreadyComplete ? '/dashboard/account' : '/'}
                   className="mt-8 rounded-md bg-ocean-800 px-8 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.16em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700"
                 >
-                  Go to Homepage
+                  {wasAlreadyComplete ? 'Back to Account Settings' : 'Go to Homepage'}
                 </Link>
               </div>
             ) : (
