@@ -632,53 +632,67 @@ export function FacilityWizard({
               <div className="flex flex-col items-center py-6 text-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/mmm/pages/reg-icon-heart.png" alt="" className="h-28 w-28 object-contain" />
-                <h2 className="mt-6 font-garamond text-[36px] font-bold text-ocean-900 sm:text-[50.8px]">Thank you!</h2>
-                <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[16.1px]">
-                  {isOnboarding
-                    ? 'Your community profile is complete. Musicians nearby can now find you and send performance offers.'
-                    : "Your facility has been registered and is now awaiting admin approval. We'll email you as soon as you're approved and ready to start receiving performance offers."}
-                </p>
+                <h2 className="mt-6 font-garamond text-[36px] font-bold text-ocean-900 sm:text-[50.8px]">
+                  {isOnboarding ? 'Thank you!' : 'Application Received!'}
+                </h2>
+                {isOnboarding ? (
+                  <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[16.1px]">
+                    Your community profile is complete. Musicians nearby can now find you and send performance offers.
+                  </p>
+                ) : (
+                  <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[13.2px] leading-relaxed text-ocean-900">
+                    Thank you for registering your memory care community with Margaret&apos;s Memorycare Music.
+                    <br />
+                    <br />
+                    Your registration has been successfully submitted and is now awaiting approval. We&apos;ll review
+                    your information and notify you by email once your account has been approved.
+                  </p>
+                )}
                 {notice && (
                   <p className="mt-3 rounded-lg bg-ocean-100 px-4 py-2 font-poppins text-[12px] font-medium text-ocean-800">{notice}</p>
                 )}
                 {/* Only claim an e-mail was sent when one really was — Supabase
                     sends the confirmation only when e-mail confirmation is on,
-                    which is what leaves signUp without a session. Otherwise point
-                    them at the next real step. */}
-                {!isOnboarding && (
+                    which is what leaves signUp without a session. Otherwise show
+                    the approved Next Steps card. */}
+                {!isOnboarding && awaitingConfirmation && (
                   <div
                     className="mt-7 flex max-w-[500px] items-center gap-5 rounded-2xl px-6 py-5 text-left shadow"
                     style={{ background: 'linear-gradient(100deg, #b3d0ee 0%, #d9e8f7 100%)' }}
                   >
                     <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-ocean-900">
-                      {awaitingConfirmation ? (
-                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} aria-hidden="true">
-                          <rect x="2.5" y="5" width="19" height="14" rx="2" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 7l9 6 9-6" />
-                        </svg>
-                      ) : (
-                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
+                      <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} aria-hidden="true">
+                        <rect x="2.5" y="5" width="19" height="14" rx="2" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7l9 6 9-6" />
+                      </svg>
                     </span>
                     <div>
-                      <h3 className="font-garamond text-[20px] font-bold text-ocean-900">
-                        {awaitingConfirmation ? 'Check your e-mail!' : "You're all set!"}
-                      </h3>
+                      <h3 className="font-garamond text-[20px] font-bold text-ocean-900">Check your e-mail!</h3>
                       <p className="mt-1 font-poppins text-[10.5px] font-bold leading-relaxed text-ocean-900">
-                        {awaitingConfirmation
-                          ? "We've sent a confirmation e-mail — open it to activate your account, then sign in."
-                          : "You're signed in and your community is registered, but still awaiting admin approval. We'll email you once it's approved — meanwhile, head to your dashboard to add a photo and review your details."}
+                        We&apos;ve sent a confirmation e-mail — open it to activate your account, then sign in.
                       </p>
                     </div>
                   </div>
                 )}
+                {!isOnboarding && !awaitingConfirmation && (
+                  <div
+                    className="mt-7 max-w-[500px] rounded-2xl px-6 py-5 text-left shadow"
+                    style={{ background: 'linear-gradient(100deg, #d9e8f7 0%, #b3d0ee 100%)' }}
+                  >
+                    <h3 className="font-garamond text-[20px] font-bold text-ocean-900">Next Steps</h3>
+                    <ul className="mt-2 list-disc space-y-1 pl-4 font-poppins text-[10.5px] font-bold leading-relaxed text-ocean-900">
+                      <li>Application review</li>
+                      <li>Approval email</li>
+                      <li>Dashboard access</li>
+                      <li>Request your first performance</li>
+                    </ul>
+                  </div>
+                )}
                 <Link
-                  href={isOnboarding ? '/dashboard/center' : '/dashboard'}
+                  href={isOnboarding ? '/dashboard/center' : '/'}
                   className="mt-8 rounded-md bg-ocean-800 px-8 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.16em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700"
                 >
-                  Go to Dashboard
+                  {isOnboarding ? 'Go to Dashboard' : 'Go to Homepage'}
                 </Link>
               </div>
             ) : (

@@ -106,7 +106,7 @@ export default function GetStartedPage() {
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/mmm/icon-facility.png"
+                  src="/mmm/icon-facility-navy.png"
                   alt=""
                   className="absolute -bottom-8 left-1/2 h-16 w-16 -translate-x-1/2 object-contain"
                 />

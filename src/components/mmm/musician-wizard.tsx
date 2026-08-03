@@ -766,38 +766,62 @@ export function MusicianWizard({
                     />
                   </svg>
                 </div>
-                <h2 className="mt-6 font-garamond text-[36px] font-bold text-ocean-900 sm:text-[48px]">
-                  {isOnboarding ? 'Your profile is ready!' : 'Welcome to MMM!'}
+                <h2 className="mt-6 font-garamond text-[36px] font-bold text-ocean-900 sm:text-[50.8px]">
+                  {isOnboarding ? 'Your profile is ready!' : 'Application Received!'}
                 </h2>
-                <p className="mx-auto mt-3 max-w-[480px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[16.1px]">
-                  {isOnboarding
-                    ? 'Your musician profile is complete. Memory care communities near you can now find you and send performance requests.'
-                    : "Thank you for registering as a volunteer musician. Your account is now awaiting admin approval — we'll email you as soon as you're approved and ready to start receiving performance requests."}
-                </p>
+                {isOnboarding ? (
+                  <p className="mx-auto mt-3 max-w-[480px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[16.1px]">
+                    Your musician profile is complete. Memory care communities near you can now find you and send
+                    performance requests.
+                  </p>
+                ) : (
+                  <p className="mx-auto mt-3 max-w-[480px] font-poppins text-[13.2px] leading-relaxed text-ocean-900">
+                    Thank you for registering as a volunteer musician with Margaret&apos;s Memorycare Music.
+                    <br />
+                    <br />
+                    Your application is currently being reviewed. We&apos;ll notify you by email as soon as
+                    it&apos;s approved so you can complete your volunteer onboarding and begin making a difference.
+                  </p>
+                )}
                 {notice && (
                   <p className="mt-3 rounded-lg bg-ocean-100 px-4 py-2 font-poppins text-[12px] font-medium text-ocean-800">{notice}</p>
                 )}
-                <div
-                  className="mt-7 flex max-w-[440px] items-start gap-4 rounded-xl px-6 py-5 text-left shadow"
-                  style={{ background: 'linear-gradient(100deg, #d9e8f7 0%, #b3d0ee 100%)' }}
-                >
-                  <svg className="mt-0.5 h-9 w-9 shrink-0 text-ocean-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.25c-1.6-1.3-3.7-1.75-6-1.75v12c2.3 0 4.4.45 6 1.75 1.6-1.3 3.7-1.75 6-1.75v-12c-2.3 0-4.4.45-6 1.75zm0 0v12" />
-                    <path strokeLinecap="round" d="M3 20.5h18" />
-                  </svg>
-                  <div>
-                    <h3 className="font-garamond text-[20px] font-bold text-ocean-900">What&apos;s Next?</h3>
-                    <p className="mt-1 font-poppins text-[11.5px] leading-relaxed text-ocean-900">
-                      You can now complete the Education section to learn more about MMM (Margaret&apos;s Memorycare Music)
-                      and get started.
-                    </p>
+                {isOnboarding ? (
+                  <div
+                    className="mt-7 flex max-w-[440px] items-start gap-4 rounded-xl px-6 py-5 text-left shadow"
+                    style={{ background: 'linear-gradient(100deg, #d9e8f7 0%, #b3d0ee 100%)' }}
+                  >
+                    <svg className="mt-0.5 h-9 w-9 shrink-0 text-ocean-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.25c-1.6-1.3-3.7-1.75-6-1.75v12c2.3 0 4.4.45 6 1.75 1.6-1.3 3.7-1.75 6-1.75v-12c-2.3 0-4.4.45-6 1.75zm0 0v12" />
+                      <path strokeLinecap="round" d="M3 20.5h18" />
+                    </svg>
+                    <div>
+                      <h3 className="font-garamond text-[20px] font-bold text-ocean-900">What&apos;s Next?</h3>
+                      <p className="mt-1 font-poppins text-[11.5px] leading-relaxed text-ocean-900">
+                        You can now complete the Education section to learn more about MMM (Margaret&apos;s Memorycare Music)
+                        and get started.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    className="mt-7 max-w-[440px] rounded-2xl px-6 py-5 text-left shadow"
+                    style={{ background: 'linear-gradient(100deg, #d9e8f7 0%, #b3d0ee 100%)' }}
+                  >
+                    <h3 className="font-garamond text-[20px] font-bold text-ocean-900">Next Steps</h3>
+                    <ul className="mt-2 list-disc space-y-1 pl-4 font-poppins text-[10.5px] font-bold leading-relaxed text-ocean-900">
+                      <li>Application review</li>
+                      <li>Approval notification by email</li>
+                      <li>Complete the Education section</li>
+                      <li>Start accepting performance requests</li>
+                    </ul>
+                  </div>
+                )}
                 <Link
-                  href={isOnboarding ? '/dashboard/musician' : '/education'}
+                  href={isOnboarding ? '/dashboard/musician' : '/'}
                   className="mt-8 rounded-md bg-ocean-800 px-7 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.16em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700"
                 >
-                  {isOnboarding ? 'Go to Dashboard' : 'Continue to Education'}
+                  {isOnboarding ? 'Go to Dashboard' : 'Go to Homepage'}
                 </Link>
               </div>
             ) : (
