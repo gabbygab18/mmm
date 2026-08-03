@@ -57,8 +57,8 @@ export function FaqClient({ content }: { content: Record<string, string> }) {
         heroImage="/mmm/pages/faq-hero.png"
         heroAspect="1100 / 355"
         copyBand="76%"
-        copyWidth="max-w-[720px]"
-        align="center"
+        copyWidth="max-w-[580px]"
+        align="left"
         tailColor="#0f3b6b"
       >
         <h1 className="landing-rise font-garamond text-[22px] font-bold leading-tight text-white drop-shadow-md sm:text-[32px] md:text-[40px] lg:text-[52px]">
