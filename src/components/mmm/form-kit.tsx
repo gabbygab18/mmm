@@ -79,6 +79,49 @@ export function TextField({
   )
 }
 
+/** (XXX) XXX-XXXX as the digits come in — never more than 10 digits kept. */
+export function formatPhoneNumber(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 10)
+  if (digits.length === 0) return ''
+  if (digits.length < 4) return `(${digits}`
+  if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+}
+
+/** Phone input that auto-formats to (XXX) XXX-XXXX as the user types. */
+export function PhoneField({
+  label,
+  value,
+  onChange,
+  placeholder = '(555) 555-5555',
+  autoComplete,
+  className = '',
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  autoComplete?: string
+  className?: string
+}) {
+  const id = useId()
+  return (
+    <Field label={label} htmlFor={id} className={className}>
+      <input
+        id={id}
+        type="tel"
+        value={value}
+        onChange={(e) => onChange(formatPhoneNumber(e.target.value))}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        inputMode="tel"
+        maxLength={14}
+        className={inputClass}
+      />
+    </Field>
+  )
+}
+
 /**
  * Dropdown replacement for the free-text fields Michael asked us to constrain.
  * Renders a native select so it stays usable on phones and screen readers.

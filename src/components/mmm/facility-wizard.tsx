@@ -6,7 +6,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
 import { BackButton, NextButton, StepHeading, StepIcon, StepTracker } from '@/components/mmm/registration-ui'
-import { Field, PasswordField, PillGroup, SelectField, TextField, inputClass } from '@/components/mmm/form-kit'
+import { Field, PasswordField, PhoneField, PillGroup, SelectField, TextField, inputClass } from '@/components/mmm/form-kit'
 import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
 import { friendlyAuthError } from '@/lib/mmm/auth-errors'
 import { notifyApplicationReceivedAction } from '@/app/register/actions'
@@ -641,22 +641,15 @@ export function FacilityWizard({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/mmm/pages/reg-icon-heart.png" alt="" className="h-28 w-28 object-contain" />
                 <h2 className="mt-6 font-garamond text-[36px] font-bold text-ocean-900 sm:text-[50.8px]">
-                  {isOnboarding ? 'Thank you!' : 'Application Received!'}
+                  Application Received!
                 </h2>
-                {isOnboarding ? (
-                  <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[14px] leading-relaxed text-ocean-900 sm:text-[16.1px]">
-                    Your community profile is complete and now awaiting admin approval. We&apos;ll email you as soon
-                    as you&apos;re approved and ready to start receiving performance offers.
-                  </p>
-                ) : (
-                  <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[13.2px] leading-relaxed text-ocean-900">
-                    Thank you for registering your memory care community with Margaret&apos;s Memorycare Music.
-                    <br />
-                    <br />
-                    Your registration has been successfully submitted and is now awaiting approval. We&apos;ll review
-                    your information and notify you by email once your account has been approved.
-                  </p>
-                )}
+                <p className="mx-auto mt-3 max-w-[520px] font-poppins text-[13.2px] leading-relaxed text-ocean-900">
+                  Thank you for registering your memory care community with Margaret&apos;s Memorycare Music.
+                  <br />
+                  <br />
+                  Your registration has been successfully submitted and is now awaiting approval. We&apos;ll review
+                  your information and notify you by email once your account has been approved.
+                </p>
                 {notice && (
                   <p className="mt-3 rounded-lg bg-ocean-100 px-4 py-2 font-poppins text-[12px] font-medium text-ocean-800">{notice}</p>
                 )}
@@ -664,7 +657,7 @@ export function FacilityWizard({
                     sends the confirmation only when e-mail confirmation is on,
                     which is what leaves signUp without a session. Otherwise show
                     the approved Next Steps card. */}
-                {!isOnboarding && awaitingConfirmation && (
+                {awaitingConfirmation ? (
                   <div
                     className="mt-7 flex max-w-[500px] items-center gap-5 rounded-2xl px-6 py-5 text-left shadow"
                     style={{ background: 'linear-gradient(100deg, #b3d0ee 0%, #d9e8f7 100%)' }}
@@ -682,8 +675,7 @@ export function FacilityWizard({
                       </p>
                     </div>
                   </div>
-                )}
-                {!isOnboarding && !awaitingConfirmation && (
+                ) : (
                   <div
                     className="mt-7 max-w-[500px] rounded-2xl px-6 py-5 text-left shadow"
                     style={{ background: 'linear-gradient(100deg, #d9e8f7 0%, #b3d0ee 100%)' }}
@@ -698,10 +690,10 @@ export function FacilityWizard({
                   </div>
                 )}
                 <Link
-                  href={isOnboarding ? '/dashboard/center' : '/'}
+                  href="/"
                   className="mt-8 rounded-md bg-ocean-800 px-8 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.16em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700"
                 >
-                  {isOnboarding ? 'Go to Dashboard' : 'Go to Homepage'}
+                  Go to Homepage
                 </Link>
               </div>
             ) : (
@@ -783,7 +775,7 @@ export function FacilityWizard({
                         <TextField label="ZIP Code" value={zip} onChange={(v) => setZip(v.replace(/\D/g, '').slice(0, 5))} placeholder="Enter ZIP code" inputMode="numeric" maxLength={5} autoComplete="postal-code" />
                       </div>
                       <div className="grid gap-5 sm:grid-cols-2">
-                        <TextField label="Phone Number" value={facilityPhone} onChange={setFacilityPhone} placeholder="(555) 555-5555" inputMode="tel" autoComplete="tel" />
+                        <PhoneField label="Phone Number" value={facilityPhone} onChange={setFacilityPhone} autoComplete="tel" />
                         <TextField label="Website (Optional)" value={website} onChange={setWebsite} placeholder="https://" inputMode="url" autoComplete="url" />
                       </div>
 
@@ -897,7 +889,7 @@ export function FacilityWizard({
                         <TextField label="Last Name" value={directorLastName} onChange={setDirectorLastName} placeholder="Enter last name" />
                       </div>
                       <TextField label="E-mail Address" type="email" value={directorEmail} onChange={setDirectorEmail} placeholder="Enter e-mail address" inputMode="email" />
-                      <TextField label="Phone Number" value={directorPhone} onChange={setDirectorPhone} placeholder="(555) 555-5555" inputMode="tel" />
+                      <PhoneField label="Phone Number" value={directorPhone} onChange={setDirectorPhone} />
                       <SelectField
                         label="Preferred Contact Method"
                         value={contactMethod}
