@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TimeGridPicker } from '@/app/components/TimeGridPicker'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
@@ -349,192 +349,299 @@ export default function NewRequestPage() {
   const selectedDateObject = new Date(`${selectedDate}T00:00:00`)
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+    <section className="mx-auto max-w-[1200px] space-y-6">
+      <div
+        className="flex items-center justify-between gap-4 rounded-2xl px-7 py-6"
+        style={{ background: 'linear-gradient(90deg, #dbe8f6 0%, #f5f8fc 100%)' }}
+      >
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Create Request</h1>
-          <p className="mt-1 text-sm text-stone-600">Start a request with a calendar-style date and time window, like availability slots.</p>
+          <h1 className="font-garamond text-[26px] font-bold text-ocean-900 sm:text-[32px]">Request a Performance</h1>
+          <p className="mt-1 max-w-md font-poppins text-[12.5px] text-ocean-900/70">
+            Fill out the form below to request a live music performance for your residents. We&apos;ll connect you
+            with a volunteer musician.
+          </p>
         </div>
         <Link
           href="/dashboard/requests"
-          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+          className="shrink-0 rounded-lg border border-ocean-800/50 bg-white/70 px-3.5 py-1.5 font-poppins text-[11px] font-semibold text-ocean-900 transition hover:bg-white"
         >
           Back to requests
         </Link>
       </div>
 
       {loading ? (
-        <p className="text-sm text-stone-500">Loading request form...</p>
+        <p className="font-poppins text-[12.5px] text-ocean-900/60">Loading request form...</p>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-          {role === 'musician' && (
-            <label className="block text-sm font-medium text-stone-800">
-              Center location
-              <select
-                value={selectedCenterLocationId}
-                onChange={(event) => setSelectedCenterLocationId(event.target.value)}
-                className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none ring-amber-500 focus:ring"
-                required
-              >
-                <option value="">Select a nearby center location</option>
-                {centerLocationOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.center_name} — {option.name} (ZIP {option.zip_code})
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+        <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1.6fr_1fr] lg:items-start">
+          <div className="space-y-5 rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-6 shadow-sm">
+            <div>
+              <h2 className="font-garamond text-[22px] font-bold text-ocean-900">Performance Details</h2>
+              <p className="mt-0.5 font-poppins text-[12px] text-ocean-900/70">
+                Please provide the details of your requested performance.
+              </p>
+            </div>
 
-          {role === 'center_coordinator' && (
-            <>
-              <label className="block text-sm font-medium text-stone-800">
+            {role === 'musician' && (
+              <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
                 Your location
                 <select
                   value={selectedCenterLocationId}
                   onChange={(event) => setSelectedCenterLocationId(event.target.value)}
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none ring-brand-500 focus:ring"
+                  className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
                   required
                 >
-                  <option value="">Select your location</option>
+                  <option value="">Select a nearby center location</option>
                   {centerLocationOptions.map((option) => (
                     <option key={option.id} value={option.id}>
-                      {option.name} (ZIP {option.zip_code})
+                      {option.center_name} — {option.name} (ZIP {option.zip_code})
                     </option>
                   ))}
                 </select>
               </label>
+            )}
 
-              <label className="block text-sm font-medium text-stone-800">
-                Musician
-                <select
-                  value={selectedMusicianId}
-                  onChange={(event) => {
-                    setSelectedMusicianId(event.target.value)
-                    const selected = musicianOptions.find((m) => m.id === event.target.value)
-                    setSelectedMusicianGeneralDays((selected?.general_available_days as string[] | null) ?? [])
-                  }}
-                  className="mt-1 w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none ring-brand-500 focus:ring"
-                  required
-                >
-                  <option value="">Select a nearby musician</option>
-                  {musicianOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.name} (ZIP {option.zip_code})
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </>
-          )}
+            {role === 'center_coordinator' && (
+              <>
+                <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
+                  Your location
+                  <select
+                    value={selectedCenterLocationId}
+                    onChange={(event) => setSelectedCenterLocationId(event.target.value)}
+                    className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
+                    required
+                  >
+                    <option value="">Select your location</option>
+                    {centerLocationOptions.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.name} (ZIP {option.zip_code})
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-          <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-            <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <button
-                  type="button"
-                  onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))}
-                  className="rounded-md border border-stone-200 px-2.5 py-1 text-sm text-stone-600 transition hover:bg-stone-50"
-                >
-                  Prev
-                </button>
-                <h2 className="text-base font-semibold text-stone-900">{monthLabel}</h2>
-                <button
-                  type="button"
-                  onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))}
-                  className="rounded-md border border-stone-200 px-2.5 py-1 text-sm text-stone-600 transition hover:bg-stone-50"
-                >
-                  Next
-                </button>
-              </div>
+                <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
+                  Musician
+                  <select
+                    value={selectedMusicianId}
+                    onChange={(event) => {
+                      setSelectedMusicianId(event.target.value)
+                      const selected = musicianOptions.find((m) => m.id === event.target.value)
+                      setSelectedMusicianGeneralDays((selected?.general_available_days as string[] | null) ?? [])
+                    }}
+                    className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
+                    required
+                  >
+                    <option value="">Select a nearby musician</option>
+                    {musicianOptions.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.name} (ZIP {option.zip_code})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </>
+            )}
 
-              <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-stone-400">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day}>{day}</div>
-                ))}
-              </div>
-
-              <div className="mt-2 grid grid-cols-7 gap-2">
-                {calendarDays.map((day) => {
-                  const isCurrentMonth = day.getMonth() === visibleMonth.getMonth()
-                  const isSelected = sameDay(day, selectedDateObject)
-                  const dayValue = toDateInputValue(day)
-                  const weekdayLabel = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(day)
-                  const isGeneralAvailabilityDay = selectedMusicianGeneralDays.includes(weekdayLabel)
-
-                  return (
-                    <button
-                      key={dayValue}
-                      type="button"
-                      onClick={() => setSelectedDate(dayValue)}
-                      className={`min-h-[64px] rounded-xl border px-2 py-2 text-left transition ${
-                        isSelected
-                          ? 'border-amber-400 bg-amber-50 shadow-sm'
-                          : isGeneralAvailabilityDay
-                            ? 'border-sky-400 bg-sky-200 hover:border-sky-500'
-                            : 'border-stone-200 bg-white hover:border-amber-300'
-                      } ${isCurrentMonth ? 'text-stone-900' : 'text-stone-300'}`}
-                    >
-                      <div className="text-sm font-medium">{day.getDate()}</div>
-                    </button>
-                  )
-                })}
-              </div>
-
-              {selectedMusicianGeneralDays.length > 0 && (
-                <div className="mt-2 flex items-center gap-3 text-xs text-stone-600">
-                  <span className="inline-block h-3 w-3 rounded bg-sky-100 border border-sky-300" />
-                  <span>Soft highlight = musician's recurring day-of-week availability</span>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="rounded-xl border border-ocean-200/70 bg-white p-4">
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))}
+                    className="rounded-md border border-ocean-800/40 px-2.5 py-1 font-poppins text-[10.5px] text-ocean-900 transition hover:bg-ocean-900/5"
+                  >
+                    Prev
+                  </button>
+                  <h3 className="font-poppins text-[12.5px] font-bold text-ocean-900">{monthLabel}</h3>
+                  <button
+                    type="button"
+                    onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))}
+                    className="rounded-md border border-ocean-800/40 px-2.5 py-1 font-poppins text-[10.5px] text-ocean-900 transition hover:bg-ocean-900/5"
+                  >
+                    Next
+                  </button>
                 </div>
-              )}
-            </div>
 
-            <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-wide text-stone-500">Selected date</p>
-                <p className="mt-1 text-lg font-semibold text-stone-900">{formatDateLabel(selectedDate)}</p>
+                <div className="mt-3 grid grid-cols-7 gap-1 text-center font-poppins text-[8.5px] font-bold uppercase tracking-wide text-ocean-900/50">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                    <div key={day}>{day}</div>
+                  ))}
+                </div>
+
+                <div className="mt-1.5 grid grid-cols-7 gap-1">
+                  {calendarDays.map((day) => {
+                    const isCurrentMonth = day.getMonth() === visibleMonth.getMonth()
+                    const isSelected = sameDay(day, selectedDateObject)
+                    const dayValue = toDateInputValue(day)
+                    const weekdayLabel = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(day)
+                    const isGeneralAvailabilityDay = selectedMusicianGeneralDays.includes(weekdayLabel)
+
+                    return (
+                      <button
+                        key={dayValue}
+                        type="button"
+                        onClick={() => setSelectedDate(dayValue)}
+                        className={`min-h-[34px] rounded-md border px-1 py-1 text-left font-poppins text-[10.5px] transition ${
+                          isSelected
+                            ? 'border-ocean-500 bg-ocean-100 shadow-sm'
+                            : isGeneralAvailabilityDay
+                              ? 'border-ocean-300 bg-ocean-50 hover:border-ocean-400'
+                              : 'border-ocean-100 bg-white hover:border-ocean-300'
+                        } ${isCurrentMonth ? 'text-ocean-900' : 'text-ocean-900/30'}`}
+                      >
+                        {day.getDate()}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {selectedMusicianGeneralDays.length > 0 && (
+                  <div className="mt-2 flex items-center gap-2 font-poppins text-[9.5px] text-ocean-900/60">
+                    <span className="inline-block h-2.5 w-2.5 rounded bg-ocean-50 border border-ocean-300" />
+                    <span>Musician&apos;s recurring availability</span>
+                  </div>
+                )}
               </div>
 
-              <TimeGridPicker
-                startTime={startTime}
-                endTime={endTime}
-                onChange={(start, end) => {
-                  setStartTime(start)
-                  setEndTime(end)
-                }}
-                accent="brand"
+              <div className="space-y-3 rounded-xl border border-ocean-200/70 bg-white p-4">
+                <div>
+                  <p className="font-poppins text-[9px] font-bold uppercase tracking-wide text-ocean-900/50">Selected date</p>
+                  <p className="mt-0.5 font-poppins text-[13px] font-bold text-ocean-900">{formatDateLabel(selectedDate)}</p>
+                </div>
+
+                <TimeGridPicker
+                  startTime={startTime}
+                  endTime={endTime}
+                  onChange={(start, end) => {
+                    setStartTime(start)
+                    setEndTime(end)
+                  }}
+                  accent="brand"
+                />
+
+                <div className="rounded-lg border border-ocean-200/70 bg-ocean-50/60 p-2.5">
+                  <p className="font-poppins text-[9px] font-bold uppercase tracking-wide text-ocean-900/50">Preview</p>
+                  <p className="mt-0.5 font-poppins text-[11px] text-ocean-900">
+                    {formatDateLabel(selectedDate)} · {formatTimeLabel(startTime)} - {formatTimeLabel(endTime)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
+              Notes <span className="font-normal text-ocean-900/50">(optional)</span>
+              <textarea
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                rows={3}
+                placeholder="Any details for this request..."
+                className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
               />
+            </label>
 
-              <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Preview</p>
-                <p className="mt-1 text-sm text-stone-800">{formatDateLabel(selectedDate)} • {formatTimeLabel(startTime)} - {formatTimeLabel(endTime)}</p>
-              </div>
-            </div>
+            {error && <p className="font-poppins text-[11.5px] font-medium text-red-700">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={submitDisabled || saving}
+              className="rounded-lg bg-ocean-800 px-5 py-2.5 font-poppins text-[12.5px] font-bold uppercase tracking-[0.1em] text-white transition hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? 'Submitting…' : 'Submit Request'}
+            </button>
           </div>
 
-          <label className="block text-sm font-medium text-stone-800">
-            Notes <span className="text-xs font-normal text-stone-500">optional</span>
-            <textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              rows={3}
-              placeholder="Any details for this request..."
-                className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
-            />
-          </label>
-
-          {error && <p className="text-sm font-medium text-red-700">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={submitDisabled || saving}
-            className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {saving ? 'Creating...' : 'Create request'}
-          </button>
+          <BookingStatusPanel />
         </form>
       )}
     </section>
+  )
+}
+
+const STATUS_ICONS: Record<string, ReactNode> = {
+  requested: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+      <path d="M22 2 11 13" />
+      <path d="M22 2 15 22l-4-9-9-4 20-7z" />
+    </svg>
+  ),
+  accepted: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden="true">
+      <path d="M12 5.6a5 5 0 0 1 7 .3l3 3-1.4 1.4-1.3-1.3-3.6 3.6a2 2 0 0 1-2.8 0l-.9-.9-2.6 2.6a1.6 1.6 0 1 1-2.2-2.2l2.6-2.6-.5-.5a2.4 2.4 0 0 1 0-3.4zM4.4 8.9 2 11.3l1.4 1.4 1.3-1.3 2.6 2.6a3.6 3.6 0 0 0 5 5l.6.6a2 2 0 0 0 2.9 0l.5-.6-6.9-6.9z" />
+    </svg>
+  ),
+  scheduled: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+      <rect x="3" y="4" width="13" height="13" rx="1.5" />
+      <path d="M6.5 2.5v3M13 2.5v3M3 8.5h13" />
+      <circle cx="17" cy="17" r="5.3" />
+      <path d="M17 14.5V17l1.6 1" />
+    </svg>
+  ),
+  completed: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+      <path d="M5 12.5l4.5 4.5L19 7" />
+    </svg>
+  ),
+  cancelled: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+      <path d="M6 6l12 12M18 6 6 18" />
+    </svg>
+  ),
+}
+
+const STATUS_STEPS = [
+  { key: 'requested', label: 'Requested', body: 'Your performance request has been submitted.', bg: '#a9c9ec' },
+  { key: 'accepted', label: 'Accepted', body: 'A volunteer musician has accepted your request.', bg: '#f3dd8c' },
+  { key: 'scheduled', label: 'Scheduled', body: 'The performance is confirmed on the calendar.', bg: '#c9b7ef' },
+  { key: 'completed', label: 'Completed', body: 'The performance has been completed.', bg: '#93de9f' },
+]
+
+/** Static reference panel — the lifecycle every request moves through, shown
+    beside the form so a first-time requester knows what happens next. */
+function BookingStatusPanel() {
+  return (
+    <div
+      className="rounded-2xl p-6"
+      style={{ background: 'linear-gradient(180deg, #dbe8f6 0%, #c3d9ef 100%)' }}
+    >
+      <h2 className="font-garamond text-[22px] font-bold text-ocean-900">Booking Status</h2>
+      <p className="mt-0.5 font-poppins text-[12px] text-ocean-900/70">Track your request from start to finish.</p>
+
+      <div className="relative mt-6">
+        <div className="absolute left-[19px] top-5 bottom-5 w-0.5 bg-white/50" aria-hidden="true" />
+        <ul className="relative space-y-6">
+          {STATUS_STEPS.map((s) => (
+            <li key={s.key} className="flex items-start gap-4">
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ocean-900"
+                style={{ backgroundColor: s.bg }}
+              >
+                {STATUS_ICONS[s.key]}
+              </span>
+              <div>
+                <p className="font-poppins text-[12.5px] font-bold text-ocean-900">{s.label}</p>
+                <p className="mt-0.5 font-poppins text-[11px] leading-snug text-ocean-900/80">{s.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <hr className="my-6 border-t border-white/50" />
+
+      <div className="flex items-start gap-4">
+        <span
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ocean-900"
+          style={{ backgroundColor: '#f398a6' }}
+        >
+          {STATUS_ICONS.cancelled}
+        </span>
+        <div>
+          <p className="font-poppins text-[12.5px] font-bold text-ocean-900">Cancelled</p>
+          <p className="mt-0.5 font-poppins text-[11px] leading-snug text-ocean-900/80">The performance request was cancelled.</p>
+        </div>
+      </div>
+    </div>
   )
 }
 

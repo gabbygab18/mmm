@@ -144,7 +144,7 @@ export default async function MusicianDashboardPage() {
           actionHref="/dashboard/schedule"
         />
         <StatCard
-          icon={DASH_ICONS.handshake}
+          icon={DASH_ICONS.heartHands}
           title="Pending Requests"
           value={`${pendingList.length} waiting`}
           eyebrow="New requests"
@@ -165,7 +165,7 @@ export default async function MusicianDashboardPage() {
           value={`${monthCount ?? 0} performance${(monthCount ?? 0) === 1 ? '' : 's'}`}
           eyebrow="This month"
           actionLabel="View hours"
-          actionHref="/dashboard/schedule"
+          actionHref="/dashboard/musician/hours"
         />
       </div>
 

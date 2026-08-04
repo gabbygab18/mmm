@@ -220,7 +220,6 @@ export function MusicianWizard({
   // approved registration design does not ask a new visitor for.
   const [handle, setHandle] = useState('')
   const [handleStatus, setHandleStatus] = useState<HandleStatus>('idle')
-  const [hasOwnTransport, setHasOwnTransport] = useState(false)
   const [youtubeChannelUrl, setYoutubeChannelUrl] = useState('')
   const [savedPhotoUrl, setSavedPhotoUrl] = useState('')
   const [photoBusy, setPhotoBusy] = useState(false)
@@ -331,7 +330,6 @@ export function MusicianWizard({
         setGenres(musician.music_types ?? [])
         setPreferredDays(musician.general_available_days ?? [])
         if (musician.travel_radius_miles) setMaxDistance(`Within ${musician.travel_radius_miles} miles`)
-        setHasOwnTransport(musician.has_own_transport ?? false)
         setYoutubeChannelUrl(musician.youtube_channel_url ?? '')
         if (musician.profile_image_url) setSavedPhotoUrl(musician.profile_image_url)
         // A `u_…` handle is the provisional one the database assigns at signup —
@@ -585,7 +583,6 @@ export function MusicianWizard({
       compensation_preference: 'free',
       willing_to_travel: radius > 0,
       travel_radius_miles: radius,
-      has_own_transport: hasOwnTransport,
       general_available_days: preferredDays,
       youtube_channel_url: youtubeChannelUrl.trim() || null,
       profile_complete: true,
@@ -1208,18 +1205,6 @@ export function MusicianWizard({
                             ))}
                           </select>
                         </div>
-
-                        {isOnboarding && (
-                          <label className="mt-5 flex items-start gap-2 font-poppins text-[10.7px] text-ocean-900">
-                            <input
-                              type="checkbox"
-                              checked={hasOwnTransport}
-                              onChange={(e) => setHasOwnTransport(e.target.checked)}
-                              className="mt-0.5 h-4 w-4 rounded border-ocean-400 text-ocean-700 focus:ring-ocean-500"
-                            />
-                            <span>I have my own transport to get to performances.</span>
-                          </label>
-                        )}
                       </div>
 
                       {/* -------- Right column — unavailable dates + notes -------- */}

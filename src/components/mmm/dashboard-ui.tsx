@@ -160,28 +160,35 @@ export function PanelButton({ href, children }: { href: string; children: ReactN
 
 export const DASH_ICONS = {
   calendar: (
-    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1zm12 8H5v9h14z" />
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+      <path d="M8 3v4M16 3v4M3.5 10h17" />
+      <rect x="7" y="13" width="3" height="3" fill="currentColor" stroke="none" />
+      <rect x="14" y="13" width="3" height="3" fill="currentColor" stroke="none" />
     </svg>
   ),
-  handshake: (
-    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 5.6a5 5 0 0 1 7 .3l3 3-1.4 1.4-1.3-1.3-3.6 3.6a2 2 0 0 1-2.8 0l-.9-.9-2.6 2.6a1.6 1.6 0 1 1-2.2-2.2l2.6-2.6-.5-.5a2.4 2.4 0 0 1 0-3.4zM4.4 8.9 2 11.3l1.4 1.4 1.3-1.3 2.6 2.6a3.6 3.6 0 0 0 5 5l.6.6a2 2 0 0 0 2.9 0l.5-.6-6.9-6.9z" />
+  heartHands: (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 20.5s-7.5-4.6-9.5-9.3C1.2 8.1 2 4.8 5.4 3.8c2-.6 3.9.3 5.1 1.9l1.5 2 1.5-2c1.2-1.6 3.1-2.5 5.1-1.9 3.4 1 4.2 4.3 2.9 7.4-2 4.7-9.5 9.3-9.5 9.3z" />
     </svg>
   ),
   megaphone: (
-    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M3 10v4a1 1 0 0 0 1 1h2l4 4V5L6 9H4a1 1 0 0 0-1 1zm14.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z" />
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 10.5v3a1 1 0 0 0 1 1h1.5l4.5 3.5v-12L5.5 9.5H4a1 1 0 0 0-1 1z" />
+      <path d="M16.5 8.3a4 4 0 0 1 0 7.4" />
     </svg>
   ),
   clock: (
-    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5h-2v6l4.5 2.7 1-1.7-3.5-2z" />
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5V12l3.2 2" />
     </svg>
   ),
   music: (
-    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M20 3.5a.9.9 0 0 0-1.1-.9l-8 1.7a.9.9 0 0 0-.7.9v8.7a3.4 3.4 0 1 0 1.8 3v-7.9l6.2-1.3v5.2a3.4 3.4 0 1 0 1.8 3z" />
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 18V5.3L19 3.5V16" />
+      <circle cx="7" cy="18" r="2.3" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="16" r="2.3" fill="currentColor" stroke="none" />
     </svg>
   ),
   people: (

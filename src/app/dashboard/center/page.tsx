@@ -147,7 +147,7 @@ export default async function CenterDashboardPage() {
           actionHref="/dashboard/schedule"
         />
         <StatCard
-          icon={DASH_ICONS.handshake}
+          icon={DASH_ICONS.heartHands}
           title="Pending Requests"
           value={`${pendingCount} waiting`}
           eyebrow="New requests"

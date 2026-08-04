@@ -53,10 +53,10 @@ function formatTimeLabel(value: string) {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  initiated: 'bg-stone-100 text-stone-700',
-  matched: 'bg-stone-100 text-stone-700',
-  accepted: 'bg-brand-100 text-brand-800',
-  completed: 'bg-brand-100 text-brand-800',
+  initiated: 'bg-ocean-100 text-ocean-800',
+  matched: 'bg-ocean-100 text-ocean-800',
+  accepted: 'bg-emerald-100 text-emerald-800',
+  completed: 'bg-emerald-100 text-emerald-800',
   cancelled: 'bg-rose-100 text-rose-800',
 }
 
@@ -350,12 +350,14 @@ export default async function RequestsPage() {
     <section className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Requests</h1>
-          <p className="mt-1 text-sm text-stone-500">Active negotiations only. Scheduled events move to Scheduled Events.</p>
+          <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Requests</h1>
+          <p className="mt-1 font-poppins text-[12.5px] text-ocean-900/70">
+            Active negotiations only. Scheduled events move to Scheduled Events.
+          </p>
         </div>
         <Link
           href="/dashboard/requests/new"
-          className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-700"
+          className="rounded-lg bg-ocean-800 px-4 py-2 font-poppins text-[12px] font-semibold text-white transition hover:bg-ocean-700"
         >
           New request
         </Link>
@@ -381,32 +383,32 @@ export default async function RequestsPage() {
               : (location?.name ?? center?.name ?? 'Center location')
             const primaryFallbackClass = showMusicianAsPrimary
               ? 'bg-amber-100 text-amber-700'
-              : 'bg-brand-100 text-brand-700'
+              : 'bg-ocean-100 text-ocean-700'
 
             return (
-              <li key={request.id} className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+              <li key={request.id} className="rounded-2xl border border-ocean-200/70 bg-white p-4 shadow-sm">
                 <div className="flex gap-4">
                   {primaryImageUrl ? (
                     <img
                       src={primaryImageUrl}
                       alt={primaryName}
-                      className="h-14 w-14 flex-shrink-0 rounded-xl border border-stone-200 object-cover"
+                      className="h-14 w-14 flex-shrink-0 rounded-xl border border-ocean-200/70 object-cover"
                     />
                   ) : (
-                    <div className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-stone-200 text-sm font-semibold ${primaryFallbackClass}`}>
+                    <div className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-ocean-200/70 font-poppins text-sm font-semibold ${primaryFallbackClass}`}>
                       {primaryName.charAt(0).toUpperCase()}
                     </div>
                   )}
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-stone-900">{center?.name ?? 'Center'} · {location?.name ?? 'Location'}</p>
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[request.status] ?? 'bg-stone-100 text-stone-800'}`}>
+                      <p className="font-poppins text-sm font-semibold text-ocean-900">{center?.name ?? 'Center'} · {location?.name ?? 'Location'}</p>
+                      <span className={`rounded-full px-2.5 py-0.5 font-poppins text-xs font-semibold ${STATUS_STYLES[request.status] ?? 'bg-ocean-100 text-ocean-800'}`}>
                         {formatStatusLabel(request.status)}
                       </span>
                     </div>
 
-                    <div className="mt-2 grid gap-1 text-sm text-stone-700 sm:grid-cols-2">
+                    <div className="mt-2 grid gap-1 font-poppins text-sm text-ocean-900/80 sm:grid-cols-2">
                       <p><span className="font-medium">Musician:</span> {musician?.name ?? 'Unknown'}{musician?.zip_code ? ` (ZIP ${musician.zip_code})` : ''}</p>
                       <p>
                         <span className="font-medium">Current proposal:</span> {formatDateLabel(request.requested_date)}
@@ -417,13 +419,13 @@ export default async function RequestsPage() {
                     </div>
 
                     {latestPendingProposal && (
-                      <p className="mt-2 text-xs text-stone-600">
+                      <p className="mt-2 font-poppins text-xs text-ocean-900/60">
                         Latest pending proposal by {latestPendingProposal.proposed_by_user_id === user.id ? 'you' : 'the other side'} on{' '}
                         {new Date(latestPendingProposal.created_at).toLocaleString()}.
                       </p>
                     )}
 
-                    {request.notes && <p className="mt-2 text-sm text-stone-600">{request.notes}</p>}
+                    {request.notes && <p className="mt-2 font-poppins text-sm text-ocean-900/70">{request.notes}</p>}
 
                     <div className="mt-3 flex flex-wrap gap-2">
                       {canCurrentUserAcceptInitiated && (
@@ -432,7 +434,7 @@ export default async function RequestsPage() {
                           <input type="hidden" name="nextStatus" value="accepted" />
                           <button
                             type="submit"
-                            className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                            className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 font-poppins text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
                           >
                             Schedule event
                           </button>
@@ -441,7 +443,7 @@ export default async function RequestsPage() {
 
                       <Link
                         href={`/dashboard/requests/${request.id}/propose`}
-                        className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
+                        className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 font-poppins text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
                       >
                         Suggest alternate time
                       </Link>
@@ -451,7 +453,7 @@ export default async function RequestsPage() {
                         <input type="hidden" name="nextStatus" value="cancelled" />
                         <button
                           type="submit"
-                          className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                          className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 font-poppins text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                         >
                           Cancel
                         </button>
@@ -464,13 +466,13 @@ export default async function RequestsPage() {
           })}
         </ul>
       ) : (
-        <div className="rounded-2xl border border-stone-200 bg-white p-5 text-sm text-stone-500 shadow-sm">
+        <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 font-poppins text-sm text-ocean-900/60 shadow-sm">
           No active request negotiations right now.
         </div>
       )}
 
-      <details className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <summary className="cursor-pointer text-sm font-semibold text-stone-900">Archive / History ({archivedRequests.length})</summary>
+      <details className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
+        <summary className="cursor-pointer font-poppins text-sm font-semibold text-ocean-900">Archive / History ({archivedRequests.length})</summary>
         {archivedRequests.length > 0 ? (
           <ul className="mt-4 space-y-2">
             {archivedRequests.map((request) => {
@@ -486,31 +488,31 @@ export default async function RequestsPage() {
                 : (location?.name ?? center?.name ?? 'Center location')
               const primaryFallbackClass = showMusicianAsPrimary
                 ? 'bg-amber-100 text-amber-700'
-                : 'bg-brand-100 text-brand-700'
+                : 'bg-ocean-100 text-ocean-700'
 
               return (
-                <li key={request.id} className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
+                <li key={request.id} className="rounded-lg border border-ocean-200/70 bg-ocean-50/60 px-3 py-2 font-poppins text-sm text-ocean-900/80">
                   <div className="flex items-start gap-3">
                     {primaryImageUrl ? (
                       <img
                         src={primaryImageUrl}
                         alt={primaryName}
-                        className="h-10 w-10 flex-shrink-0 rounded-lg border border-stone-200 object-cover"
+                        className="h-10 w-10 flex-shrink-0 rounded-lg border border-ocean-200/70 object-cover"
                       />
                     ) : (
-                      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-stone-200 text-xs font-semibold ${primaryFallbackClass}`}>
+                      <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-ocean-200/70 font-poppins text-xs font-semibold ${primaryFallbackClass}`}>
                         {primaryName.charAt(0).toUpperCase()}
                       </div>
                     )}
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="font-medium text-stone-900">{center?.name ?? 'Center'} · {location?.name ?? 'Location'}</p>
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLES[request.status] ?? 'bg-stone-100 text-stone-800'}`}>
+                        <p className="font-medium text-ocean-900">{center?.name ?? 'Center'} · {location?.name ?? 'Location'}</p>
+                        <span className={`rounded-full px-2 py-0.5 font-poppins text-xs font-semibold ${STATUS_STYLES[request.status] ?? 'bg-ocean-100 text-ocean-800'}`}>
                           {formatStatusLabel(request.status)}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-stone-600">
+                      <p className="mt-1 font-poppins text-xs text-ocean-900/60">
                         {musician?.name ?? 'Musician'} · {formatDateLabel(request.requested_date)}
                         {request.requested_start_time && request.requested_end_time
                           ? ` (${formatTimeLabel(request.requested_start_time)} - ${formatTimeLabel(request.requested_end_time)})`
@@ -523,7 +525,7 @@ export default async function RequestsPage() {
             })}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-stone-400">No archived requests yet.</p>
+          <p className="mt-3 font-poppins text-sm text-ocean-900/50">No archived requests yet.</p>
         )}
       </details>
     </section>
