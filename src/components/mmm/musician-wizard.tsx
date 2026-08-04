@@ -220,7 +220,6 @@ export function MusicianWizard({
   // approved registration design does not ask a new visitor for.
   const [handle, setHandle] = useState('')
   const [handleStatus, setHandleStatus] = useState<HandleStatus>('idle')
-  const [compensation, setCompensation] = useState('free')
   const [hasOwnTransport, setHasOwnTransport] = useState(false)
   const [youtubeChannelUrl, setYoutubeChannelUrl] = useState('')
   const [savedPhotoUrl, setSavedPhotoUrl] = useState('')
@@ -332,7 +331,6 @@ export function MusicianWizard({
         setGenres(musician.music_types ?? [])
         setPreferredDays(musician.general_available_days ?? [])
         if (musician.travel_radius_miles) setMaxDistance(`Within ${musician.travel_radius_miles} miles`)
-        setCompensation(musician.compensation_preference ?? 'free')
         setHasOwnTransport(musician.has_own_transport ?? false)
         setYoutubeChannelUrl(musician.youtube_channel_url ?? '')
         if (musician.profile_image_url) setSavedPhotoUrl(musician.profile_image_url)
@@ -584,7 +582,7 @@ export function MusicianWizard({
       instruments,
       music_types: genres,
       band_size_preference: performanceTypes[0] ?? null,
-      compensation_preference: compensation,
+      compensation_preference: 'free',
       willing_to_travel: radius > 0,
       travel_radius_miles: radius,
       has_own_transport: hasOwnTransport,
@@ -1114,22 +1112,13 @@ export function MusicianWizard({
                           </div>
                         </Field>
                         {isOnboarding && (
-                          <>
-                            <SelectField
-                              label="Compensation Preference"
-                              value={compensation}
-                              onChange={setCompensation}
-                              options={['free', 'tips welcome', 'paid']}
-                              placeholder="Select preference"
-                            />
-                            <TextField
-                              label="YouTube Channel (Optional)"
-                              value={youtubeChannelUrl}
-                              onChange={setYoutubeChannelUrl}
-                              placeholder="https://youtube.com/@yourchannel"
-                              inputMode="url"
-                            />
-                          </>
+                          <TextField
+                            label="YouTube Channel (Optional)"
+                            value={youtubeChannelUrl}
+                            onChange={setYoutubeChannelUrl}
+                            placeholder="https://youtube.com/@yourchannel"
+                            inputMode="url"
+                          />
                         )}
                       </div>
                     </div>
