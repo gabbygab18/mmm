@@ -114,7 +114,7 @@ async function removeAccount(table: 'musicians' | 'centers', id: string, userId:
     await admin
       .from('musicians')
       .update({
-        name: 'Deleted Account',
+        // Name stays — admin still needs it to recognize who this was later.
         zip_code: '00000',
         phone: null,
         bio: null,
@@ -158,7 +158,7 @@ async function removeAccount(table: 'musicians' | 'centers', id: string, userId:
     await admin
       .from('centers')
       .update({
-        name: 'Deleted Account',
+        // Name stays — admin still needs it to recognize who this was later.
         phone: null,
         profile_image_url: null,
         profile_complete: false,
