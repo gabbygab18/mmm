@@ -42,18 +42,18 @@ function PasswordStrength({ password }: { password: string }) {
   )
 }
 
-function MusicNoteIcon() {
+function MusicNoteIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
         d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
     </svg>
   )
 }
 
-function BuildingIcon() {
+function BuildingIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
-    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
         d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1M9 13h1m4 0h1M10 21v-4h4v4" />
     </svg>
@@ -155,21 +155,27 @@ export default function SignupPage() {
           <p className="font-poppins text-[8.3px] font-medium text-ocean-900 lg:text-[10.7px]">I am a…</p>
           <div className="mt-2 grid grid-cols-2 gap-3">
             {([
-              { value: 'musician', label: 'Musician', icon: <MusicNoteIcon /> },
-              { value: 'center_coordinator', label: 'Center Coordinator', icon: <BuildingIcon /> },
+              { value: 'musician', label: 'Musician', icon: <MusicNoteIcon className="h-3 w-3 lg:h-3.5 lg:w-3.5" /> },
+              { value: 'center_coordinator', label: 'Center Coordinator', icon: <BuildingIcon className="h-3 w-3 lg:h-3.5 lg:w-3.5" /> },
             ] as { value: RoleOption; label: string; icon: ReactNode }[]).map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setRole(opt.value)}
                 aria-pressed={role === opt.value}
-                className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 font-poppins text-[8.4px] font-semibold transition lg:text-[11.9px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 focus-visible:ring-offset-cream ${
+                className={`flex items-center gap-2 rounded-full border-2 px-3 py-2 font-poppins text-[8.4px] font-bold transition lg:text-[11.9px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500 focus-visible:ring-offset-2 focus-visible:ring-offset-cream ${
                   role === opt.value
-                    ? 'border-transparent bg-gradient-to-r from-ocean-500 to-ocean-800 text-white shadow-md'
-                    : 'border-ocean-500 bg-white/70 text-ocean-800 hover:bg-white'
+                    ? 'border-ocean-900 bg-ocean-900 text-white shadow-md'
+                    : 'border-ocean-900 bg-[#faf4e7] text-ocean-900 hover:bg-white'
                 }`}
               >
-                {opt.icon}
+                <span
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 lg:h-6 lg:w-6 ${
+                    role === opt.value ? 'border-white' : 'border-ocean-900'
+                  }`}
+                >
+                  {opt.icon}
+                </span>
                 <span className="leading-tight">{opt.label}</span>
               </button>
             ))}
