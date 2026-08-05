@@ -206,7 +206,7 @@ export default async function AdminDashboardPage() {
       {/* ---- Status cards ---- */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          icon={DASH_ICONS.people}
+          iconImage="/mmm/icons/stat-people.png"
           title="Pending Musicians"
           value={`${pendingMusicians ?? 0} awaiting review`}
           eyebrow="Pending Musicians"
@@ -214,7 +214,7 @@ export default async function AdminDashboardPage() {
           actionHref="/dashboard/admin/musicians?status=pending"
         />
         <StatCard
-          icon={DASH_ICONS.building}
+          iconImage="/mmm/icons/stat-building.png"
           title="Pending Facilities"
           value={`${pendingFacilities ?? 0} awaiting review`}
           eyebrow="Pending Facilities"
@@ -222,7 +222,7 @@ export default async function AdminDashboardPage() {
           actionHref="/dashboard/admin/facilities?status=pending"
         />
         <StatCard
-          icon={DASH_ICONS.calendar}
+          iconImage="/mmm/icons/stat-calendar.png"
           title="Today’s Requests"
           value={`${todaysRequests ?? 0} in view`}
           eyebrow="Today’s Requests"
@@ -230,7 +230,7 @@ export default async function AdminDashboardPage() {
           actionHref="/dashboard/admin/oversight"
         />
         <StatCard
-          icon={DASH_ICONS.music}
+          iconImage="/mmm/icons/stat-music.png"
           title="Upcoming Performances"
           value={`${upcoming.length} scheduled`}
           eyebrow="Upcoming Performances"

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { toggleFavoriteMusicianAction } from '../../../actions'
 
 const COMP_LABELS: Record<string, string> = {
   free: 'Volunteer (free)',
@@ -103,6 +104,11 @@ export default async function CenterLocationDiscoverPage({ params }: { params: P
     : { data: [] as { id: string; username: string }[] }
   const musicianUsernameById = new Map((musicianProfiles ?? []).map((row) => [row.id, row.username]))
 
+  const { data: favoriteRows } = centerProfile
+    ? await supabase.from('center_favorite_musicians').select('musician_id').eq('center_id', centerProfile.id)
+    : { data: [] as { musician_id: string }[] }
+  const favoritedIds = new Set((favoriteRows ?? []).map((row) => row.musician_id))
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between gap-3">
@@ -166,10 +172,10 @@ export default async function CenterLocationDiscoverPage({ params }: { params: P
                       <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-800">Own transport</span>
                     )}
                   </div>
-                  <div className="mt-3">
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     <Link
                       href={`/discover/musician/${musicianUsernameById.get(musician.musician_id) ?? musician.musician_id}`}
-                      className="mr-2 inline-block rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-100"
+                      className="inline-block rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-100"
                     >
                       View full profile
                     </Link>
@@ -179,6 +185,24 @@ export default async function CenterLocationDiscoverPage({ params }: { params: P
                     >
                       Request this musician
                     </Link>
+                    <form action={toggleFavoriteMusicianAction}>
+                      <input type="hidden" name="musicianId" value={musician.musician_id} />
+                      <input type="hidden" name="favorited" value={String(favoritedIds.has(musician.musician_id))} />
+                      <button
+                        type="submit"
+                        aria-pressed={favoritedIds.has(musician.musician_id)}
+                        aria-label={favoritedIds.has(musician.musician_id) ? 'Remove from favorites' : 'Add to favorites'}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg border transition ${
+                          favoritedIds.has(musician.musician_id)
+                            ? 'border-ocean-500 bg-ocean-50 text-ocean-700'
+                            : 'border-stone-300 text-stone-400 hover:text-ocean-700'
+                        }`}
+                      >
+                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill={favoritedIds.has(musician.musician_id) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+                          <path d="M12 20.5s-7.5-4.6-9.5-9.3C1.2 8.1 2 4.8 5.4 3.8c2-.6 3.9.3 5.1 1.9l1.5 2 1.5-2c1.2-1.6 3.1-2.5 5.1-1.9 3.4 1 4.2 4.3 2.9 7.4-2 4.7-9.5 9.3-9.5 9.3z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>

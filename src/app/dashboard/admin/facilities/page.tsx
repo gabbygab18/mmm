@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUserRole } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { AdminAccountTable, type AdminAccountRow } from '@/components/mmm/admin-account-table'
-import { toggleCenterApprovalAction, removeCenterAccountAction } from '../accounts/actions'
+import { toggleCenterApprovalAction, removeCenterAccountAction, toggleCenterConfirmedAction } from '../accounts/actions'
 
 export const metadata = { title: "Facilities | Margaret's MemoryCare Music" }
 
@@ -14,6 +14,7 @@ type Row = {
   resident_count: number | null
   profile_complete: boolean
   approved: boolean
+  confirmed: boolean
   created_at: string
   deleted_at: string | null
   username: string | null
@@ -38,7 +39,7 @@ export default async function AdminFacilitiesPage({
   const supabase = await createSupabaseServerClient()
   let query = supabase
     .from('centers')
-    .select('id, user_id, name, resident_count, profile_complete, approved, created_at, deleted_at, username')
+    .select('id, user_id, name, resident_count, profile_complete, approved, confirmed, created_at, deleted_at, username')
   if (pendingOnly) query = query.eq('approved', false).is('deleted_at', null)
 
   const { data } = await query.order('created_at', { ascending: false }).limit(250)
@@ -51,6 +52,7 @@ export default async function AdminFacilitiesPage({
     detail: c.resident_count ? `${c.resident_count} residents` : 'Resident count not set',
     profileComplete: c.profile_complete,
     approved: c.approved,
+    confirmed: c.confirmed,
     deletedAt: c.deleted_at,
     createdAt: c.created_at,
     href: c.username ? `/discover/center/${c.username}` : undefined,
@@ -91,6 +93,7 @@ export default async function AdminFacilitiesPage({
           rows={rows}
           action={toggleCenterApprovalAction}
           removeAction={removeCenterAccountAction}
+          confirmAction={toggleCenterConfirmedAction}
           emptyMessage={pendingOnly ? 'No facilities are awaiting review.' : 'No facilities have registered yet.'}
         />
       </div>

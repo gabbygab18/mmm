@@ -20,6 +20,9 @@ export type AdminAccountRow = {
   detail: string
   profileComplete: boolean
   approved: boolean
+  /** Facilities only — a second gate past `approved`, set once admin has
+      verified the facility directly. Undefined on the musicians screen. */
+  confirmed?: boolean
   deletedAt: string | null
   createdAt: string
   /** Public profile, when there is one to link to. */
@@ -36,11 +39,14 @@ export function AdminAccountTable({
   rows,
   action,
   removeAction,
+  confirmAction,
   emptyMessage,
 }: {
   rows: AdminAccountRow[]
   action: (formData: FormData) => Promise<void>
   removeAction: (formData: FormData) => Promise<void>
+  /** Facilities only — omit on the musicians screen. */
+  confirmAction?: (formData: FormData) => Promise<void>
   emptyMessage: string
 }) {
   if (rows.length === 0) return <EmptyState message={emptyMessage} />
@@ -85,6 +91,29 @@ export function AdminAccountTable({
             >
               {row.approved ? 'Approved' : 'Awaiting review'}
             </span>
+
+            {confirmAction && row.approved && (
+              <span
+                className={`rounded-full px-2.5 py-0.5 font-poppins text-[10.5px] font-medium ${
+                  row.confirmed ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                }`}
+              >
+                {row.confirmed ? 'Confirmed' : 'Not yet confirmed'}
+              </span>
+            )}
+
+            {confirmAction && row.approved && !row.deletedAt && (
+              <form action={confirmAction}>
+                <input type="hidden" name="id" value={row.id} />
+                <input type="hidden" name="confirmed" value={String(row.confirmed ?? false)} />
+                <button
+                  type="submit"
+                  className="rounded-lg border border-ocean-800/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900 transition hover:bg-ocean-900/5"
+                >
+                  {row.confirmed ? 'Unconfirm' : 'Confirm'}
+                </button>
+              </form>
+            )}
 
             {!row.deletedAt && (
               <form action={action}>

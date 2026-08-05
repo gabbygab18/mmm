@@ -136,7 +136,7 @@ export default async function MusicianDashboardPage() {
       {/* ---- Summary tiles ---- */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          icon={DASH_ICONS.calendar}
+          iconImage="/mmm/icons/stat-calendar.png"
           title="Upcoming Performance"
           value={`${upcomingList.length} scheduled`}
           eyebrow="This week"
@@ -144,7 +144,7 @@ export default async function MusicianDashboardPage() {
           actionHref="/dashboard/schedule"
         />
         <StatCard
-          icon={DASH_ICONS.heartHands}
+          iconImage="/mmm/icons/stat-heart.png"
           title="Pending Requests"
           value={`${pendingList.length} waiting`}
           eyebrow="New requests"
@@ -160,7 +160,7 @@ export default async function MusicianDashboardPage() {
           actionHref="/dashboard/alerts"
         />
         <StatCard
-          icon={DASH_ICONS.clock}
+          iconImage="/mmm/icons/stat-clock.png"
           title="Hours Completed"
           value={`${monthCount ?? 0} performance${(monthCount ?? 0) === 1 ? '' : 's'}`}
           eyebrow="This month"

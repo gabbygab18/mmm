@@ -1,9 +1,10 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { DASH_ICONS, StatCard, WelcomeBanner } from '@/components/mmm/dashboard-ui'
-import { toggleMusicianApprovalAction, toggleCenterApprovalAction } from '../accounts/actions'
+import { toggleMusicianApprovalAction, toggleCenterApprovalAction, toggleCenterConfirmedAction } from '../accounts/actions'
 
 type RequestStatus = 'initiated' | 'matched' | 'accepted' | 'completed' | 'cancelled'
 
@@ -233,7 +234,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const hasCenterFilter = Boolean(centerFilter)
 
   type ModMusician = { id: string; name: string; zip_code: string; profile_complete: boolean; approved: boolean; created_at: string; deleted_at: string | null }
-  type ModCenter = { id: string; name: string; resident_count: number | null; profile_complete: boolean; approved: boolean; created_at: string; deleted_at: string | null }
+  type ModCenter = { id: string; name: string; resident_count: number | null; profile_complete: boolean; approved: boolean; confirmed: boolean; created_at: string; deleted_at: string | null }
 
   const loadMusicians = hasMusicianFilter || musicianStatusView === 'pending' || musicianStatusView === 'all'
   const loadCenters = hasCenterFilter || centerStatusView === 'pending' || centerStatusView === 'all'
@@ -253,7 +254,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   if (loadCenters) {
     let query = supabase
       .from('centers')
-      .select('id, name, resident_count, profile_complete, approved, created_at, deleted_at')
+      .select('id, name, resident_count, profile_complete, approved, confirmed, created_at, deleted_at')
     if (centerFilter) query = query.ilike('name', `%${centerFilter}%`)
     if (centerStatusView === 'pending') query = query.eq('approved', false).is('deleted_at', null)
     const { data } = await query.order('created_at', { ascending: false }).limit(250)
@@ -398,16 +399,24 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         title="Welcome back, Admin!"
         subtitle="Here’s what’s happening on Margaret’s Memorycare Music today."
         aside={
-          <span className="inline-flex items-center gap-2 self-start rounded-xl bg-ocean-800 px-5 py-3 font-poppins text-[12.4px] font-semibold text-white shadow">
-            {DASH_ICONS.calendar}
-            {todayLabel}
-          </span>
+          <div className="flex flex-col items-end gap-2">
+            <span className="inline-flex items-center gap-2 self-end rounded-xl bg-ocean-800 px-5 py-3 font-poppins text-[12.4px] font-semibold text-white shadow">
+              {DASH_ICONS.calendar}
+              {todayLabel}
+            </span>
+            <Link
+              href="/dashboard/admin/bookings/new"
+              className="inline-flex items-center gap-2 self-end rounded-xl border border-ocean-800/60 bg-white px-5 py-2.5 font-poppins text-[11.5px] font-bold uppercase tracking-[0.08em] text-ocean-900 shadow transition hover:bg-ocean-900/5"
+            >
+              + Manual Booking
+            </Link>
+          </div>
         }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          icon={DASH_ICONS.people}
+          iconImage="/mmm/icons/stat-people.png"
           title="Pending Musicians"
           value={`${pendingMusicianCount ?? 0} awaiting review`}
           eyebrow="Pending musicians"
@@ -415,7 +424,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           actionHref="/dashboard/admin/oversight?musicianStatus=pending#account-moderation"
         />
         <StatCard
-          icon={DASH_ICONS.building}
+          iconImage="/mmm/icons/stat-building.png"
           title="Pending Facilities"
           value={`${pendingCenterCount ?? 0} awaiting review`}
           eyebrow="Pending facilities"
@@ -423,7 +432,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           actionHref="/dashboard/admin/oversight?centerStatus=pending#account-moderation"
         />
         <StatCard
-          icon={DASH_ICONS.calendar}
+          iconImage="/mmm/icons/stat-calendar.png"
           title="Today’s Requests"
           value={`${requestRows.length} in view`}
           eyebrow="Today’s requests"
@@ -431,7 +440,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           actionHref="/dashboard/requests"
         />
         <StatCard
-          icon={DASH_ICONS.music}
+          iconImage="/mmm/icons/stat-music.png"
           title="Open Flags"
           value={`${openFlags.length} to resolve`}
           eyebrow="Needs attention"
@@ -714,6 +723,15 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                       >
                         {center.approved ? 'Approved' : 'Disabled'}
                       </span>
+                      {center.approved && (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                            center.confirmed ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {center.confirmed ? 'Confirmed' : 'Not yet confirmed'}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -728,6 +746,18 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                         {center.approved ? 'Disable profile' : 'Re-enable profile'}
                       </button>
                     </form>
+                    {center.approved && (
+                      <form action={toggleCenterConfirmedAction}>
+                        <input type="hidden" name="id" value={center.id} />
+                        <input type="hidden" name="confirmed" value={String(center.confirmed)} />
+                        <button
+                          type="submit"
+                          className="rounded border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                        >
+                          {center.confirmed ? 'Unconfirm' : 'Confirm'}
+                        </button>
+                      </form>
+                    )}
                   </div>
 
                   <form action={createCenterFlag} className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">

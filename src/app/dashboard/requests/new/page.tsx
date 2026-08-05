@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TimeGridPicker } from '@/app/components/TimeGridPicker'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
@@ -557,47 +557,17 @@ export default function NewRequestPage() {
   )
 }
 
-const STATUS_ICONS: Record<string, ReactNode> = {
-  requested: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-      <path d="M22 2 11 13" />
-      <path d="M22 2 15 22l-4-9-9-4 20-7z" />
-    </svg>
-  ),
-  accepted: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5" aria-hidden="true">
-      <path d="M12 5.6a5 5 0 0 1 7 .3l3 3-1.4 1.4-1.3-1.3-3.6 3.6a2 2 0 0 1-2.8 0l-.9-.9-2.6 2.6a1.6 1.6 0 1 1-2.2-2.2l2.6-2.6-.5-.5a2.4 2.4 0 0 1 0-3.4zM4.4 8.9 2 11.3l1.4 1.4 1.3-1.3 2.6 2.6a3.6 3.6 0 0 0 5 5l.6.6a2 2 0 0 0 2.9 0l.5-.6-6.9-6.9z" />
-    </svg>
-  ),
-  scheduled: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-      <rect x="3" y="4" width="13" height="13" rx="1.5" />
-      <path d="M6.5 2.5v3M13 2.5v3M3 8.5h13" />
-      <circle cx="17" cy="17" r="5.3" />
-      <path d="M17 14.5V17l1.6 1" />
-    </svg>
-  ),
-  completed: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-      <path d="M5 12.5l4.5 4.5L19 7" />
-    </svg>
-  ),
-  cancelled: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-      <path d="M6 6l12 12M18 6 6 18" />
-    </svg>
-  ),
-}
-
 const STATUS_STEPS = [
-  { key: 'requested', label: 'Requested', body: 'Your performance request has been submitted.', bg: '#a9c9ec' },
-  { key: 'accepted', label: 'Accepted', body: 'A volunteer musician has accepted your request.', bg: '#f3dd8c' },
-  { key: 'scheduled', label: 'Scheduled', body: 'The performance is confirmed on the calendar.', bg: '#c9b7ef' },
-  { key: 'completed', label: 'Completed', body: 'The performance has been completed.', bg: '#93de9f' },
+  { key: 'requested', label: 'Requested', body: 'Your performance request has been submitted.', icon: '/mmm/icons/status-requested.png' },
+  { key: 'accepted', label: 'Accepted', body: 'A volunteer musician has accepted your request.', icon: '/mmm/icons/status-accepted.png' },
+  { key: 'scheduled', label: 'Scheduled', body: 'The performance is confirmed on the calendar.', icon: '/mmm/icons/status-scheduled.png' },
+  { key: 'completed', label: 'Completed', body: 'The performance has been completed.', icon: '/mmm/icons/status-completed.png' },
 ]
 
 /** Static reference panel — the lifecycle every request moves through, shown
-    beside the form so a first-time requester knows what happens next. */
+    beside the form so a first-time requester knows what happens next.
+    Icons are cropped straight from the approved mockup (page 17), not
+    redrawn — see public/mmm/icons/status-*.png. */
 function BookingStatusPanel() {
   return (
     <div
@@ -612,12 +582,8 @@ function BookingStatusPanel() {
         <ul className="relative space-y-6">
           {STATUS_STEPS.map((s) => (
             <li key={s.key} className="flex items-start gap-4">
-              <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ocean-900"
-                style={{ backgroundColor: s.bg }}
-              >
-                {STATUS_ICONS[s.key]}
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.icon} alt="" className="h-10 w-10 shrink-0 rounded-full" />
               <div>
                 <p className="font-poppins text-[12.5px] font-bold text-ocean-900">{s.label}</p>
                 <p className="mt-0.5 font-poppins text-[11px] leading-snug text-ocean-900/80">{s.body}</p>
@@ -630,12 +596,8 @@ function BookingStatusPanel() {
       <hr className="my-6 border-t border-white/50" />
 
       <div className="flex items-start gap-4">
-        <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ocean-900"
-          style={{ backgroundColor: '#f398a6' }}
-        >
-          {STATUS_ICONS.cancelled}
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/mmm/icons/status-cancelled.png" alt="" className="h-10 w-10 shrink-0 rounded-full" />
         <div>
           <p className="font-poppins text-[12.5px] font-bold text-ocean-900">Cancelled</p>
           <p className="mt-0.5 font-poppins text-[11px] leading-snug text-ocean-900/80">The performance request was cancelled.</p>

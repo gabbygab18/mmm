@@ -10,6 +10,9 @@ import {
   StatCard,
   WelcomeBanner,
 } from '@/components/mmm/dashboard-ui'
+import { deleteCenterNoteAction, toggleFavoriteMusicianAction } from './actions'
+import { AddNoteForm } from './add-note-form'
+
 
 /**
  * Facility dashboard — approved design.
@@ -96,6 +99,27 @@ export default async function CenterDashboardPage() {
   const pendingCount = (pending?.data ?? []).length
   const announcementList = announcements?.data ?? []
 
+  const [{ data: favoriteRows }, { data: noteRows }] = center
+    ? await Promise.all([
+        supabase
+          .from('center_favorite_musicians')
+          .select('musician_id, musicians(id, name, first_name, last_name, instruments, music_types, profile_image_url)')
+          .eq('center_id', center.id)
+          .order('created_at', { ascending: false })
+          .limit(4),
+        supabase
+          .from('center_notes')
+          .select('id, title, body, created_at')
+          .eq('center_id', center.id)
+          .order('created_at', { ascending: false })
+          .limit(4),
+      ])
+    : [{ data: null }, { data: null }]
+
+  const favoriteMusicians = favoriteRows ?? []
+  const notes = noteRows ?? []
+  const firstLocationId = locations?.[0]?.id ?? null
+
   // Musicians are shown publicly as first name plus last initial.
   const musicianLabel = (m: { name?: string | null; first_name?: string | null; last_name?: string | null } | null) => {
     if (!m) return 'Musician'
@@ -139,7 +163,7 @@ export default async function CenterDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          icon={DASH_ICONS.calendar}
+          iconImage="/mmm/icons/stat-calendar.png"
           title="Upcoming Visits"
           value={`${upcomingList.length} scheduled`}
           eyebrow="This week"
@@ -147,7 +171,7 @@ export default async function CenterDashboardPage() {
           actionHref="/dashboard/schedule"
         />
         <StatCard
-          icon={DASH_ICONS.heartHands}
+          iconImage="/mmm/icons/stat-heart.png"
           title="Pending Requests"
           value={`${pendingCount} waiting`}
           eyebrow="New requests"
@@ -155,7 +179,7 @@ export default async function CenterDashboardPage() {
           actionHref="/dashboard/requests"
         />
         <StatCard
-          icon={DASH_ICONS.music}
+          iconImage="/mmm/icons/stat-music.png"
           title="Past Performances"
           value={`${pastCount ?? 0} this month`}
           eyebrow="This month"
@@ -163,7 +187,7 @@ export default async function CenterDashboardPage() {
           actionHref="/dashboard/schedule"
         />
         <StatCard
-          icon={DASH_ICONS.clock}
+          iconImage="/mmm/icons/stat-clock.png"
           title="Hours of Music"
           value={`${(pastCount ?? 0) * 1} hour${(pastCount ?? 0) === 1 ? '' : 's'}`}
           eyebrow="This month"
@@ -173,60 +197,46 @@ export default async function CenterDashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Panel
-          title="Upcoming Visits"
-          viewAllHref="/dashboard/schedule"
-          footer={<PanelButton href="/dashboard/schedule">View full schedule</PanelButton>}
-        >
-          {upcomingList.length === 0 ? (
-            <EmptyState
-              message="No visits booked yet. Send a performance request to get started."
-              actionLabel="Request a performance"
-              actionHref="/dashboard/requests/new"
-            />
-          ) : (
-            <ul className="space-y-4">
-              {upcomingList.map((item) => {
-                const musician = Array.isArray(item.musicians) ? item.musicians[0] : item.musicians
-                return (
-                  <li key={item.id} className="border-b border-ocean-200/70 pb-4 last:border-0 last:pb-0">
-                    <div className="flex gap-3">
-                      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-ocean-200 font-poppins text-[12.9px] font-semibold text-ocean-900">
-                        {formatDate(item.requested_date)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-poppins text-[11.1px] font-bold text-ocean-900">
-                          {musicianLabel(musician)}
-                        </p>
-                        <p className="font-poppins text-[11.1px] text-ocean-900/80">
-                          {timeRange(item.requested_start_time, item.requested_end_time)}
-                        </p>
-                        <p className="mt-1 font-poppins text-[11.1px] font-bold uppercase tracking-wide text-ocean-800">
-                          Confirmed
-                        </p>
-                      </div>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </Panel>
-
         <div className="space-y-4">
-          {/* Request a performance — the primary action for a facility. */}
-          <section className="relative overflow-hidden rounded-2xl bg-[#fdfaf3] px-6 py-6 shadow-sm">
-            <h2 className="font-garamond text-[19px] font-bold text-ocean-900">Request a Performance</h2>
-            <p className="mt-1 max-w-[280px] font-poppins text-[10.3px] leading-relaxed text-ocean-900/85">
-              Invite volunteer musicians to bring live music and joy to your residents.
-            </p>
-            <Link
-              href="/dashboard/requests/new"
-              className="mt-4 inline-block rounded-md bg-ocean-800 px-6 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.14em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3)] transition hover:bg-ocean-700"
-            >
-              Request now
-            </Link>
-          </section>
+          <Panel
+            title="Upcoming Visits"
+            viewAllHref="/dashboard/schedule"
+            footer={<PanelButton href="/dashboard/schedule">View full schedule</PanelButton>}
+          >
+            {upcomingList.length === 0 ? (
+              <EmptyState
+                message="No visits booked yet. Send a performance request to get started."
+                actionLabel="Request a performance"
+                actionHref="/dashboard/requests/new"
+              />
+            ) : (
+              <ul className="space-y-4">
+                {upcomingList.map((item) => {
+                  const musician = Array.isArray(item.musicians) ? item.musicians[0] : item.musicians
+                  return (
+                    <li key={item.id} className="border-b border-ocean-200/70 pb-4 last:border-0 last:pb-0">
+                      <div className="flex gap-3">
+                        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-ocean-200 font-poppins text-[12.9px] font-semibold text-ocean-900">
+                          {formatDate(item.requested_date)}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-poppins text-[11.1px] font-bold text-ocean-900">
+                            {musicianLabel(musician)}
+                          </p>
+                          <p className="font-poppins text-[11.1px] text-ocean-900/80">
+                            {timeRange(item.requested_start_time, item.requested_end_time)}
+                          </p>
+                          <p className="mt-1 font-poppins text-[11.1px] font-bold uppercase tracking-wide text-ocean-800">
+                            Confirmed
+                          </p>
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </Panel>
 
           <Panel title="Resources" viewAllHref="/education">
             <ul className="space-y-3">
@@ -246,23 +256,123 @@ export default async function CenterDashboardPage() {
           </Panel>
         </div>
 
-        <Panel title="Announcements" viewAllHref="/dashboard/alerts">
-          {announcementList.length === 0 ? (
-            <EmptyState message="Nothing new from the MMM team." />
-          ) : (
-            <ul className="space-y-3">
-              {announcementList.map((a) => (
-                <li key={a.id} className="rounded-xl bg-ocean-100/80 px-4 py-3">
-                  <p className="font-poppins text-[11.1px] font-bold text-ocean-900">{a.title}</p>
-                  {a.body && <p className="mt-0.5 font-poppins text-[11.1px] text-ocean-900/85">{a.body}</p>}
-                  <p className="mt-1 font-poppins text-[7px] uppercase tracking-wide text-ocean-900/60">
-                    {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
+        <div className="space-y-4">
+          {/* Request a performance — the primary action for a facility. */}
+          <section className="relative overflow-hidden rounded-2xl bg-[#fdfaf3] px-6 py-6 shadow-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/mmm/icons/guitar.png" alt="" className="absolute right-6 top-6 h-9 w-9 object-contain" />
+            <h2 className="font-garamond text-[19px] font-bold text-ocean-900">Request a Performance</h2>
+            <p className="mt-1 max-w-[280px] font-poppins text-[10.3px] leading-relaxed text-ocean-900/85">
+              Invite volunteer musicians to bring live music and joy to your residents.
+            </p>
+            <Link
+              href="/dashboard/requests/new"
+              className="mt-4 inline-block rounded-md bg-ocean-800 px-6 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.14em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3)] transition hover:bg-ocean-700"
+            >
+              Request now
+            </Link>
+          </section>
+
+          <Panel
+            title="Favorite Musicians"
+            viewAllHref={firstLocationId ? `/dashboard/center/locations/${firstLocationId}/discover` : undefined}
+          >
+            {favoriteMusicians.length === 0 ? (
+              <EmptyState
+                message="No favorites yet. Heart a musician while browsing to save them here."
+                actionLabel={firstLocationId ? 'Browse musicians' : undefined}
+                actionHref={firstLocationId ? `/dashboard/center/locations/${firstLocationId}/discover` : undefined}
+              />
+            ) : (
+              <ul className="space-y-3">
+                {favoriteMusicians.map((row) => {
+                  const m = Array.isArray(row.musicians) ? row.musicians[0] : row.musicians
+                  if (!m) return null
+                  const label = m.first_name ? `${m.first_name}${m.last_name ? ` ${m.last_name[0]}.` : ''}` : m.name
+                  const detail = m.instruments?.[0] ?? m.music_types?.[0] ?? 'Musician'
+                  return (
+                    <li key={m.id} className="flex items-center gap-3">
+                      {m.profile_image_url ? (
+                        <img src={m.profile_image_url} alt={label} className="h-9 w-9 shrink-0 rounded-full object-cover" />
+                      ) : (
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ocean-100 font-poppins text-[11px] font-bold text-ocean-700">
+                          {label?.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-poppins text-[11.1px] font-bold text-ocean-900">{label}</p>
+                        <p className="truncate font-poppins text-[9.3px] text-ocean-900/70">{detail}</p>
+                      </div>
+                      <form action={toggleFavoriteMusicianAction}>
+                        <input type="hidden" name="musicianId" value={m.id} />
+                        <input type="hidden" name="favorited" value="true" />
+                        <button type="submit" aria-label="Remove from favorites" className="text-ocean-700 transition hover:text-ocean-900">
+                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                          </svg>
+                        </button>
+                      </form>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </Panel>
+        </div>
+
+        <div className="space-y-4">
+          <Panel title="Announcements" viewAllHref="/dashboard/alerts">
+            {announcementList.length === 0 ? (
+              <EmptyState message="Nothing new from the MMM team." />
+            ) : (
+              <ul className="space-y-3">
+                {announcementList.map((a) => (
+                  <li key={a.id} className="rounded-xl bg-ocean-100/80 px-4 py-3">
+                    <p className="font-poppins text-[11.1px] font-bold text-ocean-900">{a.title}</p>
+                    {a.body && <p className="mt-0.5 font-poppins text-[11.1px] text-ocean-900/85">{a.body}</p>}
+                    <p className="mt-1 font-poppins text-[7px] uppercase tracking-wide text-ocean-900/60">
+                      {new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+
+          <section className="rounded-2xl bg-[#fdfaf3] px-5 py-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4 border-b border-ocean-300/70 pb-2">
+              <h2 className="font-garamond text-[19px] font-bold text-ocean-900">Facility Notes</h2>
+              <AddNoteForm />
+            </div>
+            <div className="pt-4">
+              {notes.length === 0 ? (
+                <EmptyState message="No notes yet. Jot down anything worth remembering for next time." />
+              ) : (
+                <ul className="space-y-3">
+                  {notes.map((note) => (
+                    <li key={note.id} className="flex items-start justify-between gap-2 rounded-xl bg-ocean-100/80 px-4 py-3">
+                      <div className="min-w-0">
+                        <p className="font-poppins text-[11.1px] font-bold text-ocean-900">{note.title}</p>
+                        {note.body && <p className="mt-0.5 font-poppins text-[11.1px] text-ocean-900/85">{note.body}</p>}
+                        <p className="mt-1 font-poppins text-[7px] uppercase tracking-wide text-ocean-900/60">
+                          {new Date(note.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      <form action={deleteCenterNoteAction}>
+                        <input type="hidden" name="noteId" value={note.id} />
+                        <button type="submit" aria-label="Delete note" className="shrink-0 text-ocean-900/40 transition hover:text-rose-600">
+                          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+                            <path d="M6 6l12 12M18 6 6 18" />
+                          </svg>
+                        </button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   )

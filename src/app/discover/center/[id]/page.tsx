@@ -54,11 +54,13 @@ export default async function CenterProfilePage({ params }: { params: Promise<{ 
 
   const { data: center, error: centerError } = await supabase
     .from('centers')
-    .select('id, username, name, phone, profile_image_url, profile_complete, approved')
+    .select('id, username, name, phone, profile_image_url, profile_complete, approved, confirmed')
     .eq('username', username)
     .maybeSingle()
 
-  if (centerError || !center) {
+  // Admins can preview an unconfirmed facility (e.g. while verifying it);
+  // everyone else only ever sees confirmed, approved facilities.
+  if (centerError || !center || (!(center.approved && center.confirmed) && role !== 'admin')) {
     notFound()
   }
 
@@ -120,6 +122,11 @@ export default async function CenterProfilePage({ params }: { params: Promise<{ 
             <div className="mt-2 flex flex-wrap gap-2">
               {center.approved && (
                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">Approved</span>
+              )}
+              {center.confirmed ? (
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">Confirmed</span>
+              ) : (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">Not yet confirmed</span>
               )}
               {center.profile_complete && (
                 <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-800">Profile complete</span>

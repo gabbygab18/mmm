@@ -22,24 +22,12 @@ const FAQS = [
     a: 'Musicians of all ages and skill levels are welcome! Whether you’re a solo artist, band, or part of a group, your music can make a meaningful difference.',
   },
   {
-    q: 'Do facilities pay?',
-    a: 'No. There is no cost for any of our performances. Margaret’s Memorycare Music is a nonprofit organization funded by donations and community support.',
-  },
-  {
     q: 'Can choirs join?',
     a: 'Absolutely! Choirs and vocal ensembles are encouraged to volunteer. Group performances bring joy and connection to residents.',
   },
   {
     q: 'How long are performances?',
     a: 'Most performances are 30–60 minutes, depending on the residents’ needs and the facility’s preference.',
-  },
-  {
-    q: 'Is insurance provided?',
-    a: 'Yes. All volunteer musicians are covered by our liability insurance while performing at partnered facilities.',
-  },
-  {
-    q: 'How do you ensure safety?',
-    a: 'We follow strict safety guidelines and work closely with each facility to create a comfortable and secure environment for residents and musicians.',
   },
 ]
 

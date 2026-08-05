@@ -64,9 +64,13 @@ export default async function LocationProfilePage({ params }: { params: Promise<
 
   const { data: center } = await supabase
     .from('centers')
-    .select('id, name, username, approved, profile_image_url')
+    .select('id, name, username, approved, confirmed, profile_image_url')
     .eq('id', location.center_id)
     .maybeSingle()
+
+  if (!center || (!(center.approved && center.confirmed) && role !== 'admin')) {
+    notFound()
+  }
 
   const locationDisplayImageUrl = getDisplayImageUrl(location.location_image_url, center?.profile_image_url)
 

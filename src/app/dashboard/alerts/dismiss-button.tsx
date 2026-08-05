@@ -31,7 +31,7 @@ export function DismissAlertButton({ alertId, onDismiss }: DismissButtonProps) {
     <button
       onClick={handleDismiss}
       disabled={isLoading}
-      className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50 disabled:opacity-50"
+      className="rounded-md border border-ocean-800/50 px-3 py-1.5 font-poppins text-sm font-medium text-ocean-900 transition hover:bg-ocean-900/5 disabled:opacity-50"
     >
       {isLoading ? 'Dismissing...' : 'Dismiss'}
     </button>

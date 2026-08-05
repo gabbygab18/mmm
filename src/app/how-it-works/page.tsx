@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 const MUSICIAN_STEPS = [
-  { title: 'Register', body: 'Create your musician account in minutes.' },
+  { title: 'Register', body: 'Create your musician profile in minutes.' },
   { title: 'Complete Profile', body: 'Tell us about yourself, your music, and experience.' },
   { title: 'Set Availability', body: 'Choose the days and times you’re available to perform.' },
   { title: 'Receive Requests', body: 'Facilities will send performance requests.' },

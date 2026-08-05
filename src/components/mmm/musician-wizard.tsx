@@ -52,6 +52,8 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 const TIMES = ['Morning', 'Afternoon', 'Evening'] as const
 const FREQUENCIES = ['Weekly', 'Every 2 weeks', 'Monthly', 'Flexible'] as const
 const DISTANCES = ['Within 5 miles', 'Within 10 miles', 'Within 15 miles', 'Within 25 miles', 'Within 50 miles', 'Any distance'] as const
+/** Larger than any real point-to-point distance within the continental US (~2900mi). */
+const NATIONWIDE_RADIUS_MILES = 5000
 const WEEKDAY_HEADERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const
 
@@ -329,7 +331,13 @@ export function MusicianWizard({
         }
         setGenres(musician.music_types ?? [])
         setPreferredDays(musician.general_available_days ?? [])
-        if (musician.travel_radius_miles) setMaxDistance(`Within ${musician.travel_radius_miles} miles`)
+        if (musician.travel_radius_miles) {
+          setMaxDistance(
+            musician.travel_radius_miles >= NATIONWIDE_RADIUS_MILES
+              ? 'Any distance'
+              : `Within ${musician.travel_radius_miles} miles`,
+          )
+        }
         setYoutubeChannelUrl(musician.youtube_channel_url ?? '')
         if (musician.profile_image_url) setSavedPhotoUrl(musician.profile_image_url)
         // A `u_…` handle is the provisional one the database assigns at signup —
@@ -537,7 +545,12 @@ export function MusicianWizard({
     }
 
     const instruments = [primaryInstrument, ...otherInstruments.split(',').map((v) => v.trim())].filter(Boolean)
-    const radius = Number(maxDistance.replace(/\D/g, '')) || 15
+    // "Any distance" has no digits to parse — regex-stripping it fell through
+    // to the 15-mile default instead of meaning nationwide. NATIONWIDE_RADIUS_MILES
+    // is large enough that no real US distance exceeds it.
+    const radius = /any distance/i.test(maxDistance)
+      ? NATIONWIDE_RADIUS_MILES
+      : Number(maxDistance.replace(/\D/g, '')) || 15
 
     await supabase.auth.updateUser({
       data: {

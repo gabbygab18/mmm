@@ -49,13 +49,17 @@ export function WelcomeBanner({
 /** One of the four summary tiles across the top of each dashboard. */
 export function StatCard({
   icon,
+  iconImage,
   title,
   value,
   eyebrow,
   actionLabel,
   actionHref,
 }: {
-  icon: ReactNode
+  icon?: ReactNode
+  /** Cropped straight from the approved mockup — already a complete navy
+      circle, so it renders on its own rather than inside another one. */
+  iconImage?: string
   title: string
   value: ReactNode
   eyebrow: string
@@ -65,9 +69,14 @@ export function StatCard({
   return (
     <div className="flex flex-col rounded-2xl bg-[#fdfaf3] px-5 py-5 shadow-sm">
       <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ocean-900 text-white">
-          {icon}
-        </span>
+        {iconImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={iconImage} alt="" className="h-11 w-11 shrink-0 rounded-full" />
+        ) : (
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ocean-900 text-white">
+            {icon}
+          </span>
+        )}
         <div className="min-w-0">
           <h2 className="font-garamond text-[15px] font-bold leading-tight text-ocean-900 sm:text-[16.5px]">{title}</h2>
           <p className="font-poppins text-[13px] font-semibold text-ocean-900">{value}</p>

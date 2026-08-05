@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { getCurrentUserRole } from '@/lib/auth'
+import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { notifyUser, getRecipientEmail } from '@/lib/notifications'
@@ -37,12 +37,16 @@ async function setApproved(table: 'musicians' | 'centers', id: string, approved:
       title: 'Your account has been approved!',
       message: isMusician
         ? "You're approved! Facilities near you can now find you and send performance requests."
-        : "You're approved! Musicians near you can now find you and send performance offers.",
+        : "Your facility account has been approved. We'll be in touch to confirm your details before you go live.",
       recipientEmail,
       subject: "You're approved — welcome to Margaret's MemoryCare Music",
       body: isMusician
-        ? `Hi ${name},\n\nGreat news — your musician account has been approved by our team. Facilities near you can now discover your profile and send you performance requests.\n\nSign in to your dashboard to review your availability and get ready for your first request:\n${appUrl}/dashboard\n\nThank you for volunteering your time and talent.\n\n— Margaret's MemoryCare Music`
-        : `Hi ${name},\n\nGreat news — your facility account has been approved by our team. Volunteer musicians near you can now discover your community and send performance offers.\n\nSign in to your dashboard to review your details:\n${appUrl}/dashboard\n\nThank you for partnering with us to bring live music to your residents.\n\n— Margaret's MemoryCare Music`,
+        ? `Hi ${name},\n\nGreat news — your musician profile has been approved by our team. Facilities near you can now discover your profile and send you performance requests.\n\nSign in to your dashboard to review your availability and get ready for your first request:\n${appUrl}/dashboard\n\nThank you for volunteering your time and talent.\n\n— Margaret's MemoryCare Music`
+        // Approval alone doesn't make a facility discoverable — "confirmed" is
+        // the separate gate that does, set once admin has verified them
+        // directly. Don't claim visibility here; confirmCenterAction below
+        // sends the real "you're live" email once that happens.
+        : `Hi ${name},\n\nGreat news — your facility account has been approved by our team. As a final step, we'll be reaching out to confirm your details — once that's done, volunteer musicians near you will be able to discover your community and send performance offers.\n\nSign in to your dashboard to review your details:\n${appUrl}/dashboard\n\nThank you for partnering with us to bring live music to your residents.\n\n— Margaret's MemoryCare Music`,
     })
   }
 
@@ -51,6 +55,61 @@ async function setApproved(table: 'musicians' | 'centers', id: string, approved:
   revalidatePath('/dashboard/admin/facilities')
   revalidatePath('/dashboard/admin/oversight')
   revalidatePath('/dashboard/admin/reports')
+}
+
+/**
+ * Facility-only second gate, separate from `approved`: admin has directly
+ * verified this facility (e.g. a phone call) and it's now actually
+ * discoverable to musicians — see the `confirmed` filter added to the
+ * get_nearby_centers_for_musician* RPCs.
+ */
+async function setConfirmed(id: string, confirmed: boolean) {
+  const role = await getCurrentUserRole()
+  if (role !== 'admin') return
+
+  const admin = await requireAuthenticatedUser()
+  const supabase = await createSupabaseServerClient()
+
+  const { data: before } = await supabase.from('centers').select('user_id, name, approved, confirmed').eq('id', id).maybeSingle()
+  if (!before) return
+  // Can't confirm a facility that isn't even approved yet.
+  if (confirmed && !before.approved) return
+
+  await supabase
+    .from('centers')
+    .update({
+      confirmed,
+      confirmed_at: confirmed ? new Date().toISOString() : null,
+      confirmed_by_user_id: confirmed ? admin.id : null,
+    })
+    .eq('id', id)
+
+  if (confirmed && !before.confirmed && before.user_id) {
+    const name = before.name || 'there'
+    const recipientEmail = await getRecipientEmail(before.user_id)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+    await notifyUser({
+      userId: before.user_id,
+      alertType: 'facility_confirmed',
+      title: "You're live!",
+      message: "You're confirmed! Musicians near you can now find you and send performance offers.",
+      recipientEmail,
+      subject: "You're confirmed — welcome to Margaret's MemoryCare Music",
+      body: `Hi ${name},\n\nYou're all set — we've confirmed your facility details, and volunteer musicians near you can now discover your community and send performance offers.\n\nSign in to your dashboard to get started:\n${appUrl}/dashboard\n\nThank you for partnering with us to bring live music to your residents.\n\n— Margaret's MemoryCare Music`,
+    })
+  }
+
+  revalidatePath('/dashboard/admin')
+  revalidatePath('/dashboard/admin/facilities')
+  revalidatePath('/dashboard/admin/oversight')
+  revalidatePath('/dashboard/admin/reports')
+}
+
+export async function toggleCenterConfirmedAction(formData: FormData) {
+  const id = String(formData.get('id') ?? '')
+  const confirmed = String(formData.get('confirmed') ?? '') === 'true'
+  if (id) await setConfirmed(id, !confirmed)
 }
 
 export async function toggleMusicianApprovalAction(formData: FormData) {
