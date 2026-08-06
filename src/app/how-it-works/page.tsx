@@ -12,22 +12,24 @@ export const metadata: Metadata = {
 }
 
 const MUSICIAN_STEPS = [
-  { title: 'Register', body: 'Create your musician profile in minutes.' },
-  { title: 'Complete Profile', body: 'Tell us about yourself, your music, and experience.' },
-  { title: 'Set Availability', body: 'Choose the days and times you’re available to perform.' },
-  { title: 'Receive Requests', body: 'Facilities will send performance requests.' },
-  { title: 'Accept', body: 'Accept the requests that work for you.' },
-  { title: 'Perform', body: 'Bring joy through live music!' },
-  { title: 'Track Volunteer Hours', body: 'We track your hours so you can see your impact.' },
+  { title: 'Create Your Profile', body: 'Complete your registration and share your musical background, performance experience, and contact information.' },
+  { title: 'Browse Participating Facilities', body: 'Explore participating memory care communities to learn about their locations and volunteer opportunities.' },
+  { title: 'Request an Introduction', body: 'Select a participating facility and submit a request for an introduction through the MMM team.' },
+  { title: 'Review & Connect', body: 'The MMM team reviews your request and helps facilitate your first connection with the selected community.' },
+  { title: 'Prepare for Your Performance', body: 'Once connected, coordinate the details for your upcoming visit.' },
+  { title: 'Schedule Your Performance', body: 'Coordinate a date and time that works for both you and the facility.' },
+  { title: 'Share the Joy of Music', body: 'Perform for residents and create meaningful moments through live music and connection.' },
+  { title: 'Track Your Volunteer Hours', body: 'Log your completed performances and volunteer hours through your musician profile.' },
 ]
 
 const FACILITY_STEPS = [
-  { title: 'Register', body: 'Create your facility account.' },
-  { title: 'Search Musicians', body: 'Browse and find musicians that fit your community.' },
-  { title: 'Submit Requests', body: 'Send a performance request with your preferences.' },
-  { title: 'Schedule', body: 'We’ll match you and confirm the details.' },
-  { title: 'Enjoy Performances', body: 'Your residents enjoy meaningful live music.' },
-  { title: 'Repeat', body: 'Invite your favorite musicians back anytime.' },
+  { title: 'Register Your Community', body: 'Create a facility profile and provide information about your community, activities program, and primary contact.' },
+  { title: 'Submit Your Registration', body: 'Submit your completed registration for review by the MMM team.' },
+  { title: 'MMM Reviews Your Registration', body: 'Our team reviews your information and activates your facility profile once approved.' },
+  { title: 'Receive Interested Musicians', body: 'Receive volunteer requests from musicians interested in serving your community.' },
+  { title: 'Schedule a Performance', body: 'Work with the MMM team and the volunteer musician to confirm the performance date, time, and any special requests.' },
+  { title: 'Welcome Live Music to Your Community', body: 'Host meaningful live music experiences that bring joy, comfort, and connection to your residents.' },
+  { title: 'Build Lasting Partnerships', body: 'Continue requesting performances and invite volunteer musicians back for future visits.' },
 ]
 
 function PathColumn({

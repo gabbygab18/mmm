@@ -136,7 +136,7 @@ export default function LoginPage() {
 
       <p className="mt-5 text-center font-poppins text-[8.3px] text-ocean-900/80 lg:text-[10.7px]">
         New here?{' '}
-        <Link href="/signup" className="font-bold text-ocean-700 transition hover:text-ocean-600">
+        <Link href="/get-started" className="font-bold text-ocean-700 transition hover:text-ocean-600">
           Create a free account
         </Link>
       </p>

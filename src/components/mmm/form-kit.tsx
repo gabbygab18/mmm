@@ -21,23 +21,39 @@ export function Field({
   children,
   className = '',
   hint,
+  required,
+  error,
 }: {
   label: string
   htmlFor?: string
   children: ReactNode
   className?: string
   hint?: string
+  required?: boolean
+  error?: string
 }) {
   return (
     <div className={className}>
       <label className={labelClass} htmlFor={htmlFor}>
         {label}
+        {required && (
+          <span className="text-red-600" aria-hidden="true">
+            {' '}*
+          </span>
+        )}
       </label>
       {children}
-      {hint && <p className="mt-1 font-poppins text-[10px] text-ocean-900/60">{hint}</p>}
+      {error ? (
+        <p className="mt-1 font-poppins text-[10px] font-medium text-red-600">{error}</p>
+      ) : (
+        hint && <p className="mt-1 font-poppins text-[10px] text-ocean-900/60">{hint}</p>
+      )}
     </div>
   )
 }
+
+/** Border/ring classes an input should pick up when it has a field error. */
+export const errorInputClass = 'border-red-400 focus:border-red-500 focus:ring-red-400'
 
 /** Text input wired to a label via a generated id. */
 export function TextField({
@@ -50,6 +66,8 @@ export function TextField({
   className = '',
   inputMode,
   maxLength,
+  required,
+  error,
 }: {
   label: string
   value: string
@@ -60,10 +78,12 @@ export function TextField({
   className?: string
   inputMode?: 'text' | 'tel' | 'email' | 'numeric' | 'url'
   maxLength?: number
+  required?: boolean
+  error?: string
 }) {
   const id = useId()
   return (
-    <Field label={label} htmlFor={id} className={className}>
+    <Field label={label} htmlFor={id} className={className} required={required} error={error}>
       <input
         id={id}
         type={type}
@@ -73,7 +93,8 @@ export function TextField({
         autoComplete={autoComplete}
         inputMode={inputMode}
         maxLength={maxLength}
-        className={inputClass}
+        aria-invalid={error ? true : undefined}
+        className={`${inputClass} ${error ? errorInputClass : ''}`}
       />
     </Field>
   )
@@ -96,6 +117,8 @@ export function PhoneField({
   placeholder = '(555) 555-5555',
   autoComplete,
   className = '',
+  required,
+  error,
 }: {
   label: string
   value: string
@@ -103,10 +126,12 @@ export function PhoneField({
   placeholder?: string
   autoComplete?: string
   className?: string
+  required?: boolean
+  error?: string
 }) {
   const id = useId()
   return (
-    <Field label={label} htmlFor={id} className={className}>
+    <Field label={label} htmlFor={id} className={className} required={required} error={error}>
       <input
         id={id}
         type="tel"
@@ -116,7 +141,8 @@ export function PhoneField({
         autoComplete={autoComplete}
         inputMode="tel"
         maxLength={14}
-        className={inputClass}
+        aria-invalid={error ? true : undefined}
+        className={`${inputClass} ${error ? errorInputClass : ''}`}
       />
     </Field>
   )
@@ -133,6 +159,8 @@ export function SelectField({
   options,
   placeholder = 'Select an option',
   className = '',
+  required,
+  error,
 }: {
   label: string
   value: string
@@ -140,16 +168,19 @@ export function SelectField({
   options: readonly string[]
   placeholder?: string
   className?: string
+  required?: boolean
+  error?: string
 }) {
   const id = useId()
   return (
-    <Field label={label} htmlFor={id} className={className}>
+    <Field label={label} htmlFor={id} className={className} required={required} error={error}>
       <div className="relative">
         <select
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`${inputClass} appearance-none pr-10 ${value ? '' : 'text-ocean-900/40'}`}
+          aria-invalid={error ? true : undefined}
+          className={`${inputClass} appearance-none pr-10 ${value ? '' : 'text-ocean-900/40'} ${error ? errorInputClass : ''}`}
         >
           <option value="">{placeholder}</option>
           {options.map((opt) => (
@@ -180,16 +211,28 @@ export function PillGroup({
   selected,
   onToggle,
   className = '',
+  required,
+  error,
 }: {
   label: string
   options: readonly string[]
   selected: string[]
   onToggle: (v: string) => void
   className?: string
+  required?: boolean
+  error?: string
 }) {
   return (
     <fieldset className={className}>
-      <legend className={labelClass}>{label}</legend>
+      <legend className={labelClass}>
+        {label}
+        {required && (
+          <span className="text-red-600" aria-hidden="true">
+            {' '}*
+          </span>
+        )}
+      </legend>
+      {error && <p className="-mt-1 mb-1.5 font-poppins text-[10px] font-medium text-red-600">{error}</p>}
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => {
           const checked = selected.includes(opt)

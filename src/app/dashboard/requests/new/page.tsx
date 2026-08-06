@@ -402,22 +402,35 @@ export default function NewRequestPage() {
 
             {role === 'center_coordinator' && (
               <>
-                <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
-                  Your location
-                  <select
-                    value={selectedCenterLocationId}
-                    onChange={(event) => setSelectedCenterLocationId(event.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
-                    required
-                  >
-                    <option value="">Select your location</option>
-                    {centerLocationOptions.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.name} (ZIP {option.zip_code})
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                {/* Most facilities only ever have the one location their
+                    account represents — asking them to pick it is a
+                    pointless extra step. Only show the picker for the rare
+                    facility that's actually added more than one. */}
+                {centerLocationOptions.length > 1 ? (
+                  <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
+                    Your location
+                    <select
+                      value={selectedCenterLocationId}
+                      onChange={(event) => setSelectedCenterLocationId(event.target.value)}
+                      className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
+                      required
+                    >
+                      <option value="">Select your location</option>
+                      {centerLocationOptions.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.name} (ZIP {option.zip_code})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : (
+                  centerLocationOptions[0] && (
+                    <p className="font-poppins text-[11px] text-ocean-900/60">
+                      Location: <span className="font-semibold text-ocean-900">{centerLocationOptions[0].name}</span>{' '}
+                      (ZIP {centerLocationOptions[0].zip_code})
+                    </p>
+                  )
+                )}
 
                 <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
                   Musician

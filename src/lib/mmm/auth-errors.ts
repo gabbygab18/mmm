@@ -59,6 +59,17 @@ export const RESET_LINK_EXPIRED =
   'That reset link has expired or has already been used. Please request a new one below.'
 
 /**
+ * Copy for the PKCE cross-device failure: the reset link only works in the
+ * browser that requested it, since the verifier it needs lives there — opening
+ * the e-mail on a phone after requesting the reset on a laptop (or vice versa)
+ * hits this every time. Without this branch the raw GoTrue message ("PKCE code
+ * verifier not found in storage...") went straight to the screen — accurate to
+ * a developer, meaningless to a volunteer musician.
+ */
+export const RESET_LINK_WRONG_DEVICE =
+  "This reset link only works in the browser you requested it from. Please open the e-mail on that same device and browser, or go back and request a new link from here."
+
+/**
  * Password-reset wording. The generic messages above are written for sign-up
  * and sign-in — a send failure there means "your account was not created",
  * which is nonsense when someone is trying to get back into an account they
@@ -70,6 +81,10 @@ export function friendlyResetError(message: string | null | undefined): string {
 
   if (lower.includes('sending recovery email') || lower.includes('error sending')) {
     return `We could not send the reset e-mail. This is a problem on our side — please e-mail ${SUPPORT_EMAIL} and we will get you back into your account.`
+  }
+
+  if (lower.includes('code verifier') || lower.includes('pkce')) {
+    return RESET_LINK_WRONG_DEVICE
   }
 
   if (lower.includes('email rate limit') || lower.includes('over_email_send_rate_limit')) {

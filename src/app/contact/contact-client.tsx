@@ -12,9 +12,9 @@ import { Lines } from '@/components/mmm/lines'
  * Contact — inquiry form with a volunteer / facility toggle, direct contact
  * cards, social links, and the service-area map.
  *
- * The form posts to /api/contact. Until the mail transport is wired up that
- * route stores the message and returns success, so the page never silently
- * drops an inquiry.
+ * The form posts to /api/contact, which stores the inquiry and e-mails both
+ * the submitter (confirmation) and the monitored inbox (so nothing sits
+ * unread).
  */
 
 const SOCIALS = [
@@ -162,11 +162,6 @@ export function ContactClient({ content }: { content: Record<string, string> }) 
             </div>
 
             {error && <p className="mt-4 text-center font-poppins text-[11px] font-medium text-red-600">{error}</p>}
-            {status === 'sent' && (
-              <p className="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-center font-poppins text-[11.5px] font-medium text-emerald-800">
-                Message sent. We&apos;ll be in touch within two business days.
-              </p>
-            )}
 
             <div className="mt-7 flex justify-center">
               <button
@@ -224,6 +219,36 @@ export function ContactClient({ content }: { content: Record<string, string> }) 
           </div>
         </div>
       </section>
+
+      {status === 'sent' && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="contact-success-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ocean-950/60 px-4"
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-white px-7 py-8 text-center shadow-2xl">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+              <svg className="h-9 w-9 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 id="contact-success-title" className="mt-5 font-garamond text-[24px] font-bold text-ocean-900">
+              Thank You!
+            </h2>
+            <p className="mt-2 font-poppins text-[13px] leading-relaxed text-ocean-900/80">
+              Your message has been sent successfully. Our team will get back to you as soon as possible.
+            </p>
+            <button
+              type="button"
+              onClick={() => setStatus('idle')}
+              className="mx-auto mt-6 rounded-lg bg-ocean-800 px-8 py-2.5 font-poppins text-[12px] font-bold uppercase tracking-[0.14em] text-white transition hover:bg-ocean-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ============ Our location ============ */}
       <section className="bg-ocean-900 pb-16">

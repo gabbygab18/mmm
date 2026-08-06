@@ -31,6 +31,7 @@ const NAV: Record<string, NavItem[]> = {
     { href: '/dashboard/schedule', label: 'Upcoming Performances', icon: 'performances' },
     { href: '/dashboard/musician/availability', label: 'Availability', icon: 'availability' },
     { href: '/dashboard/musician/hours', label: 'Volunteer Hours', icon: 'hours' },
+    { href: '/dashboard/musician/discover', label: 'Browse Facilities', icon: 'facilities' },
     { href: '/dashboard/requests', label: 'Requests', icon: 'bookings', prefix: true },
     { href: '/education', label: 'Resources', icon: 'resources' },
     { href: '/dashboard/alerts', label: 'Notifications', icon: 'notifications' },
@@ -39,6 +40,7 @@ const NAV: Record<string, NavItem[]> = {
   center_coordinator: [
     { href: '/dashboard/center', label: 'Dashboard', icon: 'dashboard' },
     { href: '/dashboard/schedule', label: 'Upcoming Performances', icon: 'performances' },
+    { href: '/dashboard/center/discover', label: 'Volunteer Musicians', icon: 'musicians' },
     { href: '/dashboard/requests', label: 'Requests', icon: 'bookings', prefix: true },
     // "Hours of Music" pointed at /dashboard/center/hours, which has never
     // existed — every facility user had a dead link here. Removed until the

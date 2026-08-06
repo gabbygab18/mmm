@@ -3,7 +3,7 @@
 import { FormEvent, useState, useTransition } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { PasswordInput } from '@/components/mmm/password-input'
-import { updateEmailNotificationsAction, deleteAccountAction } from './actions'
+import { updateEmailNotificationsAction, deleteAccountAction, notifyPasswordChangedAction } from './actions'
 
 function passwordStrength(pw: string): { score: number; label: string } {
   if (pw.length === 0) return { score: 0, label: '' }
@@ -45,6 +45,7 @@ export function AccountSettingsForm({
   emailNotificationsEnabled: boolean
 }) {
   // ── Password change ────────────────────────────────────────────────────
+  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordStatus, setPasswordStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -61,14 +62,41 @@ export function AccountSettingsForm({
     setPasswordLoading(true)
     setPasswordStatus('idle')
     const supabase = createSupabaseBrowserClient()
+
+    // Supabase's updateUser has no "current password" check of its own — an
+    // already-open session could otherwise change the password without
+    // knowing it. Re-authenticating first closes that gap.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user?.email) {
+      setPasswordError('Your session has expired — please sign in again.')
+      setPasswordStatus('error')
+      setPasswordLoading(false)
+      return
+    }
+
+    const { error: reauthError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    })
+    if (reauthError) {
+      setPasswordError('Current password is incorrect.')
+      setPasswordStatus('error')
+      setPasswordLoading(false)
+      return
+    }
+
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) {
       setPasswordError(error.message)
       setPasswordStatus('error')
     } else {
       setPasswordStatus('success')
+      setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
+      notifyPasswordChangedAction().catch(() => {})
     }
     setPasswordLoading(false)
   }
@@ -119,6 +147,16 @@ export function AccountSettingsForm({
       <section className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-6">
         <h2 className="font-garamond text-lg font-bold text-ocean-900">Change Password</h2>
         <form onSubmit={handlePasswordChange} className="mt-5 space-y-4">
+          <label className="block font-poppins text-[12.5px] font-semibold text-ocean-900/80">
+            Current password
+            <PasswordInput
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              className="mt-1.5 w-full rounded-xl border border-ocean-300 bg-white px-3.5 py-2.5 font-poppins text-ocean-900 outline-none ring-ocean-500 transition focus:ring-2"
+            />
+          </label>
           <label className="block font-poppins text-[12.5px] font-semibold text-ocean-900/80">
             New password
             <PasswordInput

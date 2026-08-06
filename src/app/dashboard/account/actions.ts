@@ -3,6 +3,28 @@
 import { requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createSupabaseAdminClient } from '@/lib/supabase/admin'
+import { notifyUser, getRecipientEmail } from '@/lib/notifications'
+
+/**
+ * Security confirmation email — fired right after a successful password
+ * change so the account owner notices if it wasn't them. Derives the caller
+ * from the session rather than taking a userId param: nothing about "which
+ * account" needs to come from the client here.
+ */
+export async function notifyPasswordChangedAction() {
+  const user = await requireAuthenticatedUser()
+  const recipientEmail = await getRecipientEmail(user.id)
+
+  await notifyUser({
+    userId: user.id,
+    alertType: 'password_changed',
+    title: 'Your password was changed',
+    message: 'Your account password was just changed. If this was not you, contact us immediately.',
+    recipientEmail,
+    subject: 'Your password was changed — Margaret\'s MemoryCare Music',
+    body: `Hi,\n\nThis is a confirmation that your account password was just changed.\n\nIf you made this change, no action is needed.\n\nIf you did NOT make this change, please contact us immediately at privacy@margaretsmemorycaremusic.com so we can secure your account.\n\n— Margaret's MemoryCare Music`,
+  })
+}
 
 export async function updateEmailNotificationsAction(
   userId: string,
@@ -30,6 +52,11 @@ export async function deleteAccountAction(
   const supabase = await createSupabaseServerClient()
   const now = new Date().toISOString()
   const activeStatuses = ['initiated', 'matched', 'accepted']
+
+  // Capture the email before anything below touches the account — the auth
+  // address gets swapped to a deleted-{userId}@deleted.invalid placeholder
+  // near the end of this function, and by then it's too late to reach the person.
+  const recipientEmail = await getRecipientEmail(userId)
 
   // ── Musician cleanup ───────────────────────────────────────────────────
   const { data: musician } = await supabase
@@ -171,6 +198,18 @@ export async function deleteAccountAction(
     console.error('[deleteAccountAction] admin client unavailable:', e)
     return { ok: false, error: 'Your data was removed, but the sign-in account could not be closed. Please contact support.' }
   }
+
+  // Confirmation email — sent to the address captured at the top of this
+  // function, since the auth address above is now the deleted.invalid placeholder.
+  await notifyUser({
+    userId,
+    alertType: 'account_deleted',
+    title: 'Your account has been deleted',
+    message: 'Your account and personal information have been removed.',
+    recipientEmail,
+    subject: 'Your account has been deleted — Margaret\'s MemoryCare Music',
+    body: `Hi,\n\nThis confirms your Margaret's MemoryCare Music account has been deleted. Your personal profile information has been removed or anonymized.\n\nAnonymized records of any completed events are retained for platform integrity, per our Privacy Policy.\n\nIf you did not request this, please contact us immediately at privacy@margaretsmemorycaremusic.com.\n\n— Margaret's MemoryCare Music`,
+  }).catch(() => {})
 
   // The caller signs out and navigates — a redirect from here would keep the
   // stale session cookie, and the middleware would send them back to /dashboard.

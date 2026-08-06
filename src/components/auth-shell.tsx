@@ -1,12 +1,17 @@
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { SOCIAL_URLS } from '@/lib/mmm/social'
+import { MarketingHeader } from '@/components/mmm/marketing-header'
+import { MarketingFooter } from '@/components/mmm/marketing-footer'
 
 /**
- * Shared shell for the auth pages (/login, /signup) — matches the approved
- * landing-page design pack: cream header with the heart-note logo, a photo hero
- * washed in ocean blue with the musical-notes texture, a warm cream form card,
- * the round social icons, and the cream footer strip.
+ * Shared shell for the auth pages (/login, /register/*) — matches the
+ * approved landing-page design pack: a photo hero washed in ocean blue with
+ * the musical-notes texture, a warm cream form card, the round social icons.
+ *
+ * Header and footer are the same MarketingHeader/MarketingFooter every
+ * informational page uses — these used to be a bespoke logo-only header and
+ * a 2-link footer, which is exactly the inconsistency flagged in UX
+ * feedback: reuse the shared chrome, don't hand-roll a second copy of it.
  *
  * Layout:
  *  - Desktop (lg+): full-bleed photo behind everything; card on the left,
@@ -53,25 +58,9 @@ export function AuthShell({
   cardSide = 'left',
   children,
 }: AuthShellProps) {
-  const year = new Date().getFullYear()
-
   return (
     <div className="flex min-h-screen flex-col bg-ocean-950 font-sans">
-      {/* ============ Header ============ */}
-      <header className="relative z-20 bg-cream">
-        <div className="mx-auto flex max-w-6xl items-center px-6 py-2.5 sm:py-3">
-          <Link href="/" aria-label="Margaret's MemoryCare Music home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/landing/logo.png"
-              alt="Margaret's MemoryCare Music"
-              className="h-12 w-auto sm:h-14"
-              width={112}
-              height={113}
-            />
-          </Link>
-        </div>
-      </header>
+      <MarketingHeader />
 
       {/* ============ Hero ============ */}
       <main className="relative flex-1 overflow-hidden">
@@ -178,20 +167,7 @@ export function AuthShell({
         </div>
       </main>
 
-      {/* ============ Footer ============ */}
-      <footer className="relative z-10 bg-cream">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-6 py-5 text-center font-poppins text-[4.8px] text-ocean-800/70 sm:flex-row sm:justify-between sm:text-left sm:text-[10.7px]">
-          <p>© {year} Margaret&apos;s MemoryCare Music · Connecting communities through music</p>
-          <div className="flex items-center gap-6">
-            <Link href="/privacy" className="transition hover:text-ocean-800">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="transition hover:text-ocean-800">
-              Terms of Service
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter variant="simple" />
     </div>
   )
 }

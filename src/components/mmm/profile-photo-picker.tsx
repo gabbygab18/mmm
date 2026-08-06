@@ -22,6 +22,7 @@ const SIZES = {
 export function ProfilePhotoPicker({
   currentUrl,
   onPhotoReady,
+  onRemove,
   busy = false,
   error = null,
   hint = 'JPG or PNG, up to 5 MB.',
@@ -31,6 +32,8 @@ export function ProfilePhotoPicker({
   /** Photo shown in the circle — an uploaded URL or a local preview. */
   currentUrl: string | null
   onPhotoReady: (cropped: File) => void | Promise<void>
+  /** Clears the photo. Omit to hide the Remove option (e.g. nothing to clear back to). */
+  onRemove?: () => void
   busy?: boolean
   error?: string | null
   hint?: string
@@ -90,6 +93,16 @@ export function ProfilePhotoPicker({
               />
               Take photo
             </label>
+            {currentUrl && onRemove && (
+              <button
+                type="button"
+                onClick={onRemove}
+                disabled={busy}
+                className="font-poppins text-[10px] font-bold uppercase tracking-[0.1em] text-red-700 underline transition hover:text-red-800 disabled:opacity-50"
+              >
+                Remove
+              </button>
+            )}
           </div>
           <p className="mt-1.5 font-poppins text-[10px] text-ocean-900/60">{busy ? 'Uploading…' : hint}</p>
         </div>

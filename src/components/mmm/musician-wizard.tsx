@@ -29,8 +29,8 @@ import { PhotoEditor } from '@/components/mmm/photo-editor'
  */
 
 const STEP_LABELS = [
-  ['Create', 'Account'],
-  ['Create', 'Profile'],
+  ['Getting', 'Started'],
+  ['Musician', 'Profile'],
   ['Musical', 'Background'],
   ['Availability'],
   ['Agreement'],
@@ -210,6 +210,7 @@ export function MusicianWizard({
   const [step, setStep] = useState(firstStep)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [notice, setNotice] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [initializing, setInitializing] = useState(isOnboarding)
@@ -240,6 +241,10 @@ export function MusicianWizard({
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
+  /** True once "Remove photo" is used — distinguishes "never uploaded one"
+      (leave the column alone on save) from "had one, took it away" (must
+      actually clear it). */
+  const [photoRemoved, setPhotoRemoved] = useState(false)
   // Raw pick waiting in the crop/zoom editor.
   const [pendingPhoto, setPendingPhoto] = useState<File | null>(null)
   const [bio, setBio] = useState('')
@@ -397,54 +402,54 @@ export function MusicianWizard({
   const togglePerformanceType = (t: string) =>
     setPerformanceTypes((cur) => (cur.includes(t) ? cur.filter((v) => v !== t) : [...cur, t]))
 
-  const goNext = () => {
-    setError(null)
+  /** Onboarding's Profile step (name, ZIP, handle) — shared between the
+      step-by-step Next button and the final save, since the final save can
+      be reached from step 5 without ever revisiting step 2. */
+  const getProfileFieldErrors = (): Record<string, string> => {
+    const errs: Record<string, string> = {}
+    if (!firstName.trim()) errs.firstName = 'First name is required.'
+    if (!lastName.trim()) errs.lastName = 'Last name is required.'
+    if (!/^\d{5}$/.test(zip.trim())) errs.zip = 'Enter a 5-digit ZIP code so nearby communities can find you.'
+    if (handleStatus === 'invalid') errs.handle = 'Use 3-30 lowercase letters, numbers, or underscores.'
+    if (handleStatus === 'taken') errs.handle = 'That profile link is already taken.'
+    return errs
+  }
+
+  /** Every problem on the current step, keyed by field — so all of them can
+      be highlighted at once instead of stopping at the first one found. */
+  const getStepErrors = (): Record<string, string> => {
+    const errs: Record<string, string> = {}
     if (step === 2 && isOnboarding) {
-      if (!firstName.trim() || !lastName.trim()) {
-        setError('Please enter your first and last name.')
-        return
-      }
-      if (!/^\d{5}$/.test(zip.trim())) {
-        setError('Please enter a 5-digit ZIP code so nearby communities can find you.')
-        return
-      }
-      if (handleStatus === 'invalid') {
-        setError('The profile link must be 3-30 characters, using lowercase letters, numbers, or underscores.')
-        return
-      }
-      if (handleStatus === 'taken') {
-        setError('That profile link is already taken. Please choose another.')
-        return
-      }
+      return getProfileFieldErrors()
     }
     if (step === 1 && !isOnboarding) {
-      if (!firstName.trim() || !lastName.trim()) {
-        setError('Please enter your first and last name.')
-        return
-      }
-      if (!email.trim() || !password) {
-        setError('Please fill in your e-mail address and password.')
-        return
-      }
-      if (password.length < 8) {
-        setError('Password must be at least 8 characters.')
-        return
-      }
-      if (!human.verified) {
-        setError('Please complete the human verification check.')
-        return
-      }
-      if (!agreeTos) {
-        setError('Please agree to the Terms of Service and Privacy Policy.')
-        return
-      }
+      if (!firstName.trim()) errs.firstName = 'First name is required.'
+      if (!lastName.trim()) errs.lastName = 'Last name is required.'
+      if (!email.trim()) errs.email = 'E-mail address is required.'
+      if (!password) errs.password = 'Password is required.'
+      else if (password.length < 8) errs.password = 'Password must be at least 8 characters.'
+      if (!human.verified) errs.human = 'Please complete the human verification check.'
+      if (!agreeTos) errs.agreeTos = 'Please agree to the Terms of Service and Privacy Policy.'
     }
+    return errs
+  }
+
+  const goNext = () => {
+    const errs = getStepErrors()
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs)
+      setError(errs.firstName ?? Object.values(errs)[0])
+      return
+    }
+    setFieldErrors({})
+    setError(null)
     setStep((s) => Math.min(5, s + 1))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const goBack = () => {
     setError(null)
+    setFieldErrors({})
     setStep((s) => Math.max(firstStep, s - 1))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -470,6 +475,7 @@ export function MusicianWizard({
   const acceptCroppedPhoto = async (cropped: File) => {
     setPendingPhoto(null)
     setPhotoFile(cropped)
+    setPhotoRemoved(false)
     setPhotoPreview((previous) => {
       if (previous) URL.revokeObjectURL(previous)
       return URL.createObjectURL(cropped)
@@ -495,9 +501,15 @@ export function MusicianWizard({
     setPhotoBusy(false)
   }
 
+  /** Clears both the locally staged pick and any already-saved photo — without
+      also clearing savedPhotoUrl, the old upload just reappeared since the
+      preview falls back to it (`photoPreview ?? savedPhotoUrl`), making
+      "Remove photo" look like it did nothing. */
   const clearPhoto = () => {
     setPhotoFile(null)
     setPhotoError(null)
+    setSavedPhotoUrl('')
+    setPhotoRemoved(true)
     setPhotoPreview((previous) => {
       if (previous) URL.revokeObjectURL(previous)
       return null
@@ -516,18 +528,10 @@ export function MusicianWizard({
       setError('Please read and agree to the Volunteer Agreement to continue.')
       return
     }
-    if (!firstName.trim() || !lastName.trim()) {
-      setError('Please enter your first and last name.')
-      setStep(2)
-      return
-    }
-    if (!/^\d{5}$/.test(zip.trim())) {
-      setError('Please enter a 5-digit ZIP code so nearby communities can find you.')
-      setStep(2)
-      return
-    }
-    if (handleStatus === 'taken' || handleStatus === 'invalid') {
-      setError('Please choose a different profile link.')
+    const profileErrs = getProfileFieldErrors()
+    if (Object.keys(profileErrs).length > 0) {
+      setFieldErrors(profileErrs)
+      setError(profileErrs.firstName ?? Object.values(profileErrs)[0])
       setStep(2)
       return
     }
@@ -601,9 +605,10 @@ export function MusicianWizard({
       profile_complete: true,
     }
     // Leave both columns alone when empty, so the provisional handle and any
-    // photo saved earlier are not wiped.
+    // photo saved earlier are not wiped — unless the photo was deliberately removed.
     if (normalizedHandle) row.username = normalizedHandle
     if (savedPhotoUrl.trim()) row.profile_image_url = savedPhotoUrl.trim()
+    else if (photoRemoved) row.profile_image_url = null
 
     const { error: saveError } = await supabase.from('musicians').upsert(row, { onConflict: 'user_id' })
 
@@ -616,7 +621,9 @@ export function MusicianWizard({
     // Onboarding's account was created via the plain /signup form, which never
     // gets a chance to fire this — this profile-completion step is the first
     // point they're both authenticated and have a name to put in the email.
-    if (isOnboarding) {
+    // wasAlreadyComplete means they're editing an existing profile, not
+    // applying for the first time — must not re-send the application email.
+    if (isOnboarding && !wasAlreadyComplete) {
       notifyApplicationReceivedAction(user.id, `${firstName.trim()} ${lastName.trim()}`.trim(), 'musician').catch(() => {})
     }
 
@@ -840,8 +847,8 @@ export function MusicianWizard({
                   <div>
                     <StepHeading
                       step={1}
-                      title="Create Account"
-                      subtitle="Let’s get started by creating your account."
+                      title="Getting Started"
+                      subtitle="Create your login details to continue your Musician registration."
                       icon={
                         <svg className="h-12 w-12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                           <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4 0-8 2-8 5v2h16v-2c0-3-4-5-8-5z" />
@@ -850,15 +857,17 @@ export function MusicianWizard({
                     />
                     <div className="mx-auto mt-8 max-w-[520px] space-y-5">
                       <div className="grid gap-5 sm:grid-cols-2">
-                        <TextField label="First Name" value={firstName} onChange={setFirstName} placeholder="Enter your first name" autoComplete="given-name" />
-                        <TextField label="Last Name" value={lastName} onChange={setLastName} placeholder="Enter your last name" autoComplete="family-name" />
+                        <TextField label="First Name" value={firstName} onChange={setFirstName} placeholder="Enter your first name" autoComplete="given-name" required error={fieldErrors.firstName} />
+                        <TextField label="Last Name" value={lastName} onChange={setLastName} placeholder="Enter your last name" autoComplete="family-name" required error={fieldErrors.lastName} />
                       </div>
                       <p className="font-poppins text-[10px] text-ocean-900/60">
                         Facilities see your first name and last initial — for example, Maria S.
                       </p>
-                      <TextField label="E-mail Address" type="email" value={email} onChange={setEmail} placeholder="Enter your e-mail address" autoComplete="email" inputMode="email" />
+                      <TextField label="E-mail Address" type="email" value={email} onChange={setEmail} placeholder="Enter your e-mail address" autoComplete="email" inputMode="email" required error={fieldErrors.email} />
                       <PasswordField value={password} onChange={setPassword} hint="At least 8 characters." />
+                      {fieldErrors.password && <p className="-mt-3 font-poppins text-[10px] font-medium text-red-600">{fieldErrors.password}</p>}
                       <HumanCheck onChange={setHuman} />
+                      {fieldErrors.human && <p className="text-center font-poppins text-[10px] font-medium text-red-600">{fieldErrors.human}</p>}
                       <label className="flex items-start justify-center gap-2 pt-1 font-poppins text-[10.7px] text-ocean-900">
                         <input
                           type="checkbox"
@@ -877,6 +886,7 @@ export function MusicianWizard({
                           </Link>
                         </span>
                       </label>
+                      {fieldErrors.agreeTos && <p className="text-center font-poppins text-[10px] font-medium text-red-600">{fieldErrors.agreeTos}</p>}
                     </div>
                     {error && <p className="mt-4 text-center font-poppins text-[11px] font-medium text-red-600">{error}</p>}
                     <div className="mt-8 flex items-center justify-between">
@@ -933,11 +943,13 @@ export function MusicianWizard({
                           />
                           Take a photo instead
                         </label>
-                        {photoFile && (
+                        {(photoFile || savedPhotoUrl) && (
                           <div className="mt-1.5 w-[120px] sm:w-[164px]">
-                            <p className="truncate font-poppins text-[9px] text-ocean-900/70 sm:text-[10px]" title={photoFile.name}>
-                              {photoFile.name}
-                            </p>
+                            {photoFile && (
+                              <p className="truncate font-poppins text-[9px] text-ocean-900/70 sm:text-[10px]" title={photoFile.name}>
+                                {photoFile.name}
+                              </p>
+                            )}
                             <button
                               type="button"
                               onClick={clearPhoto}
@@ -961,10 +973,10 @@ export function MusicianWizard({
                       <div className="min-w-0">
                         <p className="font-poppins text-[11px] text-ocean-900 sm:text-[13px]">Step 2 of 5</p>
                         <h2 className="font-garamond text-[26px] font-bold leading-none text-ocean-900 sm:text-[44px] lg:text-[50.8px]">
-                          Profile
+                          Musician Profile
                         </h2>
                         <p className="mt-1 font-poppins text-[11.5px] text-ocean-900 sm:text-[14px] lg:text-[16.1px]">
-                          Tell us a little a bit about yourself.
+                          Tell us a little bit about yourself.
                         </p>
                       </div>
                     </div>
@@ -976,8 +988,8 @@ export function MusicianWizard({
                             Your account is already set up{email ? ` as ${email}` : ''} — step 1 is done.
                           </p>
                           <div className="grid gap-5 sm:grid-cols-2">
-                            <TextField label="First Name" value={firstName} onChange={setFirstName} autoComplete="given-name" />
-                            <TextField label="Last Name" value={lastName} onChange={setLastName} autoComplete="family-name" />
+                            <TextField label="First Name" value={firstName} onChange={setFirstName} autoComplete="given-name" required error={fieldErrors.firstName} />
+                            <TextField label="Last Name" value={lastName} onChange={setLastName} autoComplete="family-name" required error={fieldErrors.lastName} />
                           </div>
                           <div>
                             <TextField
@@ -1029,6 +1041,8 @@ export function MusicianWizard({
                           inputMode="numeric"
                           maxLength={5}
                           autoComplete="postal-code"
+                          required
+                          error={fieldErrors.zip}
                         />
                       </div>
 

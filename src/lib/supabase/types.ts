@@ -11,6 +11,8 @@ export type Database = {
         | 'account_approved'
         | 'application_received'
         | 'facility_confirmed'
+        | 'password_changed'
+        | 'account_deleted'
       request_status: 'initiated' | 'matched' | 'accepted' | 'completed' | 'cancelled'
     }
     Tables: {

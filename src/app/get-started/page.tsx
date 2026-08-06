@@ -45,11 +45,12 @@ export default function GetStartedPage() {
 
         <div className="relative mx-auto max-w-[1100px] px-6 pb-4 pt-14 sm:px-8">
           <h1 className="landing-rise text-center font-garamond text-[42px] font-semibold leading-tight text-white drop-shadow-md sm:text-[56px] lg:text-[65.9px]">
-            Ready to Make a Difference?
+            Ready to Share the Gift of Music?
           </h1>
           <p className="landing-rise landing-delay-1 mx-auto mt-4 max-w-[760px] text-center font-poppins text-[14px] leading-relaxed text-white drop-shadow sm:text-[16.1px]">
-            Join Margaret&apos;s Memorycare Music by volunteering your musical talents or registering your memory care
-            community. Together, we create meaningful moments through live music.
+            Join Margaret&apos;s Memorycare Music by creating your profile or registering your memory care community.
+            Browse participating communities, express your interest, and let our team help coordinate meaningful
+            musical connections.
           </p>
 
           <div className="landing-rise landing-delay-2 mx-auto mt-12 grid max-w-[960px] gap-8 md:grid-cols-2">
@@ -77,9 +78,8 @@ export default function GetStartedPage() {
               <div className="flex flex-col items-center px-8 pb-9 pt-11 text-center">
                 <h2 className="font-garamond text-[20px] font-bold text-ocean-900">I&apos;m a Musician</h2>
                 <p className="mt-1 font-poppins text-[11.4px] leading-relaxed text-ocean-900">
-                  Share your gift.
-                  <br />
-                  Become a volunteer.
+                  Create your volunteer profile, browse participating memory care communities, and express interest in
+                  where you&apos;d like to serve.
                 </p>
                 <Link
                   href="/register/musician"
@@ -116,7 +116,8 @@ export default function GetStartedPage() {
                   I&apos;m a Memory Care Community
                 </h2>
                 <p className="mt-1 font-poppins text-[11.4px] leading-relaxed text-ocean-900">
-                  Bring meaningful live performances to your residents
+                  Register your community and connect with volunteer musicians who want to share the joy of live music
+                  with your residents.
                 </p>
                 <Link
                   href="/register/facility"
@@ -162,10 +163,10 @@ export default function GetStartedPage() {
               <div className="relative flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
                 <div>
                   <h2 className="font-garamond text-[26px] font-bold text-ocean-900 sm:text-[32.7px]">
-                    Already have an account?
+                    Already have a profile?
                   </h2>
                   <p className="mt-1 font-poppins text-[14px] text-ocean-900 sm:text-[16.9px]">
-                    Sign in to manage your profile requests and upcoming performances.
+                    Sign in to manage your volunteer profile, performance requests, and upcoming visits.
                   </p>
                 </div>
                 <Link

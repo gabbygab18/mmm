@@ -42,8 +42,8 @@ import {
 type Mode = 'register' | 'onboarding'
 
 const STEP_LABELS = [
-  ['Create', 'Account'],
-  ['Facility', 'Information'],
+  ['Getting', 'Started'],
+  ['Community', 'Profile'],
   ['Activities', 'Director'],
   ['Scheduling', 'Preferences'],
   ['Complete'],
@@ -77,6 +77,7 @@ export function FacilityWizard({
   const [step, setStep] = useState(firstStep)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [notice, setNotice] = useState<string | null>(null)
   /** True only when signUp left no session, i.e. a confirmation e-mail is pending. */
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
@@ -109,11 +110,13 @@ export function FacilityWizard({
   const [handleStatus, setHandleStatus] = useState<'idle' | 'invalid' | 'checking' | 'available' | 'taken'>('idle')
   const [residentCount, setResidentCount] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
+  const [photoRemoved, setPhotoRemoved] = useState(false)
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [locationHandle, setLocationHandle] = useState('')
   const [locationHandleStatus, setLocationHandleStatus] = useState<'idle' | 'invalid' | 'checking' | 'available' | 'taken'>('idle')
   const [locationPhotoUrl, setLocationPhotoUrl] = useState('')
+  const [locationPhotoRemoved, setLocationPhotoRemoved] = useState(false)
   const [locationPhotoBusy, setLocationPhotoBusy] = useState(false)
   const [locationPhotoError, setLocationPhotoError] = useState<string | null>(null)
 
@@ -198,7 +201,10 @@ export function FacilityWizard({
 
       if (center) {
         setWasAlreadyComplete(Boolean(center.profile_complete))
-        setFacilityName(center.name ?? '')
+        // Defensive: the bootstrap trigger used to default a bare /signup
+        // account's name to the user's own email — never show that as a
+        // pre-filled "facility name" even if an old row still has it.
+        setFacilityName(center.name && center.name !== user.email ? center.name : '')
         setFacilityPhone(center.phone ?? '')
         setWebsite(center.website ?? '')
         setDirectorFirstName(center.director_first_name ?? '')
@@ -337,9 +343,25 @@ export function FacilityWizard({
     }
 
     const upload = await uploadProfilePhoto(supabase, user.id, file)
-    if (upload.url) setPhotoUrl(upload.url)
-    else setPhotoError(upload.error ?? 'The photo could not be uploaded. Please try again.')
+    if (upload.url) {
+      setPhotoUrl(upload.url)
+      setPhotoRemoved(false)
+    } else {
+      setPhotoError(upload.error ?? 'The photo could not be uploaded. Please try again.')
+    }
     setPhotoBusy(false)
+  }
+
+  const removeCenterPhoto = () => {
+    setPhotoUrl('')
+    setPhotoRemoved(true)
+    setPhotoError(null)
+  }
+
+  const removeLocationPhoto = () => {
+    setLocationPhotoUrl('')
+    setLocationPhotoRemoved(true)
+    setLocationPhotoError(null)
   }
 
   const handleLocationPhoto = async (file: File) => {
@@ -357,53 +379,72 @@ export function FacilityWizard({
     }
 
     const upload = await uploadProfilePhoto(supabase, user.id, file)
-    if (upload.url) setLocationPhotoUrl(upload.url)
-    else setLocationPhotoError(upload.error ?? 'The photo could not be uploaded. Please try again.')
+    if (upload.url) {
+      setLocationPhotoUrl(upload.url)
+      setLocationPhotoRemoved(false)
+    } else {
+      setLocationPhotoError(upload.error ?? 'The photo could not be uploaded. Please try again.')
+    }
     setLocationPhotoBusy(false)
   }
 
-  const validateStep = (n: number): string | null => {
+  /** Every problem on step n, keyed by field — so all of them can be
+      highlighted at once instead of stopping at the first one found. */
+  const getStepErrors = (n: number): Record<string, string> => {
+    const errs: Record<string, string> = {}
     if (n === 1 && !isOnboarding) {
-      if (!firstName.trim() || !lastName.trim()) return 'Please enter your first and last name.'
-      if (!email.trim()) return 'Please enter an e-mail address.'
-      if (!password) return 'Please choose a password.'
-      if (password.length < 8) return 'Password must be at least 8 characters.'
-      if (!agreeTos) return 'Please agree to the Terms of Service and Privacy Policy.'
-      if (!human.verified) return 'Please complete the human verification check.'
+      if (!firstName.trim()) errs.firstName = 'First name is required.'
+      if (!lastName.trim()) errs.lastName = 'Last name is required.'
+      if (!email.trim()) errs.email = 'E-mail address is required.'
+      if (!password) errs.password = 'Password is required.'
+      else if (password.length < 8) errs.password = 'Password must be at least 8 characters.'
+      if (!human.verified) errs.human = 'Please complete the human verification check.'
+      if (!agreeTos) errs.agreeTos = 'Please agree to the Terms of Service and Privacy Policy.'
     }
     if (n === 2) {
-      if (!facilityName.trim()) return 'Please enter your facility name.'
-      if (!address.trim() || !city.trim() || !state) return 'Please enter the full facility address.'
-      if (!/^\d{5}$/.test(zip.trim())) return 'Please enter a 5-digit ZIP code.'
-      if (!facilityPhone.trim()) return 'Please enter a phone number for the facility.'
+      if (!facilityName.trim()) errs.facilityName = 'Facility name is required.'
+      if (!address.trim()) errs.address = 'Address is required.'
+      if (!city.trim()) errs.city = 'City is required.'
+      if (!state) errs.state = 'State is required.'
+      if (!/^\d{5}$/.test(zip.trim())) errs.zip = 'Enter a 5-digit ZIP code.'
+      if (!facilityPhone.trim()) errs.facilityPhone = 'Phone number is required.'
       if (isOnboarding && handleStatus === 'invalid') {
-        return 'The profile link must be 3-30 characters, using lowercase letters, numbers, or underscores.'
+        errs.handle = 'Use 3-30 lowercase letters, numbers, or underscores.'
       }
-      if (isOnboarding && handleStatus === 'taken') return 'That profile link is already taken. Please choose another.'
+      if (isOnboarding && handleStatus === 'taken') errs.handle = 'That profile link is already taken.'
       if (isOnboarding && locationHandleStatus === 'invalid') {
-        return 'The location link must be 3-30 characters, using lowercase letters, numbers, or underscores.'
+        errs.locationHandle = 'Use 3-30 lowercase letters, numbers, or underscores.'
       }
-      if (isOnboarding && locationHandleStatus === 'taken') return 'That location link is already taken. Please choose another.'
+      if (isOnboarding && locationHandleStatus === 'taken') errs.locationHandle = 'That location link is already taken.'
     }
     if (n === 3) {
-      if (!directorFirstName.trim() || !directorLastName.trim()) return "Please enter the director's first and last name."
-      if (!directorEmail.trim()) return "Please enter the director's e-mail address."
-      if (!contactMethod) return 'Please choose a preferred contact method.'
+      if (!directorFirstName.trim()) errs.directorFirstName = "Director's first name is required."
+      if (!directorLastName.trim()) errs.directorLastName = "Director's last name is required."
+      if (!directorEmail.trim()) errs.directorEmail = "Director's e-mail address is required."
+      if (!contactMethod) errs.contactMethod = 'Please choose a preferred contact method.'
     }
     if (n === 4) {
-      if (preferredDays.length === 0) return 'Please choose at least one preferred day.'
-      if (!frequency) return 'Please choose how often you would like performances.'
-      if (!preferredTime) return 'Please choose a preferred time of day.'
+      if (preferredDays.length === 0) errs.preferredDays = 'Choose at least one preferred day.'
+      if (!frequency) errs.frequency = 'Please choose how often you would like performances.'
+      if (!preferredTime) errs.preferredTime = 'Please choose a preferred time of day.'
     }
-    return null
+    return errs
+  }
+
+  const FIRST_MESSAGE: Record<string, string> = {
+    firstName: 'Please enter your first and last name.',
+    facilityName: 'Please fix the highlighted fields below.',
+    directorFirstName: "Please enter the director's first and last name.",
   }
 
   const goNext = () => {
-    const problem = validateStep(step)
-    if (problem) {
-      setError(problem)
+    const errs = getStepErrors(step)
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs)
+      setError(FIRST_MESSAGE[Object.keys(errs)[0]] ?? Object.values(errs)[0])
       return
     }
+    setFieldErrors({})
     setError(null)
     setStep((s) => Math.min(5, s + 1))
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -411,6 +452,7 @@ export function FacilityWizard({
 
   const goBack = () => {
     setError(null)
+    setFieldErrors({})
     setStep((s) => Math.max(firstStep, s - 1))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -444,14 +486,16 @@ export function FacilityWizard({
       return false
     }
     for (let n = firstStep; n <= 4; n++) {
-      const problem = validateStep(n)
-      if (problem) {
-        setError(problem)
+      const errs = getStepErrors(n)
+      if (Object.keys(errs).length > 0) {
+        setFieldErrors(errs)
+        setError(FIRST_MESSAGE[Object.keys(errs)[0]] ?? Object.values(errs)[0])
         setStep(n)
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return false
       }
     }
+    setFieldErrors({})
     return true
   }
 
@@ -541,7 +585,10 @@ export function FacilityWizard({
     // Leave the column alone when they kept the provisional handle, so the
     // database default is not overwritten with an empty value.
     if (normalizedHandle) centerRow.username = normalizedHandle
+    // photoUrl empty could mean "never set" (leave the column alone) or
+    // "just removed" (must actually clear it) — photoRemoved tells them apart.
     if (photoUrl.trim()) centerRow.profile_image_url = photoUrl.trim()
+    else if (photoRemoved) centerRow.profile_image_url = null
 
     const { data: savedCenter, error: centerError } = await supabase
       .from('centers')
@@ -567,9 +614,11 @@ export function FacilityWizard({
       resident_count: residentCount.trim() ? Number(residentCount.trim()) : null,
     }
     // Both are nullable, so only write them when there is something to write —
-    // an empty box must not wipe a link or photo saved earlier.
+    // an empty box must not wipe a link or photo saved earlier, unless it was
+    // deliberately removed.
     if (normalizedLocationHandle) locationRow.username = normalizedLocationHandle
     if (locationPhotoUrl.trim()) locationRow.location_image_url = locationPhotoUrl.trim()
+    else if (locationPhotoRemoved) locationRow.location_image_url = null
 
     const { error: locationError } = locationId
       ? await supabase.from('center_locations').update(locationRow).eq('id', locationId)
@@ -584,7 +633,11 @@ export function FacilityWizard({
     // Onboarding's account was created via the plain /signup form, which never
     // gets a chance to fire this — this profile-completion step is the first
     // point they're both authenticated and have a name to put in the email.
-    notifyApplicationReceivedAction(user.id, facilityName.trim(), 'facility').catch(() => {})
+    // wasAlreadyComplete means they're editing an existing profile, not
+    // applying for the first time — must not re-send the application email.
+    if (!wasAlreadyComplete) {
+      notifyApplicationReceivedAction(user.id, facilityName.trim(), 'facility').catch(() => {})
+    }
 
     setLoading(false)
     setDone(true)
@@ -712,18 +765,20 @@ export function FacilityWizard({
                   <div>
                     <StepHeading
                       step={1}
-                      title="Create Account"
-                      subtitle="Let’s get started by creating your account."
+                      title="Getting Started"
+                      subtitle="Create your login details to continue your Facility registration."
                       icon={<StepIcon src="/mmm/pages/reg-icon-account.png" />}
                     />
                     <div className="mx-auto mt-8 max-w-[520px] space-y-5">
                       <div className="grid gap-5 sm:grid-cols-2">
-                        <TextField label="First Name" value={firstName} onChange={setFirstName} placeholder="Enter your first name" autoComplete="given-name" />
-                        <TextField label="Last Name" value={lastName} onChange={setLastName} placeholder="Enter your last name" autoComplete="family-name" />
+                        <TextField label="First Name" value={firstName} onChange={setFirstName} placeholder="Enter your first name" autoComplete="given-name" required error={fieldErrors.firstName} />
+                        <TextField label="Last Name" value={lastName} onChange={setLastName} placeholder="Enter your last name" autoComplete="family-name" required error={fieldErrors.lastName} />
                       </div>
-                      <TextField label="E-mail Address" type="email" value={email} onChange={setEmail} placeholder="Enter your e-mail address" autoComplete="email" inputMode="email" />
+                      <TextField label="E-mail Address" type="email" value={email} onChange={setEmail} placeholder="Enter your e-mail address" autoComplete="email" inputMode="email" required error={fieldErrors.email} />
                       <PasswordField value={password} onChange={setPassword} hint="At least 8 characters." />
+                      {fieldErrors.password && <p className="-mt-3 font-poppins text-[10px] font-medium text-red-600">{fieldErrors.password}</p>}
                       <HumanCheck onChange={setHuman} />
+                      {fieldErrors.human && <p className="text-center font-poppins text-[10px] font-medium text-red-600">{fieldErrors.human}</p>}
                       <label className="flex items-start justify-center gap-2 pt-1 font-poppins text-[10.7px] text-ocean-900">
                         <input
                           type="checkbox"
@@ -742,6 +797,7 @@ export function FacilityWizard({
                           </Link>
                         </span>
                       </label>
+                      {fieldErrors.agreeTos && <p className="text-center font-poppins text-[10px] font-medium text-red-600">{fieldErrors.agreeTos}</p>}
                     </div>
                     {error && <p className="mt-4 text-center font-poppins text-[11px] font-medium text-red-600">{error}</p>}
                     <div className="mt-8 flex items-center justify-between">
@@ -761,7 +817,7 @@ export function FacilityWizard({
                   <div>
                     <StepHeading
                       step={2}
-                      title="Facility Information"
+                      title="Community Profile"
                       subtitle="Tell us about your memory care community."
                       icon={<StepIcon src="/mmm/pages/reg-icon-facility.png" />}
                     />
@@ -773,18 +829,18 @@ export function FacilityWizard({
                     )}
 
                     <div className="mt-8 space-y-5">
-                      <TextField label="Facility Name" value={facilityName} onChange={setFacilityName} placeholder="Enter facility name" autoComplete="organization" />
+                      <TextField label="Facility Name" value={facilityName} onChange={setFacilityName} placeholder="Enter facility name" autoComplete="organization" required error={fieldErrors.facilityName} />
                       {/* address-line1, not street-address: Chrome fills the whole
                           formatted address into a street-address field, which then
                           repeats the city, state and ZIP collected below it. */}
-                      <TextField label="Address" value={address} onChange={setAddress} placeholder="Enter street address" autoComplete="address-line1" />
+                      <TextField label="Address" value={address} onChange={setAddress} placeholder="Enter street address" autoComplete="address-line1" required error={fieldErrors.address} />
                       <div className="grid gap-5 sm:grid-cols-3">
-                        <TextField label="City" value={city} onChange={setCity} placeholder="Enter city" autoComplete="address-level2" />
-                        <SelectField label="State" value={state} onChange={setState} options={US_STATES} placeholder="Select state" />
-                        <TextField label="ZIP Code" value={zip} onChange={(v) => setZip(v.replace(/\D/g, '').slice(0, 5))} placeholder="Enter ZIP code" inputMode="numeric" maxLength={5} autoComplete="postal-code" />
+                        <TextField label="City" value={city} onChange={setCity} placeholder="Enter city" autoComplete="address-level2" required error={fieldErrors.city} />
+                        <SelectField label="State" value={state} onChange={setState} options={US_STATES} placeholder="Select state" required error={fieldErrors.state} />
+                        <TextField label="ZIP Code" value={zip} onChange={(v) => setZip(v.replace(/\D/g, '').slice(0, 5))} placeholder="Enter ZIP code" inputMode="numeric" maxLength={5} autoComplete="postal-code" required error={fieldErrors.zip} />
                       </div>
                       <div className="grid gap-5 sm:grid-cols-2">
-                        <PhoneField label="Phone Number" value={facilityPhone} onChange={setFacilityPhone} autoComplete="tel" />
+                        <PhoneField label="Phone Number" value={facilityPhone} onChange={setFacilityPhone} autoComplete="tel" required error={fieldErrors.facilityPhone} />
                         <TextField label="Website (Optional)" value={website} onChange={setWebsite} placeholder="https://" inputMode="url" autoComplete="url" />
                       </div>
 
@@ -835,6 +891,7 @@ export function FacilityWizard({
                               <ProfilePhotoPicker
                                 currentUrl={photoUrl.trim() || null}
                                 onPhotoReady={handleCenterPhoto}
+                                onRemove={removeCenterPhoto}
                                 busy={photoBusy}
                                 error={photoError}
                                 size="sm"
@@ -845,6 +902,7 @@ export function FacilityWizard({
                               <ProfilePhotoPicker
                                 currentUrl={locationPhotoUrl.trim() || null}
                                 onPhotoReady={handleLocationPhoto}
+                                onRemove={removeLocationPhoto}
                                 busy={locationPhotoBusy}
                                 error={locationPhotoError}
                                 size="sm"
@@ -884,10 +942,10 @@ export function FacilityWizard({
                     />
                     <div className="mt-8 space-y-5">
                       <div className="grid gap-5 sm:grid-cols-2">
-                        <TextField label="First Name" value={directorFirstName} onChange={setDirectorFirstName} placeholder="Enter first name" />
-                        <TextField label="Last Name" value={directorLastName} onChange={setDirectorLastName} placeholder="Enter last name" />
+                        <TextField label="First Name" value={directorFirstName} onChange={setDirectorFirstName} placeholder="Enter first name" required error={fieldErrors.directorFirstName} />
+                        <TextField label="Last Name" value={directorLastName} onChange={setDirectorLastName} placeholder="Enter last name" required error={fieldErrors.directorLastName} />
                       </div>
-                      <TextField label="E-mail Address" type="email" value={directorEmail} onChange={setDirectorEmail} placeholder="Enter e-mail address" inputMode="email" />
+                      <TextField label="E-mail Address" type="email" value={directorEmail} onChange={setDirectorEmail} placeholder="Enter e-mail address" inputMode="email" required error={fieldErrors.directorEmail} />
                       <PhoneField label="Phone Number" value={directorPhone} onChange={setDirectorPhone} />
                       <SelectField
                         label="Preferred Contact Method"
@@ -895,6 +953,8 @@ export function FacilityWizard({
                         onChange={setContactMethod}
                         options={CONTACT_METHODS}
                         placeholder="Select contact method"
+                        required
+                        error={fieldErrors.contactMethod}
                       />
                       <SelectField label="Job Title" value={jobTitle} onChange={setJobTitle} options={jobTitleOptions} placeholder="Select job title" />
                     </div>
@@ -920,9 +980,9 @@ export function FacilityWizard({
                       }
                     />
                     <div className="mt-8 grid gap-x-8 gap-y-6 md:grid-cols-2">
-                      <PillGroup label="Preferred Days" options={DAYS_OF_WEEK} selected={preferredDays} onToggle={toggleDay} />
-                      <SelectField label="Ideal Frequency" value={frequency} onChange={setFrequency} options={VISIT_FREQUENCY} placeholder="Select frequency" />
-                      <SelectField label="Preferred Time" value={preferredTime} onChange={setPreferredTime} options={TIME_OF_DAY} placeholder="Select time of day" />
+                      <PillGroup label="Preferred Days" options={DAYS_OF_WEEK} selected={preferredDays} onToggle={toggleDay} required error={fieldErrors.preferredDays} />
+                      <SelectField label="Ideal Frequency" value={frequency} onChange={setFrequency} options={VISIT_FREQUENCY} placeholder="Select frequency" required error={fieldErrors.frequency} />
+                      <SelectField label="Preferred Time" value={preferredTime} onChange={setPreferredTime} options={TIME_OF_DAY} placeholder="Select time of day" required error={fieldErrors.preferredTime} />
                       <SelectField label="Preferred Performance Location" value={performanceLocation} onChange={setPerformanceLocation} options={performanceLocationOptions} placeholder="Select location" />
                       <SelectField label="Preferred Length" value={preferredLength} onChange={setPreferredLength} options={PERFORMANCE_LENGTH} placeholder="Select duration" />
                       <Field label="Additional Notes (Optional)" htmlFor="facility-notes">

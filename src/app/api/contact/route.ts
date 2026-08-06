@@ -1,16 +1,52 @@
 import { NextResponse } from 'next/server'
+import { Resend } from 'resend'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 /**
  * Contact form endpoint.
  *
- * Writes the inquiry to `contact_inquiries` so nothing is lost while the
- * outbound mail transport is being provisioned; admins can read the table from
- * the dashboard. If TURNSTILE_SECRET_KEY is configured the token is verified
- * server-side before anything is stored.
+ * Writes the inquiry to `contact_inquiries` so nothing is lost, then — mail
+ * transport is wired up now (Resend, same as every other transactional e-mail
+ * in the app) — sends the submitter a confirmation and forwards the inquiry to
+ * the monitored inbox, so a submission isn't just a row nobody reads.
+ * If TURNSTILE_SECRET_KEY is configured the token is verified server-side
+ * before anything is stored.
  */
 
 const INQUIRY_TYPES = new Set(['volunteer', 'facility'])
+
+const EMAIL_FROM = process.env.EMAIL_FROM_ADDRESS
+  ? `Margaret’s MemoryCare Music <${process.env.EMAIL_FROM_ADDRESS}>`
+  : null
+const ADMIN_INBOX = process.env.EMAIL_REPLY_TO || undefined
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+
+async function sendContactEmails(inquiry: {
+  inquiryType: string
+  fullName: string
+  email: string
+  phone: string
+  message: string
+}) {
+  if (!resend || !EMAIL_FROM) return
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: inquiry.email,
+    subject: "We received your message — Margaret's MemoryCare Music",
+    text: `Hi ${inquiry.fullName},\n\nThanks for reaching out to Margaret's MemoryCare Music. We've received your ${inquiry.inquiryType === 'facility' ? 'facility' : 'volunteer'} inquiry and will be in touch within two business days.\n\nYour message:\n${inquiry.message}\n\n— Margaret's MemoryCare Music`,
+  }).catch((e) => console.error('[contact] confirmation email failed', e))
+
+  if (!ADMIN_INBOX) return
+
+  await resend.emails.send({
+    from: EMAIL_FROM,
+    to: ADMIN_INBOX,
+    replyTo: inquiry.email,
+    subject: `New ${inquiry.inquiryType} inquiry from ${inquiry.fullName}`,
+    text: `Type: ${inquiry.inquiryType}\nName: ${inquiry.fullName}\nEmail: ${inquiry.email}\nPhone: ${inquiry.phone || '(not provided)'}\n\nMessage:\n${inquiry.message}`,
+  }).catch((e) => console.error('[contact] admin notification email failed', e))
+}
 
 async function verifyTurnstile(token: string | null, ip: string | null) {
   const secret = process.env.TURNSTILE_SECRET_KEY
@@ -76,6 +112,8 @@ export async function POST(request: Request) {
     console.error('[contact] failed to store inquiry', error)
     return NextResponse.json({ error: 'Could not send the message.' }, { status: 500 })
   }
+
+  await sendContactEmails({ inquiryType, fullName, email, phone, message })
 
   return NextResponse.json({ ok: true })
 }
