@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import {
-  DASH_ICONS,
   EmptyState,
   Panel,
   PanelButton,
@@ -145,14 +144,14 @@ export default async function MusicianDashboardPage() {
         />
         <StatCard
           iconImage="/mmm/icons/stat-heart.png"
-          title="Pending Requests"
+          title="Performance Requests"
           value={`${pendingList.length} waiting`}
           eyebrow="New requests"
           actionLabel="Review requests"
           actionHref="/dashboard/requests"
         />
         <StatCard
-          icon={DASH_ICONS.megaphone}
+          iconImage="/mmm/icons/stat-megaphone.png"
           title="Announcements"
           value={`${announcementList.length} update${announcementList.length === 1 ? '' : 's'}`}
           eyebrow="New updates"
@@ -213,7 +212,7 @@ export default async function MusicianDashboardPage() {
         </Panel>
 
         <Panel
-          title="Pending Requests"
+          title="Performance Requests"
           viewAllHref="/dashboard/requests"
           footer={<PanelButton href="/dashboard/requests">View all requests</PanelButton>}
         >

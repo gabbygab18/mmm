@@ -31,7 +31,7 @@ const NAV: Record<string, NavItem[]> = {
     { href: '/dashboard/schedule', label: 'Upcoming Performances', icon: 'performances' },
     { href: '/dashboard/musician/availability', label: 'Availability', icon: 'availability' },
     { href: '/dashboard/musician/hours', label: 'Volunteer Hours', icon: 'hours' },
-    { href: '/dashboard/musician/discover', label: 'Browse Facilities', icon: 'facilities' },
+    { href: '/dashboard/musician/discover', label: 'Participating Facilities', icon: 'facilities' },
     { href: '/dashboard/requests', label: 'Requests', icon: 'bookings', prefix: true },
     { href: '/education', label: 'Resources', icon: 'resources' },
     { href: '/dashboard/alerts', label: 'Notifications', icon: 'notifications' },
