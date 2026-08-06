@@ -1,7 +1,39 @@
 'use client'
 
 import Link from 'next/link'
+import { useFormStatus } from 'react-dom'
 import { EmptyState } from '@/components/mmm/dashboard-ui'
+
+/** Spinner shown on a submit button while its form's server action is in flight. */
+function Spinner() {
+  return (
+    <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
+  )
+}
+
+/** Submit button that shows a spinner + disables itself while its enclosing
+    form's server action is pending — useFormStatus reads that from context,
+    so no local pending state needs wiring per row. */
+function SubmitButton({
+  pendingLabel,
+  className,
+  children,
+}: {
+  pendingLabel: string
+  className: string
+  children: React.ReactNode
+}) {
+  const { pending } = useFormStatus()
+  return (
+    <button type="submit" disabled={pending} className={`${className} disabled:cursor-not-allowed disabled:opacity-60`}>
+      {pending && <Spinner />}
+      {pending ? pendingLabel : children}
+    </button>
+  )
+}
 
 /**
  * Account list shared by the Musicians and Facilities screens.
@@ -106,12 +138,12 @@ export function AdminAccountTable({
               <form action={confirmAction}>
                 <input type="hidden" name="id" value={row.id} />
                 <input type="hidden" name="confirmed" value={String(row.confirmed ?? false)} />
-                <button
-                  type="submit"
-                  className="rounded-lg border border-ocean-800/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900 transition hover:bg-ocean-900/5"
+                <SubmitButton
+                  pendingLabel="Working…"
+                  className="flex items-center gap-1.5 rounded-lg border border-ocean-800/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900 transition hover:bg-ocean-900/5"
                 >
                   {row.confirmed ? 'Unconfirm' : 'Confirm'}
-                </button>
+                </SubmitButton>
               </form>
             )}
 
@@ -119,12 +151,12 @@ export function AdminAccountTable({
               <form action={action}>
                 <input type="hidden" name="id" value={row.id} />
                 <input type="hidden" name="approved" value={String(row.approved)} />
-                <button
-                  type="submit"
-                  className="rounded-lg border border-ocean-800/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900 transition hover:bg-ocean-900/5"
+                <SubmitButton
+                  pendingLabel="Working…"
+                  className="flex items-center gap-1.5 rounded-lg border border-ocean-800/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900 transition hover:bg-ocean-900/5"
                 >
                   {row.approved ? 'Disable' : 'Approve'}
-                </button>
+                </SubmitButton>
               </form>
             )}
 
@@ -139,12 +171,12 @@ export function AdminAccountTable({
               >
                 <input type="hidden" name="id" value={row.id} />
                 <input type="hidden" name="userId" value={row.userId} />
-                <button
-                  type="submit"
-                  className="rounded-lg border border-rose-600/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-rose-700 transition hover:bg-rose-600/5"
+                <SubmitButton
+                  pendingLabel="Removing…"
+                  className="flex items-center gap-1.5 rounded-lg border border-rose-600/60 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-rose-700 transition hover:bg-rose-600/5"
                 >
                   Remove
-                </button>
+                </SubmitButton>
               </form>
             )}
           </div>
