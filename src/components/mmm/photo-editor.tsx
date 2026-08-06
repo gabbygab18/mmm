@@ -217,6 +217,12 @@ export function PhotoEditor({
               draggable={false}
               onLoad={(e) => setNatural({ width: e.currentTarget.naturalWidth, height: e.currentTarget.naturalHeight })}
               onError={() => setFailed(true)}
+              // Tailwind's Preflight sets `img { max-width: 100% }` — that
+              // clamps the crop geometry's intended width to the 260px
+              // viewport while height (no max-height rule) scales freely,
+              // squashing any image wider than it is tall. max-w-none
+              // overrides the clamp so the inline geometry renders as computed.
+              className="max-w-none"
               style={
                 geometry
                   ? { position: 'absolute', left: geometry.left, top: geometry.top, width: geometry.width, height: geometry.height }

@@ -245,6 +245,9 @@ export function MusicianWizard({
       (leave the column alone on save) from "had one, took it away" (must
       actually clear it). */
   const [photoRemoved, setPhotoRemoved] = useState(false)
+  /** The raw pick, kept so "Adjust crop" can reopen the editor on it instead
+      of re-cropping the already-cropped square result or forcing a re-upload. */
+  const [originalPhotoFile, setOriginalPhotoFile] = useState<File | null>(null)
   // Raw pick waiting in the crop/zoom editor.
   const [pendingPhoto, setPendingPhoto] = useState<File | null>(null)
   const [bio, setBio] = useState('')
@@ -469,7 +472,14 @@ export function MusicianWizard({
 
     // Crop and zoom first — the wizard keeps the finished square.
     setPhotoError(null)
+    setOriginalPhotoFile(file)
     setPendingPhoto(file)
+  }
+
+  /** Reopens the editor on the original pick — lets "Use photo" be revisited
+      without discarding and re-uploading from disk. */
+  const adjustPhotoCrop = () => {
+    if (originalPhotoFile) setPendingPhoto(originalPhotoFile)
   }
 
   const acceptCroppedPhoto = async (cropped: File) => {
@@ -510,6 +520,7 @@ export function MusicianWizard({
     setPhotoError(null)
     setSavedPhotoUrl('')
     setPhotoRemoved(true)
+    setOriginalPhotoFile(null)
     setPhotoPreview((previous) => {
       if (previous) URL.revokeObjectURL(previous)
       return null
@@ -950,13 +961,24 @@ export function MusicianWizard({
                                 {photoFile.name}
                               </p>
                             )}
-                            <button
-                              type="button"
-                              onClick={clearPhoto}
-                              className="mt-0.5 font-poppins text-[9px] font-bold text-ocean-700 underline transition hover:text-ocean-900 sm:text-[10px]"
-                            >
-                              Remove photo
-                            </button>
+                            <div className="flex gap-2.5">
+                              {originalPhotoFile && (
+                                <button
+                                  type="button"
+                                  onClick={adjustPhotoCrop}
+                                  className="mt-0.5 font-poppins text-[9px] font-bold text-ocean-700 underline transition hover:text-ocean-900 sm:text-[10px]"
+                                >
+                                  Adjust crop
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={clearPhoto}
+                                className="mt-0.5 font-poppins text-[9px] font-bold text-ocean-700 underline transition hover:text-ocean-900 sm:text-[10px]"
+                              >
+                                Remove photo
+                              </button>
+                            </div>
                           </div>
                         )}
                         {photoBusy && (

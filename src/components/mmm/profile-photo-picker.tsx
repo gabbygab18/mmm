@@ -43,6 +43,11 @@ export function ProfilePhotoPicker({
 }) {
   const [pending, setPending] = useState<File | null>(null)
   const [pickError, setPickError] = useState<string | null>(null)
+  // Kept after the crop is confirmed (unlike `pending`) so "Adjust crop" can
+  // reopen the editor on the original pick — re-cropping the already-cropped
+  // square result would lose detail, and re-uploading from disk just to
+  // nudge the zoom is exactly the friction this button removes.
+  const [lastPicked, setLastPicked] = useState<File | null>(null)
 
   const handlePick = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null
@@ -93,6 +98,16 @@ export function ProfilePhotoPicker({
               />
               Take photo
             </label>
+            {currentUrl && lastPicked && (
+              <button
+                type="button"
+                onClick={() => setPending(lastPicked)}
+                disabled={busy}
+                className="font-poppins text-[10px] font-bold uppercase tracking-[0.1em] text-ocean-700 underline transition hover:text-ocean-900 disabled:opacity-50"
+              >
+                Adjust crop
+              </button>
+            )}
             {currentUrl && onRemove && (
               <button
                 type="button"
@@ -115,6 +130,7 @@ export function ProfilePhotoPicker({
           file={pending}
           onCancel={() => setPending(null)}
           onConfirm={async (cropped) => {
+            setLastPicked(pending)
             setPending(null)
             await onPhotoReady(cropped)
           }}
