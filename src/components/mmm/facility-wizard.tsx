@@ -201,6 +201,9 @@ export function FacilityWizard({
 
       if (center) {
         setWasAlreadyComplete(Boolean(center.profile_complete))
+        // Completing the wizard once already means "the information above is
+        // accurate" was already confirmed — editing shouldn't force it again.
+        if (center.profile_complete) setConfirmAccurate(true)
         // Defensive: the bootstrap trigger used to default a bare /signup
         // account's name to the user's own email — never show that as a
         // pre-filled "facility name" even if an old row still has it.
@@ -669,6 +672,20 @@ export function FacilityWizard({
     <main className="flex min-h-screen flex-col bg-ocean-900 font-sans">
       <MarketingHeader />
 
+      {/* Editing an existing profile reuses the registration flow, which
+          otherwise only ever carries the marketing site's own nav — this is
+          the one way back to the dashboard without hunting for it. */}
+      {isOnboarding && wasAlreadyComplete && !done && (
+        <div className="bg-ocean-950/40 px-4 py-2 text-center sm:px-8">
+          <Link
+            href="/dashboard/account"
+            className="font-poppins text-[11.5px] font-bold text-white/90 underline-offset-2 hover:text-white hover:underline"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
+      )}
+
       <section className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-top" style={{ backgroundImage: "url('/mmm/pages/reg-bg.png')" }} aria-hidden="true" />
         <div
@@ -752,10 +769,14 @@ export function FacilityWizard({
                   </div>
                 )}
                 <Link
-                  href={wasAlreadyComplete ? '/dashboard/account' : '/'}
+                  href={wasAlreadyComplete ? '/dashboard/account' : '/dashboard'}
+                  // Not prefetched: a prefetch of the dashboard shell captured
+                  // before this save landed would carry the old avatar, and the
+                  // sidebar would show it until a manual refresh.
+                  prefetch={false}
                   className="mt-8 rounded-md bg-ocean-800 px-8 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.16em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700"
                 >
-                  {wasAlreadyComplete ? 'Back to Account Settings' : 'Go to Homepage'}
+                  {wasAlreadyComplete ? 'Back to Account Settings' : 'Go to Dashboard'}
                 </Link>
               </div>
             ) : (

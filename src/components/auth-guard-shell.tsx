@@ -90,10 +90,12 @@ function Sidebar({
   role,
   avatarUrl,
   photoTable,
+  unreadAlertCount,
 }: {
   role: Role
   avatarUrl?: string | null
   photoTable?: ProfileTable | null
+  unreadAlertCount: number
 }) {
   const pathname = usePathname()
   const items = role ? (NAV[role] ?? []) : []
@@ -132,8 +134,21 @@ function Sidebar({
                 active ? 'bg-ocean-300/45 font-semibold text-white shadow-inner' : 'text-white/95 hover:bg-white/10'
               }`}
             >
-              <NavIcon name={item.icon} />
-              <span>{item.label}</span>
+              <span className="relative">
+                <NavIcon name={item.icon} />
+                {item.href === '/dashboard/alerts' && unreadAlertCount > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-ocean-900 bg-red-500"
+                  />
+                )}
+              </span>
+              <span className="flex-1">{item.label}</span>
+              {item.href === '/dashboard/alerts' && unreadAlertCount > 0 && (
+                <span className="rounded-full bg-red-500 px-1.5 py-0.5 font-poppins text-[10px] font-bold leading-none text-white">
+                  {unreadAlertCount > 99 ? '99+' : unreadAlertCount}
+                </span>
+              )}
             </Link>
           )
         })}
@@ -169,7 +184,7 @@ function Sidebar({
 }
 
 /** Mobile bottom tab bar — the primary navigation on small screens. */
-function TabBar({ role }: { role: Role }) {
+function TabBar({ role, unreadAlertCount }: { role: Role; unreadAlertCount: number }) {
   const pathname = usePathname()
   const items = role ? (NAV[role] ?? []) : []
   const isActive = (i: NavItem) => (i.prefix ? pathname.startsWith(i.href) : pathname === i.href)
@@ -192,7 +207,15 @@ function TabBar({ role }: { role: Role }) {
                   active ? 'bg-white/15' : 'hover:bg-white/10'
                 }`}
               >
-                <NavIcon name={item.icon} className="h-6 w-6" />
+                <span className="relative">
+                  <NavIcon name={item.icon} className="h-6 w-6" />
+                  {item.href === '/dashboard/alerts' && unreadAlertCount > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-[#0d3763] bg-red-500"
+                    />
+                  )}
+                </span>
                 <span className="font-poppins text-[8.5px] leading-tight text-white">{item.label}</span>
               </Link>
             </li>
@@ -208,6 +231,7 @@ export function AuthGuardShell({
   role,
   avatarUrl = null,
   photoTable = null,
+  unreadAlertCount = 0,
 }: {
   children: React.ReactNode
   role: Role
@@ -215,6 +239,8 @@ export function AuthGuardShell({
   avatarUrl?: string | null
   /** Profile row that owns the photo — null for admins, who have none. */
   photoTable?: ProfileTable | null
+  /** Unread, non-dismissed alert count — drives the red badge on Notifications. */
+  unreadAlertCount?: number
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const signOut = useSignOut()
@@ -276,7 +302,7 @@ export function AuthGuardShell({
 
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-[260px] shrink-0 lg:block xl:w-[300px]">
-          <Sidebar role={role} avatarUrl={avatarUrl} photoTable={photoTable} />
+          <Sidebar role={role} avatarUrl={avatarUrl} photoTable={photoTable} unreadAlertCount={unreadAlertCount} />
         </aside>
 
         <main
@@ -287,7 +313,7 @@ export function AuthGuardShell({
         </main>
       </div>
 
-      <TabBar role={role} />
+      <TabBar role={role} unreadAlertCount={unreadAlertCount} />
     </div>
   )
 }

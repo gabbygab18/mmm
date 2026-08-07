@@ -19,14 +19,18 @@ export default async function MusicianDiscoverSlotsPage({ searchParams }: { sear
   const role = await getCurrentUserRole()
   if (role !== 'musician') redirect('/dashboard')
 
-  await requireAuthenticatedUser()
+  const user = await requireAuthenticatedUser()
   const supabase = await createSupabaseServerClient()
   const params = await searchParams
   const radiusBoost = clampRadiusBoost(Number(params.radiusBoost ?? '0'))
 
+  // Filtered by user_id, not just RLS: "musicians_view_approved" makes every
+  // approved musician's row visible too, so an unfiltered query here could
+  // return multiple rows and make .maybeSingle() throw.
   const { data: musician } = await supabase
     .from('musicians')
     .select('travel_radius_miles, willing_to_travel')
+    .eq('user_id', user.id)
     .maybeSingle()
 
   const baseRadius = musician?.willing_to_travel ? musician.travel_radius_miles ?? 0 : 0

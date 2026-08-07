@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TimeGridPicker } from '@/app/components/TimeGridPicker'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { notifyRequestInitiatedAction } from './actions'
 
 type Role = 'musician' | 'center_coordinator' | 'admin'
 
@@ -340,7 +341,9 @@ export default function NewRequestPage() {
       return
     }
 
-    router.push('/dashboard/requests?created=1')
+    notifyRequestInitiatedAction(insertedRequest.id).catch(() => {})
+
+    router.push('/dashboard/requests?status=created')
     router.refresh()
   }
 

@@ -5,6 +5,7 @@ import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { notifyUser, getRecipientEmail } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
+import { SubmitButton } from '@/components/mmm/submit-button'
 
 type WorkflowRole = 'musician' | 'center_coordinator'
 type WorkflowStatus = 'initiated' | 'matched' | 'accepted' | 'completed' | 'cancelled'
@@ -210,9 +211,8 @@ async function updateRequestStatusAction(formData: FormData) {
       })
     }
 
-    revalidatePath('/dashboard/requests')
     revalidatePath('/dashboard/schedule')
-    return
+    redirect('/dashboard/requests?status=accepted')
   }
 
   if (nextStatus === 'cancelled') {
@@ -261,12 +261,17 @@ async function updateRequestStatusAction(formData: FormData) {
       })
     }
 
-    revalidatePath('/dashboard/requests')
     revalidatePath('/dashboard/schedule')
+    redirect('/dashboard/requests?status=cancelled')
   }
 }
 
-export default async function RequestsPage() {
+export default async function RequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>
+}) {
+  const { status: justUpdatedStatus } = await searchParams
   const role = await getCurrentUserRole()
   if (role !== 'musician' && role !== 'center_coordinator') redirect('/dashboard')
 
@@ -363,6 +368,22 @@ export default async function RequestsPage() {
         </Link>
       </div>
 
+      {justUpdatedStatus === 'accepted' && (
+        <p className="rounded-lg bg-emerald-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-emerald-800">
+          Request accepted — it&apos;s now on Scheduled Events.
+        </p>
+      )}
+      {justUpdatedStatus === 'cancelled' && (
+        <p className="rounded-lg bg-rose-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-rose-800">
+          Request cancelled.
+        </p>
+      )}
+      {justUpdatedStatus === 'created' && (
+        <p className="rounded-lg bg-emerald-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-emerald-800">
+          Request sent.
+        </p>
+      )}
+
       {activeRequests.length > 0 ? (
         <ul className="space-y-3">
           {activeRequests.map((request) => {
@@ -432,12 +453,12 @@ export default async function RequestsPage() {
                         <form action={updateRequestStatusAction}>
                           <input type="hidden" name="requestId" value={request.id} />
                           <input type="hidden" name="nextStatus" value="accepted" />
-                          <button
-                            type="submit"
-                            className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 font-poppins text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                          <SubmitButton
+                            pendingLabel="Accepting…"
+                            className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 font-poppins text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
                           >
-                            Schedule event
-                          </button>
+                            Accept
+                          </SubmitButton>
                         </form>
                       )}
 
@@ -451,12 +472,12 @@ export default async function RequestsPage() {
                       <form action={updateRequestStatusAction}>
                         <input type="hidden" name="requestId" value={request.id} />
                         <input type="hidden" name="nextStatus" value="cancelled" />
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 font-poppins text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                        <SubmitButton
+                          pendingLabel="Cancelling…"
+                          className="flex items-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 font-poppins text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                         >
                           Cancel
-                        </button>
+                        </SubmitButton>
                       </form>
                     </div>
                   </div>

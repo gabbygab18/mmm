@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { notifyUser, getRecipientEmail } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
 import { ScheduleCalendar } from './schedule-calendar'
+import { SubmitButton } from '@/components/mmm/submit-button'
 
 type WorkflowRole = 'musician' | 'center_coordinator'
 type WorkflowStatus = 'initiated' | 'matched' | 'accepted' | 'completed' | 'cancelled'
@@ -150,13 +151,18 @@ async function updateScheduledStatusAction(formData: FormData) {
     }
   }
 
-  revalidatePath('/dashboard/schedule')
   revalidatePath('/dashboard/requests')
+  redirect(`/dashboard/schedule?status=${nextStatus}`)
 }
 
-export default async function SchedulePage() {
+export default async function SchedulePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>
+}) {
   const role = await getCurrentUserRole()
   if (role !== 'musician' && role !== 'center_coordinator' && role !== 'admin') redirect('/dashboard')
+  const { status: justUpdatedStatus } = await searchParams
 
   const user = await requireAuthenticatedUser()
   const supabase = await createSupabaseServerClient()
@@ -259,6 +265,17 @@ export default async function SchedulePage() {
         </div>
       </div>
 
+      {justUpdatedStatus === 'completed' && (
+        <p className="rounded-lg bg-emerald-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-emerald-800">
+          Marked as completed.
+        </p>
+      )}
+      {justUpdatedStatus === 'cancelled' && (
+        <p className="rounded-lg bg-rose-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-rose-800">
+          Event cancelled.
+        </p>
+      )}
+
       <ScheduleCalendar events={calendarEvents} />
 
       <div className="space-y-3">
@@ -320,22 +337,22 @@ export default async function SchedulePage() {
                           <form action={updateScheduledStatusAction}>
                             <input type="hidden" name="requestId" value={request.id} />
                             <input type="hidden" name="nextStatus" value="completed" />
-                            <button
-                              type="submit"
-                              className="rounded-lg border border-ocean-300 bg-ocean-50 px-3 py-1.5 text-xs font-semibold text-ocean-700 transition hover:bg-ocean-100"
+                            <SubmitButton
+                              pendingLabel="Marking completed…"
+                              className="flex items-center gap-1.5 rounded-lg border border-ocean-300 bg-ocean-50 px-3 py-1.5 text-xs font-semibold text-ocean-700 transition hover:bg-ocean-100"
                             >
                               Mark completed
-                            </button>
+                            </SubmitButton>
                           </form>
                           <form action={updateScheduledStatusAction}>
                             <input type="hidden" name="requestId" value={request.id} />
                             <input type="hidden" name="nextStatus" value="cancelled" />
-                            <button
-                              type="submit"
-                              className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                            <SubmitButton
+                              pendingLabel="Cancelling…"
+                              className="flex items-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                             >
                               Cancel event
-                            </button>
+                            </SubmitButton>
                           </form>
                         </div>
                       )}

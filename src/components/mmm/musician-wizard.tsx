@@ -326,6 +326,9 @@ export function MusicianWizard({
 
       if (musician) {
         setWasAlreadyComplete(Boolean(musician.profile_complete))
+        // Completing the wizard once already means the Volunteer Agreement was
+        // already accepted — editing existing answers shouldn't force it again.
+        if (musician.profile_complete) setAgreeVolunteer(true)
         if (musician.first_name) setFirstName(musician.first_name)
         if (musician.last_name) setLastName(musician.last_name)
         setBio(musician.bio ?? '')
@@ -769,6 +772,20 @@ export function MusicianWizard({
     <main className="flex min-h-screen flex-col bg-ocean-900 font-sans">
       <MarketingHeader />
 
+      {/* Editing an existing profile reuses the registration flow, which
+          otherwise only ever carries the marketing site's own nav — this is
+          the one way back to the dashboard without hunting for it. */}
+      {isOnboarding && wasAlreadyComplete && !done && (
+        <div className="bg-ocean-950/40 px-4 py-2 text-center sm:px-8">
+          <Link
+            href="/dashboard/account"
+            className="font-poppins text-[11.5px] font-bold text-white/90 underline-offset-2 hover:text-white hover:underline"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
+      )}
+
       <section className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-top" style={{ backgroundImage: "url('/mmm/gs-bg.png')" }} aria-hidden="true" />
         <div
@@ -845,10 +862,14 @@ export function MusicianWizard({
                   </div>
                 )}
                 <Link
-                  href={wasAlreadyComplete ? '/dashboard/account' : '/'}
+                  href={wasAlreadyComplete ? '/dashboard/account' : '/dashboard'}
+                  // Not prefetched: a prefetch of the dashboard shell captured
+                  // before this save landed would carry the old avatar, and the
+                  // sidebar would show it until a manual refresh.
+                  prefetch={false}
                   className="mt-8 rounded-md bg-ocean-800 px-7 py-2.5 font-poppins text-[11.1px] font-bold uppercase tracking-[0.16em] text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700"
                 >
-                  {wasAlreadyComplete ? 'Back to Account Settings' : 'Go to Homepage'}
+                  {wasAlreadyComplete ? 'Back to Account Settings' : 'Go to Dashboard'}
                 </Link>
               </div>
             ) : (
@@ -917,7 +938,7 @@ export function MusicianWizard({
                   <div>
                     <div className="flex items-start gap-4 sm:items-center sm:gap-6">
                       <div className="shrink-0">
-                        <label className="flex h-[132px] w-[120px] cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-xl border-2 border-ocean-300 bg-white/70 px-2 text-center transition hover:border-ocean-500 focus-within:border-ocean-500 sm:h-[168px] sm:w-[164px]">
+                        <label className="flex h-[132px] w-[132px] cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-full border-2 border-ocean-300 bg-white/70 px-2 text-center transition hover:border-ocean-500 focus-within:border-ocean-500 sm:h-[168px] sm:w-[168px]">
                           <input
                             type="file"
                             accept={ACCEPT_ATTRIBUTE}
@@ -933,9 +954,14 @@ export function MusicianWizard({
                               className="h-full w-full object-cover"
                             />
                           ) : (
+                            // A plain glyph, not the pages/upload-photo.png
+                            // card asset — that image bakes in its own square
+                            // border, which doubled up against this circle's.
                             <>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="/mmm/pages/upload-photo.png" alt="" className="h-11 w-11 object-contain sm:h-14 sm:w-14" />
+                              <svg className="h-9 w-9 text-ocean-400 sm:h-11 sm:w-11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8a2 2 0 0 1 2-2h1.5l1-1.5h7l1 1.5H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" />
+                                <circle cx="12" cy="13" r="3.4" />
+                              </svg>
                               <span className="font-poppins text-[10px] font-bold text-ocean-900 sm:text-[12px]">Upload Photo</span>
                               <span className="font-poppins text-[8px] leading-tight text-ocean-900/50 sm:text-[10px]">
                                 JPG, PNG (max 5MB)
@@ -944,7 +970,7 @@ export function MusicianWizard({
                           )}
                         </label>
                         {/* Phones and tablets: straight to the camera. */}
-                        <label className="mt-1.5 hidden w-[120px] cursor-pointer font-poppins text-[9px] font-bold text-ocean-700 underline [@media(pointer:coarse)]:block sm:w-[164px] sm:text-[10px]">
+                        <label className="mt-1.5 hidden w-[132px] cursor-pointer font-poppins text-[9px] font-bold text-ocean-700 underline [@media(pointer:coarse)]:block sm:w-[168px] sm:text-[10px]">
                           <input
                             type="file"
                             accept={ACCEPT_ATTRIBUTE}
@@ -955,7 +981,7 @@ export function MusicianWizard({
                           Take a photo instead
                         </label>
                         {(photoFile || savedPhotoUrl) && (
-                          <div className="mt-1.5 w-[120px] sm:w-[164px]">
+                          <div className="mt-1.5 w-[132px] sm:w-[168px]">
                             {photoFile && (
                               <p className="truncate font-poppins text-[9px] text-ocean-900/70 sm:text-[10px]" title={photoFile.name}>
                                 {photoFile.name}
@@ -982,12 +1008,12 @@ export function MusicianWizard({
                           </div>
                         )}
                         {photoBusy && (
-                          <p className="mt-1.5 w-[120px] font-poppins text-[9px] text-ocean-900/60 sm:w-[164px] sm:text-[10px]">
+                          <p className="mt-1.5 w-[132px] font-poppins text-[9px] text-ocean-900/60 sm:w-[168px] sm:text-[10px]">
                             Uploading…
                           </p>
                         )}
                         {photoError && (
-                          <p className="mt-1.5 w-[120px] font-poppins text-[9px] leading-tight text-red-700 sm:w-[164px] sm:text-[10px]">
+                          <p className="mt-1.5 w-[132px] font-poppins text-[9px] leading-tight text-red-700 sm:w-[168px] sm:text-[10px]">
                             {photoError}
                           </p>
                         )}

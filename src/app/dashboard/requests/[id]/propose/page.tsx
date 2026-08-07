@@ -13,6 +13,7 @@ import {
   toDateInputValue,
 } from '@/app/components/calendar-utils'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { notifyProposalSuggestedAction } from './actions'
 
 type RequestProposal = {
   id: string
@@ -159,6 +160,8 @@ export default function SuggestAlternateTimePage() {
       setSaving(false)
       return
     }
+
+    notifyProposalSuggestedAction(requestId).catch(() => {})
 
     router.push('/dashboard/requests')
     router.refresh()

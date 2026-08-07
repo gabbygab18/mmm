@@ -36,15 +36,19 @@ export default async function MusicianDiscoverPage({ searchParams }: { searchPar
   const role = await getCurrentUserRole()
   if (role !== 'musician') redirect('/dashboard')
 
-  await requireAuthenticatedUser()
+  const user = await requireAuthenticatedUser()
   const supabase = await createSupabaseServerClient()
   const params = await searchParams
   const radiusBoost = clampRadiusBoost(Number(params.radiusBoost ?? '0'))
 
-  // Check if musician's own profile is complete
+  // Check if musician's own profile is complete. Filtered by user_id, not
+  // just RLS: "musicians_view_approved" makes every approved musician's row
+  // visible too, so an unfiltered query here returned multiple rows and
+  // .maybeSingle() threw "JSON object requested, multiple rows returned".
   const { data: musicianProfile, error: profileError } = await supabase
     .from('musicians')
     .select('id, profile_complete, name, travel_radius_miles, willing_to_travel')
+    .eq('user_id', user.id)
     .maybeSingle()
 
   if (profileError) {
