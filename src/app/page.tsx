@@ -126,7 +126,7 @@ export default async function Home() {
               <div key={step.n} className="contents">
                 <div className="flex flex-col items-center text-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={step.icon} alt="" className="h-14 w-14 object-contain sm:h-16 sm:w-16" />
+                  <img src={step.icon} alt="" className="h-24 w-24 object-contain md:h-16 md:w-16" />
                   <h3 className="mt-3 max-w-[110px] font-garamond text-[12.5px] font-bold leading-snug text-ocean-900 sm:max-w-[130px] sm:text-[14px]">
                     {step.title}
                   </h3>
