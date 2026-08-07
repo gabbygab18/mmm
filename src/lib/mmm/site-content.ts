@@ -42,13 +42,13 @@ export const CONTENT_GROUPS: ContentGroup[] = [
       {
         title: 'Hero',
         fields: [
-          { key: 'home.hero.title', label: 'Headline', default: 'Bringing Music to Memory Care' },
+          { key: 'home.hero.title', label: 'Headline', default: 'Share the Joy of Live Music with Memory Care Communities' },
           {
             key: 'home.hero.body',
             label: 'Sub-heading',
             multiline: true,
             default:
-              'Connecting volunteer musicians with memory care communities throughout Palm Beach County, creating meaningful moments through live music at no cost.',
+              "Join Margaret's Memorycare Music by creating your volunteer profile, browsing participating memory care communities, and expressing your interest in serving. We'll help make your first connection a success.",
           },
         ],
       },
@@ -71,7 +71,8 @@ export const CONTENT_GROUPS: ContentGroup[] = [
             key: 'home.path.musician.body',
             label: 'Musician card — copy',
             multiline: true,
-            default: 'Share your gift.\nBecome a volunteer.',
+            default:
+              "Create your volunteer profile, browse participating memory care communities, and express interest in where you'd like to serve.",
           },
           { key: 'home.path.musician.cta', label: 'Musician card — button', default: 'Join as Musician' },
           {
@@ -83,9 +84,10 @@ export const CONTENT_GROUPS: ContentGroup[] = [
             key: 'home.path.community.body',
             label: 'Community card — copy',
             multiline: true,
-            default: 'Bring meaningful live performances to your residents',
+            default:
+              'Register your community and connect with volunteer musicians who want to share the joy of live music with your residents.',
           },
-          { key: 'home.path.community.cta', label: 'Community card — button', default: 'Register Your Facility' },
+          { key: 'home.path.community.cta', label: 'Community card — button', default: 'Register Your Community' },
         ],
       },
       {

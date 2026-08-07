@@ -10,24 +10,12 @@ import { getSiteContent } from '@/lib/mmm/site-content'
  */
 
 const STEPS = [
-  {
-    n: 1,
-    icon: '/mmm/icon-musicians-join.png',
-    title: 'Musicians Join',
-    body: 'Talented volunteers sign up and create their profile.',
-  },
-  {
-    n: 2,
-    icon: '/mmm/icon-facilities-request.png',
-    title: 'Facilities Request Performances',
-    body: 'Memory care communities find musicians and request live music.',
-  },
-  {
-    n: 3,
-    icon: '/mmm/icon-residents-enjoy.png',
-    title: 'Residents Enjoy Live Music',
-    body: 'Meaningful moments of joy, connection, and comfort.',
-  },
+  { n: 1, icon: '/mmm/home-step-1-profile.png', title: 'Create Your Profile' },
+  { n: 2, icon: '/mmm/home-step-2-browse.png', title: 'Browse Participating Communities' },
+  { n: 3, icon: '/mmm/home-step-3-interest.png', title: 'Express Interest' },
+  { n: 4, icon: '/mmm/home-step-4-connect.png', title: 'Review & Connect' },
+  { n: 5, icon: '/mmm/home-step-5-schedule.png', title: 'Schedule Your Performance' },
+  { n: 6, icon: '/mmm/home-step-6-share.png', title: 'Share the Joy of Live Music' },
 ]
 
 const BENEFITS = [
@@ -46,8 +34,8 @@ const BENEFITS = [
  * ran short and stopped lining up with the musician card beside it.
  */
 const cardTitleClass =
-  'mt-4 flex min-h-[54px] max-w-[215px] items-center justify-center font-garamond text-[20px] font-bold leading-tight'
-const cardBodyClass = 'mt-1 min-h-[38px] max-w-[215px] font-poppins text-[11.4px] leading-relaxed'
+  'mt-4 flex min-h-[54px] max-w-[240px] items-center justify-center font-garamond text-[20px] font-bold leading-tight'
+const cardBodyClass = 'mt-1 min-h-[76px] max-w-[240px] font-poppins text-[11.4px] leading-relaxed'
 
 export default async function Home() {
   const t = await getSiteContent()
@@ -103,47 +91,18 @@ export default async function Home() {
           </p>
 
           <div className="landing-rise landing-delay-2 mt-9">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/mmm/get-started-label.png"
-              alt="Get Started – Join as a:"
-              className="h-8 w-auto select-none drop-shadow"
-              draggable={false}
-            />
-            <div className="mt-4 flex flex-wrap items-center gap-3.5">
-              <Link
-                href="/register/musician"
-                aria-label="Join as a Volunteer Musician"
-                className="rounded-xl transition hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/mmm/volunteer-musician-btn.png"
-                  alt="Volunteer Musician"
-                  className="h-12 w-auto select-none drop-shadow-md"
-                  draggable={false}
-                />
+            <Link
+              href="/register/musician"
+              className="inline-flex items-center justify-center rounded-lg border-2 border-ocean-900 bg-gradient-to-b from-ocean-200 to-ocean-500 px-7 py-3 font-poppins text-[15px] font-bold text-white shadow-[0_2px_8px_rgba(7,37,68,0.35)] transition hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Start Your Volunteer Journey
+            </Link>
+            <p className="mt-4 font-poppins text-[13px] text-white drop-shadow">
+              Are you a memory care community?{' '}
+              <Link href="/register/facility" className="font-bold underline-offset-2 hover:underline">
+                Register Your Community →
               </Link>
-              <Link
-                href="/register/facility"
-                aria-label="Join as a Memory Care Community"
-                className="rounded-xl transition hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/mmm/memory-care-btn.png"
-                  alt="Memory Care Community"
-                  className="h-12 w-auto select-none drop-shadow-md"
-                  draggable={false}
-                />
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex h-12 items-center justify-center rounded-lg bg-ocean-300/80 px-10 font-poppins text-[16px] font-bold uppercase tracking-[0.2em] text-white shadow-[inset_0_-2px_5px_rgba(7,37,68,0.35)] backdrop-blur-sm transition hover:bg-ocean-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-              >
-                Sign In
-              </Link>
-            </div>
+            </p>
           </div>
         </div>
       </section>
@@ -155,29 +114,27 @@ export default async function Home() {
         style={{ background: 'linear-gradient(120deg, #faf4e7 0%, #eaf1f8 45%, #cfe0ef 100%)' }}
       >
         <div className="mx-auto max-w-[1200px] px-6 py-14 sm:px-8">
-          {/* Same serif treatment as the other section headings, per the mock-up
-              — it was the odd one out as a small uppercase label. */}
-          <h2 className="text-center font-garamond text-[30px] font-bold text-ocean-900 sm:text-[38px]">
+          <h2 className="text-center font-poppins text-[13px] font-bold uppercase tracking-[0.22em] text-ocean-900">
             {t('home.how.title')}
           </h2>
 
-          <div className="mt-10 grid items-start gap-10 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-6">
+          {/* No grid-template below md: undefined columns fall back to one
+              implicit column per row, i.e. the steps simply stack — same
+              fallback the original 3-step version relied on. */}
+          <div className="mt-9 grid items-start gap-y-8 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-3">
             {STEPS.map((step, i) => (
               <div key={step.n} className="contents">
                 <div className="flex flex-col items-center text-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={step.icon} alt="" className="h-48 w-48 object-contain" />
-                  <h3 className="mt-6 max-w-[220px] font-garamond text-[20px] font-bold leading-snug text-ocean-900">
+                  <img src={step.icon} alt="" className="h-14 w-14 object-contain sm:h-16 sm:w-16" />
+                  <h3 className="mt-3 max-w-[110px] font-garamond text-[12.5px] font-bold leading-snug text-ocean-900 sm:max-w-[130px] sm:text-[14px]">
                     {step.title}
                   </h3>
-                  <p className="mt-2 max-w-[240px] font-poppins text-[11.4px] leading-relaxed text-ocean-900/90">
-                    {step.body}
-                  </p>
                 </div>
                 {i < STEPS.length - 1 && (
                   <div className="hidden items-center justify-center self-center md:flex" aria-hidden="true">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/mmm/icon-arrow.png" alt="" className="h-8 w-auto" />
+                    <img src="/mmm/icon-arrow.png" alt="" className="h-5 w-auto" />
                   </div>
                 )}
               </div>
@@ -189,11 +146,7 @@ export default async function Home() {
       {/* ============ Choose Your Path ============ */}
       <section id="choose-your-path" style={{ background: 'linear-gradient(180deg, #10416f 0%, #0a2f5a 100%)' }}>
         <div className="mx-auto max-w-[1080px] px-6 py-16 sm:px-8">
-          <h2 className="text-center font-garamond text-[30px] font-bold text-white sm:text-[38px]">{t('home.path.title')}</h2>
-          <p className="mx-auto mt-2 max-w-[560px] text-center font-poppins text-[13.8px] leading-relaxed text-white/90">
-            <Lines text={t('home.path.body')} />
-          </p>
-          <div className="mt-10 grid gap-8 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2">
           {/* Musician card */}
           <div className="relative overflow-hidden rounded-2xl border-2 border-ocean-200/60 shadow-xl">
             <div
