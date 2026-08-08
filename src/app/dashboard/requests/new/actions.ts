@@ -2,7 +2,7 @@
 
 import { requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { notifyUser, getRecipientEmail } from '@/lib/notifications'
+import { notifyUser, getRecipientEmail, buildRequestJourneyEmailHtml } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
 
 function formatDateLabel(value: string) {
@@ -66,7 +66,9 @@ export async function notifyRequestInitiatedAction(requestId: string) {
       : 'TBD'
 
   const otherUserEmail = await getRecipientEmail(otherUserId)
+  const recipientName = initiatedByMusician ? center?.name : musician?.name
 
+  const recipientBody = `Hi,\n\n${participantName ?? 'Someone'} sent you a performance request for ${dateStr} at ${timeStr}.\n\nReview and respond from your dashboard.\n\n— Margaret's MemoryCare Music`
   await notifyUser({
     userId: otherUserId,
     alertType: 'request_initiated' as AlertType,
@@ -74,7 +76,28 @@ export async function notifyRequestInitiatedAction(requestId: string) {
     message: `${participantName ?? 'Someone'} sent a performance request for ${dateStr} at ${timeStr}.`,
     recipientEmail: otherUserEmail,
     subject: 'New Performance Request — Margaret\'s MemoryCare Music',
-    body: `Hi,\n\n${participantName ?? 'Someone'} sent you a performance request for ${dateStr} at ${timeStr}.\n\nReview and respond from your dashboard.\n\n— Margaret's MemoryCare Music`,
+    body: recipientBody,
+    html: buildRequestJourneyEmailHtml(recipientBody, 'sent'),
     relatedRequestId: requestId,
+    // The request_initiated_trigger DB trigger already inserts the in-app
+    // alert for this event — this call only needs to handle the email.
+    skipInAppAlert: true,
+  })
+
+  // Confirmation back to the sender — they already see the "Request sent"
+  // banner in-app, so this is email-only, not a second alert.
+  const senderEmail = await getRecipientEmail(user.id)
+  const senderBody = `Hi,\n\nThis confirms your performance request to ${recipientName ?? 'the other party'} for ${dateStr} at ${timeStr} was sent successfully.\n\nWe'll notify you as soon as they respond.\n\n— Margaret's MemoryCare Music`
+  await notifyUser({
+    userId: user.id,
+    alertType: 'request_initiated' as AlertType,
+    title: 'Performance request sent',
+    message: `Your performance request to ${recipientName ?? 'the other party'} for ${dateStr} at ${timeStr} was sent.`,
+    recipientEmail: senderEmail,
+    subject: 'Your performance request was sent — Margaret\'s MemoryCare Music',
+    body: senderBody,
+    html: buildRequestJourneyEmailHtml(senderBody, 'sent'),
+    relatedRequestId: requestId,
+    skipInAppAlert: true,
   })
 }

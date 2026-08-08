@@ -188,7 +188,7 @@ export default function MusicianAvailabilityPage() {
   if (loading) {
     return (
       <section className="space-y-4">
-        <p className="text-sm text-stone-500">Loading availability dates...</p>
+        <p className="text-sm text-ocean-900/60">Loading availability dates...</p>
       </section>
     )
   }
@@ -199,35 +199,35 @@ export default function MusicianAvailabilityPage() {
   const selectedDateSlots = rows.filter((row) => row.available_date === selectedDate)
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 font-poppins">
       <div>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Manage Availability Slots</h1>
-          <p className="mt-1 text-sm text-stone-600">Pick a date from the calendar, then add the time window you can perform.</p>
+          <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Manage Availability Slots</h1>
+          <p className="mt-1 text-sm text-ocean-900/70">Pick a date from the calendar, then add the time window you can perform.</p>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))}
-              className="rounded-md border border-stone-200 px-2.5 py-1 text-sm text-stone-600 transition hover:bg-stone-50"
+              className="rounded-md border border-ocean-200/70 px-2.5 py-1 text-sm text-ocean-900/70 transition hover:bg-ocean-50"
             >
               Prev
             </button>
-            <h2 className="text-base font-semibold text-stone-900">{monthLabel}</h2>
+            <h2 className="text-base font-semibold text-ocean-900">{monthLabel}</h2>
             <button
               type="button"
               onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))}
-              className="rounded-md border border-stone-200 px-2.5 py-1 text-sm text-stone-600 transition hover:bg-stone-50"
+              className="rounded-md border border-ocean-200/70 px-2.5 py-1 text-sm text-ocean-900/70 transition hover:bg-ocean-50"
             >
               Next
             </button>
           </div>
 
-          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-stone-400">
+          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-ocean-900/40">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
               <div key={day}>{day}</div>
             ))}
@@ -252,8 +252,8 @@ export default function MusicianAvailabilityPage() {
                       ? 'border-amber-400 bg-amber-50 shadow-sm'
                       : isGeneralAvailabilityDay
                         ? 'border-sky-400 bg-sky-200 hover:border-sky-500'
-                        : 'border-stone-200 bg-white hover:border-amber-300'
-                  } ${isCurrentMonth ? 'text-stone-900' : 'text-stone-300'}`}
+                        : 'border-ocean-200/70 bg-white hover:border-amber-300'
+                  } ${isCurrentMonth ? 'text-ocean-900' : 'text-ocean-300'}`}
                 >
                   <div className="text-sm font-medium">{day.getDate()}</div>
                   {slotCount > 0 && (
@@ -266,16 +266,16 @@ export default function MusicianAvailabilityPage() {
             })}
           </div>
 
-          <div className="mt-3 flex items-center gap-3 text-xs text-stone-600">
+          <div className="mt-3 flex items-center gap-3 text-xs text-ocean-900/70">
             <span className="inline-block h-3 w-3 rounded bg-sky-100 border border-sky-300" />
             <span>Soft highlight = your recurring day-of-week availability</span>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-stone-500">Selected date</p>
-            <p className="mt-1 text-lg font-semibold text-stone-900">{formatDateLabel(selectedDate)}</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-ocean-900/60">Selected date</p>
+            <p className="mt-1 text-lg font-semibold text-ocean-900">{formatDateLabel(selectedDate)}</p>
           </div>
 
           <div className="grid gap-4">
@@ -284,20 +284,20 @@ export default function MusicianAvailabilityPage() {
               setEndTime(end)
             }} accent="amber" />
 
-            <label className="block text-sm font-medium text-stone-800">
-              Notes <span className="text-xs font-normal text-stone-500">optional</span>
+            <label className="block text-sm font-medium text-ocean-900">
+              Notes <span className="text-xs font-normal text-ocean-900/60">optional</span>
               <input
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 placeholder="Morning set, 30-minute visit, piano only, etc."
-                className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-amber-500 focus:ring"
+                className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-amber-500 focus:ring"
               />
             </label>
           </div>
 
-          <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Preview</p>
-            <p className="mt-1 text-sm text-stone-800">{formatDateLabel(selectedDate)} • {formatTimeLabel(startTime)} - {formatTimeLabel(endTime)}</p>
+          <div className="rounded-xl border border-ocean-200/70 bg-ocean-50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ocean-900/60">Preview</p>
+            <p className="mt-1 text-sm text-ocean-900">{formatDateLabel(selectedDate)} • {formatTimeLabel(startTime)} - {formatTimeLabel(endTime)}</p>
           </div>
 
           {error && <p className="text-sm font-medium text-red-700">{error}</p>}
@@ -305,27 +305,27 @@ export default function MusicianAvailabilityPage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:opacity-60"
+            className="w-full rounded-lg bg-ocean-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ocean-900 disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Add time slot'}
           </button>
         </form>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">Posted Slots</h2>
-          <p className="text-xs text-stone-500">{selectedDateSlots.length} on selected day</p>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ocean-900/60">Posted Slots</h2>
+          <p className="text-xs text-ocean-900/60">{selectedDateSlots.length} on selected day</p>
         </div>
 
         {rows.length > 0 ? (
           <ul className="mt-3 space-y-2">
             {rows.map((row) => (
-              <li key={row.id} className="flex items-start justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
+              <li key={row.id} className="flex items-start justify-between gap-3 rounded-lg border border-ocean-200/70 bg-ocean-50 px-3 py-2">
                 <div>
-                  <p className="text-sm font-medium text-stone-900">{formatDateLabel(row.available_date)}</p>
-                  <p className="text-xs text-stone-600">{formatTimeLabel(row.start_time)} - {formatTimeLabel(row.end_time)}</p>
-                  {row.notes && <p className="text-xs text-stone-600">{row.notes}</p>}
+                  <p className="text-sm font-medium text-ocean-900">{formatDateLabel(row.available_date)}</p>
+                  <p className="text-xs text-ocean-900/70">{formatTimeLabel(row.start_time)} - {formatTimeLabel(row.end_time)}</p>
+                  {row.notes && <p className="text-xs text-ocean-900/70">{row.notes}</p>}
                 </div>
                 <button
                   type="button"
@@ -338,7 +338,7 @@ export default function MusicianAvailabilityPage() {
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-stone-500">No slots posted yet.</p>
+          <p className="mt-3 text-sm text-ocean-900/60">No slots posted yet.</p>
         )}
       </div>
     </section>

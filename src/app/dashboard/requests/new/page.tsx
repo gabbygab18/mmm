@@ -341,7 +341,9 @@ export default function NewRequestPage() {
       return
     }
 
-    notifyRequestInitiatedAction(insertedRequest.id).catch(() => {})
+    // Awaited: navigating away right after firing this would abort the
+    // in-flight server action before the email/alert send completes.
+    await notifyRequestInitiatedAction(insertedRequest.id).catch(() => {})
 
     router.push('/dashboard/requests?status=created')
     router.refresh()

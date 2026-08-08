@@ -2,7 +2,7 @@
 
 import { requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { notifyUser, getRecipientEmail } from '@/lib/notifications'
+import { notifyUser, getRecipientEmail, buildRequestJourneyEmailHtml } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
 
 function formatDateLabel(value: string) {
@@ -65,6 +65,7 @@ export async function notifyProposalSuggestedAction(requestId: string) {
       : 'TBD'
 
   const otherUserEmail = await getRecipientEmail(otherUserId)
+  const body = `Hi,\n\n${proposerName ?? 'The other side'} proposed a new time for your performance request: ${dateStr} at ${timeStr}.\n\nReview and respond from your dashboard.\n\n— Margaret's MemoryCare Music`
 
   await notifyUser({
     userId: otherUserId,
@@ -73,7 +74,11 @@ export async function notifyProposalSuggestedAction(requestId: string) {
     message: `${proposerName ?? 'The other side'} proposed a new time: ${dateStr} at ${timeStr}.`,
     recipientEmail: otherUserEmail,
     subject: 'Alternate Time Proposed — Margaret\'s MemoryCare Music',
-    body: `Hi,\n\n${proposerName ?? 'The other side'} proposed a new time for your performance request: ${dateStr} at ${timeStr}.\n\nReview and respond from your dashboard.\n\n— Margaret's MemoryCare Music`,
+    body,
+    html: buildRequestJourneyEmailHtml(body, 'sent'),
     relatedRequestId: requestId,
+    // The proposal_suggested_trigger DB trigger already inserts the in-app
+    // alert for this event — this call only needs to handle the email.
+    skipInAppAlert: true,
   })
 }

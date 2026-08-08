@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 
 interface DismissButtonProps {
@@ -10,6 +11,7 @@ interface DismissButtonProps {
 
 export function DismissAlertButton({ alertId, onDismiss }: DismissButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   async function handleDismiss() {
     setIsLoading(true)
@@ -17,6 +19,10 @@ export function DismissAlertButton({ alertId, onDismiss }: DismissButtonProps) {
       const supabase = createSupabaseBrowserClient()
       await supabase.from('alerts').update({ dismissed: true }).eq('id', alertId)
       window.dispatchEvent(new CustomEvent('alerts:dismissed', { detail: { alertId } }))
+      // The unread badge count is fetched server-side in the dashboard
+      // layout — a plain client write here never reaches it, so the red
+      // dot stayed stale until a manual reload without this.
+      router.refresh()
     } catch (e) {
       console.error('[DismissAlertButton] Error:', e)
     } finally {

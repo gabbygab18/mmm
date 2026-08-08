@@ -19,7 +19,14 @@ async function setApproved(table: 'musicians' | 'centers', id: string, approved:
 
   const supabase = await createSupabaseServerClient()
 
-  const { data: before } = await supabase.from(table).select('user_id, name, approved').eq('id', id).maybeSingle()
+  const { data: before } = await supabase
+    .from(table)
+    .select('user_id, name, approved, profile_complete')
+    .eq('id', id)
+    .maybeSingle()
+  if (!before) return
+  // Can't approve a profile that isn't finished — nothing to review yet.
+  if (approved && !before.profile_complete) return
 
   await supabase.from(table).update({ approved }).eq('id', id)
 

@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { notifyUser, getRecipientEmail } from '@/lib/notifications'
+import { notifyUser, getRecipientEmail, buildRequestJourneyEmailHtml } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
 import { SubmitButton } from '@/components/mmm/submit-button'
 
@@ -128,7 +128,10 @@ async function updateRequestStatusAction(formData: FormData) {
       : 'TBD'
 
   if (nextStatus === 'accepted') {
-    if (currentStatus !== 'initiated') return
+    // These are business-rule no-ops (nothing to accept, or you're waiting on
+    // your own last proposal) — redirect with a status instead of returning
+    // blank, so the button doesn't just look stuck.
+    if (currentStatus !== 'initiated') redirect('/dashboard/requests?status=accept_failed')
 
     const { data: latestPendingProposal } = await supabase
       .from('request_time_proposals')
@@ -140,7 +143,7 @@ async function updateRequestStatusAction(formData: FormData) {
       .maybeSingle()
 
     if (latestPendingProposal && latestPendingProposal.proposed_by_user_id === user.id) {
-      return
+      redirect('/dashboard/requests?status=accept_waiting')
     }
 
     const timestamp = new Date().toISOString()
@@ -149,7 +152,7 @@ async function updateRequestStatusAction(formData: FormData) {
       .update({ status: 'accepted', accepted_at: timestamp, updated_at: timestamp })
       .eq('id', requestId)
 
-    if (updateError) return
+    if (updateError) redirect('/dashboard/requests?status=accept_failed')
 
     const { data: latestProposalForAdoption } = await supabase
       .from('request_time_proposals')
@@ -195,10 +198,10 @@ async function updateRequestStatusAction(formData: FormData) {
     const ctx = await getRequestContext()
     const otherUserId = role === 'musician' ? ctx.centerUserId : ctx.musicianUserId
     const otherUserEmail = otherUserId ? await getRecipientEmail(otherUserId) : null
+    const participantName = role === 'musician' ? ctx.location?.name : ctx.musician?.name
 
     if (otherUserId) {
-      const participantName = role === 'musician' ? ctx.location?.name : ctx.musician?.name
-
+      const otherBody = `Great news! Your request with ${participantName} for ${dateStr} at ${timeStr} is now scheduled. Check your dashboard for details and next steps.`
       await notifyUser({
         userId: otherUserId,
         alertType: 'request_accepted' as AlertType,
@@ -206,10 +209,28 @@ async function updateRequestStatusAction(formData: FormData) {
         message: `Your request with ${participantName} for ${dateStr} at ${timeStr} is now scheduled.`,
         recipientEmail: otherUserEmail,
         subject: 'Your Performance Was Scheduled',
-        body: `Great news! Your request with ${participantName} for ${dateStr} at ${timeStr} is now scheduled. Check your dashboard for details and next steps.`,
+        body: otherBody,
+        html: buildRequestJourneyEmailHtml(otherBody, 'accepted'),
         relatedRequestId: requestId,
       })
     }
+
+    // Confirmation back to whoever clicked Accept — they see the banner
+    // in-app already, so this is email-only, not a second alert.
+    const selfEmail = await getRecipientEmail(user.id)
+    const selfAcceptBody = `Hi,\n\nThis confirms you accepted the request with ${participantName} for ${dateStr} at ${timeStr}. It's now on your Scheduled Events.\n\n— Margaret's MemoryCare Music`
+    await notifyUser({
+      userId: user.id,
+      alertType: 'request_accepted' as AlertType,
+      title: 'You accepted a performance request',
+      message: `You accepted the request with ${participantName} for ${dateStr} at ${timeStr}.`,
+      recipientEmail: selfEmail,
+      subject: 'You accepted a performance request — Margaret\'s MemoryCare Music',
+      body: selfAcceptBody,
+      html: buildRequestJourneyEmailHtml(selfAcceptBody, 'accepted'),
+      relatedRequestId: requestId,
+      skipInAppAlert: true,
+    })
 
     revalidatePath('/dashboard/schedule')
     redirect('/dashboard/requests?status=accepted')
@@ -238,17 +259,17 @@ async function updateRequestStatusAction(formData: FormData) {
     const ctx = await getRequestContext()
     const otherUserId = role === 'musician' ? ctx.centerUserId : ctx.musicianUserId
     const otherUserEmail = otherUserId ? await getRecipientEmail(otherUserId) : null
+    const participantName = role === 'musician' ? ctx.location?.name : ctx.musician?.name
+    const isScheduledEventCancellation = currentStatus === 'accepted'
+    const alertType = isScheduledEventCancellation ? 'event_cancelled' : 'request_cancelled'
+    const title = isScheduledEventCancellation ? 'Performance Cancelled' : 'Request Cancelled'
+    const subject = isScheduledEventCancellation ? 'Performance Was Cancelled' : 'Performance Request Was Cancelled'
+    const message = isScheduledEventCancellation
+      ? `The performance with ${participantName} on ${dateStr} has been cancelled.`
+      : `A request with ${participantName} for ${dateStr} has been cancelled.`
+    const journeyStage = isScheduledEventCancellation ? 'cancelled_after_accept' : 'cancelled_before_accept'
 
     if (otherUserId) {
-      const participantName = role === 'musician' ? ctx.location?.name : ctx.musician?.name
-      const isScheduledEventCancellation = currentStatus === 'accepted'
-      const alertType = isScheduledEventCancellation ? 'event_cancelled' : 'request_cancelled'
-      const title = isScheduledEventCancellation ? 'Performance Cancelled' : 'Request Cancelled'
-      const subject = isScheduledEventCancellation ? 'Performance Was Cancelled' : 'Performance Request Was Cancelled'
-      const message = isScheduledEventCancellation
-        ? `The performance with ${participantName} on ${dateStr} has been cancelled.`
-        : `A request with ${participantName} for ${dateStr} has been cancelled.`
-
       await notifyUser({
         userId: otherUserId,
         alertType: alertType as AlertType,
@@ -257,9 +278,31 @@ async function updateRequestStatusAction(formData: FormData) {
         recipientEmail: otherUserEmail,
         subject,
         body: message,
+        html: buildRequestJourneyEmailHtml(message, journeyStage),
         relatedRequestId: requestId,
       })
     }
+
+    // Confirmation back to whoever cancelled — email-only, they already see
+    // the in-app banner.
+    const selfEmail = await getRecipientEmail(user.id)
+    const selfCancelBody = isScheduledEventCancellation
+      ? `Hi,\n\nThis confirms you cancelled the performance with ${participantName} on ${dateStr}.\n\n— Margaret's MemoryCare Music`
+      : `Hi,\n\nThis confirms you cancelled the request with ${participantName} for ${dateStr}.\n\n— Margaret's MemoryCare Music`
+    await notifyUser({
+      userId: user.id,
+      alertType: alertType as AlertType,
+      title: isScheduledEventCancellation ? 'You cancelled a performance' : 'You cancelled a request',
+      message: isScheduledEventCancellation
+        ? `You cancelled the performance with ${participantName} on ${dateStr}.`
+        : `You cancelled the request with ${participantName} for ${dateStr}.`,
+      recipientEmail: selfEmail,
+      subject: isScheduledEventCancellation ? 'You cancelled a performance — Margaret\'s MemoryCare Music' : 'You cancelled a request — Margaret\'s MemoryCare Music',
+      body: selfCancelBody,
+      html: buildRequestJourneyEmailHtml(selfCancelBody, journeyStage),
+      relatedRequestId: requestId,
+      skipInAppAlert: true,
+    })
 
     revalidatePath('/dashboard/schedule')
     redirect('/dashboard/requests?status=cancelled')
@@ -376,6 +419,16 @@ export default async function RequestsPage({
       {justUpdatedStatus === 'cancelled' && (
         <p className="rounded-lg bg-rose-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-rose-800">
           Request cancelled.
+        </p>
+      )}
+      {justUpdatedStatus === 'accept_waiting' && (
+        <p className="rounded-lg bg-amber-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-amber-800">
+          You suggested the latest time — waiting on the other side to accept it.
+        </p>
+      )}
+      {justUpdatedStatus === 'accept_failed' && (
+        <p className="rounded-lg bg-rose-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-rose-800">
+          Couldn&apos;t accept that request — it may have already changed. Refresh and try again.
         </p>
       )}
       {justUpdatedStatus === 'created' && (

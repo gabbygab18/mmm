@@ -76,5 +76,16 @@ export default async function AdminUsersPage() {
     }
   })
 
-  return <UsersManager users={rows} currentUserId={currentUser.id} />
+  return (
+    <div className="mx-auto max-w-[1240px] px-4 py-8 sm:px-6">
+      <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Users</h1>
+      <p className="mt-1 font-poppins text-[12.5px] text-ocean-900/70">
+        Every account across the platform — auth records, roles, and sign-in activity.
+      </p>
+
+      <div className="mt-7">
+        <UsersManager users={rows} currentUserId={currentUser.id} />
+      </div>
+    </div>
+  )
 }

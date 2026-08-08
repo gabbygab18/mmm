@@ -83,24 +83,24 @@ export default function AddLocationPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 font-poppins">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/center" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/dashboard/center" className="text-sm text-ocean-900/60 hover:text-ocean-900">
           ← Back to dashboard
         </Link>
       </div>
 
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Add a location</h1>
-        <p className="mt-1 text-sm text-stone-600">
+        <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Add a location</h1>
+        <p className="mt-1 text-sm text-ocean-900/70">
           Each location can post its own performance requests and will be matched independently.
           Fields marked <span className="font-semibold text-rose-600">*</span> are required.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-ocean-200/70 bg-white p-6 shadow-sm">
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-stone-800">
+          <label className="block text-sm font-medium text-ocean-900">
             Location username <span className="text-rose-600">*</span>
             <input
               value={locationUsername}
@@ -110,33 +110,33 @@ export default function AddLocationPage() {
               maxLength={30}
               pattern="[a-z0-9_]{3,30}"
               placeholder="east_wing"
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-600 focus:ring"
+              className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-800 focus:ring"
             />
-            <p className="mt-1 text-xs font-normal text-stone-500">Used in public URL: /discover/location/{locationUsername || 'east_wing'}</p>
+            <p className="mt-1 text-xs font-normal text-ocean-900/60">Used in public URL: /discover/location/{locationUsername || 'east_wing'}</p>
           </label>
 
-          <label className="block text-sm font-medium text-stone-800 sm:col-span-2">
+          <label className="block text-sm font-medium text-ocean-900 sm:col-span-2">
             Location name <span className="text-rose-600">*</span>
             <input
               value={locationName}
               onChange={(event) => setLocationName(event.target.value)}
               required
               placeholder="East Wing, Building B, etc."
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-600 focus:ring"
+              className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-800 focus:ring"
             />
           </label>
 
-          <label className="block text-sm font-medium text-stone-800 sm:col-span-2">
+          <label className="block text-sm font-medium text-ocean-900 sm:col-span-2">
             Address <span className="text-rose-600">*</span>
             <input
               value={locationAddress}
               onChange={(event) => setLocationAddress(event.target.value)}
               required
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-600 focus:ring"
+              className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-800 focus:ring"
             />
           </label>
 
-          <label className="block text-sm font-medium text-stone-800">
+          <label className="block text-sm font-medium text-ocean-900">
             ZIP code <span className="text-rose-600">*</span>
             <input
               value={locationZipCode}
@@ -144,11 +144,11 @@ export default function AddLocationPage() {
               required
               maxLength={5}
               pattern="[0-9]{5}"
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-600 focus:ring"
+              className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-800 focus:ring"
             />
           </label>
 
-          <label className="block text-sm font-medium text-stone-800">
+          <label className="block text-sm font-medium text-ocean-900">
             Number of residents <span className="text-rose-600">*</span>
             <input
               type="number"
@@ -156,32 +156,32 @@ export default function AddLocationPage() {
               value={residentCount}
               onChange={(event) => setResidentCount(Number(event.target.value))}
               required
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-600 focus:ring"
+              className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-800 focus:ring"
             />
           </label>
 
-          <label className="block text-sm font-medium text-stone-800">
-            Location phone <span className="text-xs font-normal text-stone-500">optional</span>
+          <label className="block text-sm font-medium text-ocean-900">
+            Location phone <span className="text-xs font-normal text-ocean-900/60">optional</span>
             <input
               value={locationPhone}
               onChange={(event) => setLocationPhone(event.target.value)}
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-600 focus:ring"
+              className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-800 focus:ring"
             />
           </label>
 
-          <label className="block text-sm font-medium text-stone-800 sm:col-span-2">
-            Common space photo URL <span className="text-xs font-normal text-stone-500">optional</span>
+          <label className="block text-sm font-medium text-ocean-900 sm:col-span-2">
+            Common space photo URL <span className="text-xs font-normal text-ocean-900/60">optional</span>
             <input
               type="url"
               value={locationImageUrl}
               onChange={(event) => setLocationImageUrl(event.target.value)}
               placeholder="https://..."
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-600 focus:ring"
+              className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-800 focus:ring"
             />
           </label>
         </div>
 
-        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-800">
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-ocean-200/70 bg-ocean-50 px-3 py-2.5 text-sm text-ocean-900">
           <input
             type="checkbox"
             checked={supportsTransport}
@@ -196,13 +196,13 @@ export default function AddLocationPage() {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-lg bg-stone-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:opacity-60"
+            className="rounded-lg bg-ocean-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ocean-900 disabled:opacity-60"
           >
             {loading ? 'Saving…' : 'Add location'}
           </button>
           <Link
             href="/dashboard/center"
-            className="rounded-lg border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            className="rounded-lg border border-ocean-300 px-5 py-2.5 text-sm font-medium text-ocean-900 transition hover:bg-ocean-50"
           >
             Cancel
           </Link>

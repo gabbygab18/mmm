@@ -2,7 +2,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { notifyUser, getRecipientEmail } from '@/lib/notifications'
+import { notifyUser, getRecipientEmail, buildRequestJourneyEmailHtml } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
 import { ScheduleCalendar } from './schedule-calendar'
 import { SubmitButton } from '@/components/mmm/submit-button'
@@ -125,6 +125,7 @@ async function updateScheduledStatusAction(formData: FormData) {
     const participantName = role === 'musician' ? location?.name : musician?.name
 
     if (nextStatus === 'completed') {
+      const body = `The performance with ${participantName} on ${dateStr} at ${timeStr} has been marked complete. Thank you!`
       await notifyUser({
         userId: otherUserId,
         alertType: 'event_completed' as AlertType,
@@ -132,12 +133,14 @@ async function updateScheduledStatusAction(formData: FormData) {
         message: `The performance with ${participantName} on ${dateStr} has been marked complete.`,
         recipientEmail: otherUserEmail,
         subject: 'Performance Completed',
-        body: `The performance with ${participantName} on ${dateStr} at ${timeStr} has been marked complete. Thank you!`,
+        body,
+        html: buildRequestJourneyEmailHtml(body, 'completed'),
         relatedRequestId: requestId,
       })
     }
 
     if (nextStatus === 'cancelled') {
+      const body = `The performance with ${participantName} on ${dateStr} at ${timeStr} has been cancelled.`
       await notifyUser({
         userId: otherUserId,
         alertType: 'event_cancelled' as AlertType,
@@ -145,7 +148,8 @@ async function updateScheduledStatusAction(formData: FormData) {
         message: `The performance with ${participantName} on ${dateStr} has been cancelled.`,
         recipientEmail: otherUserEmail,
         subject: 'Performance Was Cancelled',
-        body: `The performance with ${participantName} on ${dateStr} at ${timeStr} has been cancelled.`,
+        body,
+        html: buildRequestJourneyEmailHtml(body, 'cancelled_after_accept'),
         relatedRequestId: requestId,
       })
     }
@@ -310,7 +314,7 @@ export default async function SchedulePage({
                           className="h-12 w-12 rounded-xl border-2 border-white object-cover shadow-sm"
                         />
                       ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-white bg-stone-100 text-sm font-semibold text-stone-600 shadow-sm">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-white bg-ocean-100 text-sm font-semibold text-ocean-900/70 shadow-sm">
                           {(musician?.name ?? 'M').charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -398,7 +402,7 @@ export default async function SchedulePage({
                           className="h-9 w-9 rounded-lg border-2 border-white object-cover shadow-sm"
                         />
                       ) : (
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-white bg-stone-100 text-[10px] font-semibold text-stone-600 shadow-sm">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-white bg-ocean-100 text-[10px] font-semibold text-ocean-900/70 shadow-sm">
                           {(musician?.name ?? 'M').charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -419,7 +423,7 @@ export default async function SchedulePage({
             })}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-stone-400">No completed events yet.</p>
+          <p className="mt-3 text-sm text-ocean-900/40">No completed events yet.</p>
         )}
       </details>
     </section>

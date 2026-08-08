@@ -97,11 +97,13 @@ export async function deleteAccountAction(
       .delete()
       .eq('musician_id', musician.id)
 
-    // Anonymize profile (name + zip_code are NOT NULL — use placeholders)
+    // Anonymize profile — name is deliberately left as-is: admins need to
+    // know who a deleted account was for support/audit, and it's already
+    // excluded from public discovery once approved/deleted_at flip below.
+    // (zip_code is NOT NULL, so it still needs a placeholder.)
     await supabase
       .from('musicians')
       .update({
-        name: 'Deleted Account',
         zip_code: '00000',
         phone: null,
         bio: null,
@@ -157,11 +159,10 @@ export async function deleteAccountAction(
       }
     }
 
-    // Anonymize center profile
+    // Anonymize center profile — name kept for admin visibility, same as musicians above.
     await supabase
       .from('centers')
       .update({
-        name: 'Deleted Account',
         phone: null,
         profile_image_url: null,
         profile_complete: false,

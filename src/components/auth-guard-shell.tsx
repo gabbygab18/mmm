@@ -86,16 +86,25 @@ function useSignOut() {
   }
 }
 
+/** Red badge counts, keyed by nav href — 0/absent renders no badge. */
+function badgeCountFor(item: NavItem, unreadAlertCount: number, pendingRequestCount: number) {
+  if (item.href === '/dashboard/alerts') return unreadAlertCount
+  if (item.href === '/dashboard/requests') return pendingRequestCount
+  return 0
+}
+
 function Sidebar({
   role,
   avatarUrl,
   photoTable,
   unreadAlertCount,
+  pendingRequestCount,
 }: {
   role: Role
   avatarUrl?: string | null
   photoTable?: ProfileTable | null
   unreadAlertCount: number
+  pendingRequestCount: number
 }) {
   const pathname = usePathname()
   const items = role ? (NAV[role] ?? []) : []
@@ -125,6 +134,7 @@ function Sidebar({
       <nav aria-label="Dashboard" className="scrollbar-on-dark min-h-0 flex-1 space-y-1 overflow-y-auto px-4 pt-4">
         {items.map((item) => {
           const active = isActive(item)
+          const badgeCount = badgeCountFor(item, unreadAlertCount, pendingRequestCount)
           return (
             <Link
               key={item.href}
@@ -136,7 +146,7 @@ function Sidebar({
             >
               <span className="relative">
                 <NavIcon name={item.icon} />
-                {item.href === '/dashboard/alerts' && unreadAlertCount > 0 && (
+                {badgeCount > 0 && (
                   <span
                     aria-hidden="true"
                     className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-ocean-900 bg-red-500"
@@ -144,9 +154,9 @@ function Sidebar({
                 )}
               </span>
               <span className="flex-1">{item.label}</span>
-              {item.href === '/dashboard/alerts' && unreadAlertCount > 0 && (
+              {badgeCount > 0 && (
                 <span className="rounded-full bg-red-500 px-1.5 py-0.5 font-poppins text-[10px] font-bold leading-none text-white">
-                  {unreadAlertCount > 99 ? '99+' : unreadAlertCount}
+                  {badgeCount > 99 ? '99+' : badgeCount}
                 </span>
               )}
             </Link>
@@ -184,7 +194,15 @@ function Sidebar({
 }
 
 /** Mobile bottom tab bar — the primary navigation on small screens. */
-function TabBar({ role, unreadAlertCount }: { role: Role; unreadAlertCount: number }) {
+function TabBar({
+  role,
+  unreadAlertCount,
+  pendingRequestCount,
+}: {
+  role: Role
+  unreadAlertCount: number
+  pendingRequestCount: number
+}) {
   const pathname = usePathname()
   const items = role ? (NAV[role] ?? []) : []
   const isActive = (i: NavItem) => (i.prefix ? pathname.startsWith(i.href) : pathname === i.href)
@@ -198,6 +216,7 @@ function TabBar({ role, unreadAlertCount }: { role: Role; unreadAlertCount: numb
       <ul className="flex min-w-max items-stretch justify-around gap-1 px-2 py-2">
         {items.map((item) => {
           const active = isActive(item)
+          const badgeCount = badgeCountFor(item, unreadAlertCount, pendingRequestCount)
           return (
             <li key={item.href} className="flex-1">
               <Link
@@ -209,7 +228,7 @@ function TabBar({ role, unreadAlertCount }: { role: Role; unreadAlertCount: numb
               >
                 <span className="relative">
                   <NavIcon name={item.icon} className="h-6 w-6" />
-                  {item.href === '/dashboard/alerts' && unreadAlertCount > 0 && (
+                  {badgeCount > 0 && (
                     <span
                       aria-hidden="true"
                       className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-[#0d3763] bg-red-500"
@@ -232,6 +251,7 @@ export function AuthGuardShell({
   avatarUrl = null,
   photoTable = null,
   unreadAlertCount = 0,
+  pendingRequestCount = 0,
 }: {
   children: React.ReactNode
   role: Role
@@ -241,6 +261,8 @@ export function AuthGuardShell({
   photoTable?: ProfileTable | null
   /** Unread, non-dismissed alert count — drives the red badge on Notifications. */
   unreadAlertCount?: number
+  /** Active ("initiated") request count — drives the red badge on Requests. */
+  pendingRequestCount?: number
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const signOut = useSignOut()
@@ -302,7 +324,13 @@ export function AuthGuardShell({
 
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-[260px] shrink-0 lg:block xl:w-[300px]">
-          <Sidebar role={role} avatarUrl={avatarUrl} photoTable={photoTable} unreadAlertCount={unreadAlertCount} />
+          <Sidebar
+            role={role}
+            avatarUrl={avatarUrl}
+            photoTable={photoTable}
+            unreadAlertCount={unreadAlertCount}
+            pendingRequestCount={pendingRequestCount}
+          />
         </aside>
 
         <main
@@ -313,7 +341,7 @@ export function AuthGuardShell({
         </main>
       </div>
 
-      <TabBar role={role} unreadAlertCount={unreadAlertCount} />
+      <TabBar role={role} unreadAlertCount={unreadAlertCount} pendingRequestCount={pendingRequestCount} />
     </div>
   )
 }

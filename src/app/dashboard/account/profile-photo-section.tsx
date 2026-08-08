@@ -44,9 +44,9 @@ export function ProfilePhotoSection({
   }
 
   return (
-    <section className="rounded-2xl border border-stone-200 bg-white p-6">
-      <h2 className="text-base font-bold text-stone-900">{isFacility ? 'Facility Photo' : 'Profile Photo'}</h2>
-      <p className="mt-1 text-sm text-stone-500">
+    <section className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-6">
+      <h2 className="font-garamond text-lg font-bold text-ocean-900">{isFacility ? 'Facility Photo' : 'Profile Photo'}</h2>
+      <p className="mt-1 font-poppins text-[12.5px] text-ocean-900/70">
         {isFacility
           ? 'Musicians see this photo when they browse nearby communities.'
           : 'Communities see this photo on your profile and on performance requests.'}
@@ -58,7 +58,7 @@ export function ProfilePhotoSection({
           table={table}
           size={104}
           tooltip={isFacility ? 'Change facility picture' : 'Change profile picture'}
-          fallback={<span className="text-[11px] text-ocean-900/40">No photo</span>}
+          fallback={<span className="font-poppins text-[11px] text-ocean-900/40">No photo</span>}
           onSaved={(next) => {
             setUrl(next)
             setSaved(true)
@@ -67,24 +67,24 @@ export function ProfilePhotoSection({
         />
 
         <div className="min-w-0">
-          <p className="text-sm text-stone-600">
+          <p className="font-poppins text-[12.5px] text-ocean-900/70">
             Click the camera to {url ? 'change' : 'add'} your photo. You can crop and zoom before it saves.
           </p>
-          <p className="mt-1 text-xs text-stone-500">JPG or PNG, up to 5 MB.</p>
+          <p className="mt-1 font-poppins text-xs text-ocean-900/60">JPG or PNG, up to 5 MB.</p>
 
           {url && (
             <button
               type="button"
               onClick={handleRemove}
               disabled={removing}
-              className="mt-3 text-sm font-semibold text-stone-500 underline transition hover:text-stone-700 disabled:opacity-60"
+              className="mt-3 font-poppins text-[12.5px] font-semibold text-ocean-900/70 underline transition hover:text-ocean-900 disabled:opacity-60"
             >
               {removing ? 'Removing…' : 'Remove photo'}
             </button>
           )}
 
-          {error && <p className="mt-2 text-xs font-medium text-red-600">{error}</p>}
-          {saved && !error && <p className="mt-2 text-xs font-medium text-green-700">Photo saved.</p>}
+          {error && <p className="mt-2 font-poppins text-xs font-medium text-red-600">{error}</p>}
+          {saved && !error && <p className="mt-2 font-poppins text-xs font-medium text-green-700">Photo saved.</p>}
         </div>
       </div>
     </section>

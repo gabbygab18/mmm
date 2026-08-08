@@ -938,7 +938,7 @@ export function MusicianWizard({
                   <div>
                     <div className="flex items-start gap-4 sm:items-center sm:gap-6">
                       <div className="shrink-0">
-                        <label className="flex h-[132px] w-[132px] cursor-pointer flex-col items-center justify-center gap-1 overflow-hidden rounded-full border-2 border-ocean-300 bg-white/70 px-2 text-center transition hover:border-ocean-500 focus-within:border-ocean-500 sm:h-[168px] sm:w-[168px]">
+                        <label className="flex h-[132px] w-[132px] cursor-pointer overflow-hidden rounded-full border-2 border-ocean-300 bg-white/70 text-center transition hover:border-ocean-500 focus-within:border-ocean-500 sm:h-[168px] sm:w-[168px]">
                           <input
                             type="file"
                             accept={ACCEPT_ATTRIBUTE}
@@ -954,10 +954,16 @@ export function MusicianWizard({
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            // A plain glyph, not the pages/upload-photo.png
-                            // card asset — that image bakes in its own square
-                            // border, which doubled up against this circle's.
-                            <>
+                            // Padding lives here, not on the label itself —
+                            // padding on the label was horizontal-only, so the
+                            // circular clip (based on the label's full square
+                            // box) left the *photo* short of the edge on the
+                            // left/right only, exposing the label's own white
+                            // background as two crescents.
+                            <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-2">
+                              {/* A plain glyph, not the pages/upload-photo.png
+                                  card asset — that image bakes in its own square
+                                  border, which doubled up against this circle's. */}
                               <svg className="h-9 w-9 text-ocean-400 sm:h-11 sm:w-11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 8a2 2 0 0 1 2-2h1.5l1-1.5h7l1 1.5H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" />
                                 <circle cx="12" cy="13" r="3.4" />
@@ -966,7 +972,7 @@ export function MusicianWizard({
                               <span className="font-poppins text-[8px] leading-tight text-ocean-900/50 sm:text-[10px]">
                                 JPG, PNG (max 5MB)
                               </span>
-                            </>
+                            </div>
                           )}
                         </label>
                         {/* Phones and tablets: straight to the camera. */}

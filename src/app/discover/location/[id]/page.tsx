@@ -39,26 +39,49 @@ export default async function LocationProfilePage({ params }: { params: Promise<
 
   const supabase = await createSupabaseServerClient()
   const { id: username } = await params
+  const LOCATION_COLUMNS =
+    'id, username, center_id, name, address, zip_code, phone, supports_transport, location_image_url, resident_count, profile_complete'
+
+  let location: {
+    id: string
+    username: string | null
+    center_id: string
+    name: string
+    address: string | null
+    zip_code: string | null
+    phone: string | null
+    supports_transport: boolean | null
+    location_image_url: string | null
+    resident_count: number | null
+    profile_complete: boolean | null
+  } | null = null
 
   if (UUID_PATTERN.test(username)) {
     const { data: locationById } = await supabase
       .from('center_locations')
-      .select('username')
+      .select(LOCATION_COLUMNS)
       .eq('id', username)
       .maybeSingle()
 
     if (locationById?.username) {
       redirect(`/discover/location/${locationById.username}`)
     }
+    // A location can exist with no username assigned yet (never claimed one
+    // during onboarding) — serve it directly by id rather than 404ing on a
+    // username-shaped link that will never resolve.
+    location = locationById ?? null
   }
 
-  const { data: location, error: locationError } = await supabase
-    .from('center_locations')
-    .select('id, username, center_id, name, address, zip_code, phone, supports_transport, location_image_url, resident_count, profile_complete')
-    .eq('username', username)
-    .maybeSingle()
+  if (!location) {
+    const { data: locationByUsername } = await supabase
+      .from('center_locations')
+      .select(LOCATION_COLUMNS)
+      .eq('username', username)
+      .maybeSingle()
+    location = locationByUsername ?? null
+  }
 
-  if (locationError || !location) {
+  if (!location) {
     notFound()
   }
 
@@ -84,81 +107,81 @@ export default async function LocationProfilePage({ params }: { params: Promise<
     .limit(30)
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 font-poppins">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Location Profile</h1>
-          <p className="mt-1 text-sm text-stone-600">Venue details, request slots, and event portfolio for this location.</p>
+          <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Location Profile</h1>
+          <p className="mt-1 text-sm text-ocean-900/70">Venue details, request slots, and event portfolio for this location.</p>
         </div>
         <div className="flex items-center gap-2">
           {center?.username && (
             <Link
               href={`/discover/center/${center.username}`}
-              className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700 transition hover:bg-brand-100"
+              className="rounded-lg border border-ocean-300 bg-ocean-50 px-3 py-1.5 text-sm font-medium text-ocean-700 transition hover:bg-ocean-100"
             >
               View parent organization
             </Link>
           )}
           <Link
             href="/dashboard"
-            className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            className="rounded-lg border border-ocean-300 px-3 py-1.5 text-sm font-medium text-ocean-900 transition hover:bg-ocean-50"
           >
             Back to dashboard
           </Link>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           {locationDisplayImageUrl ? (
             <img
               src={locationDisplayImageUrl}
               alt={location.name}
-              className="h-24 w-24 rounded-xl border border-stone-200 object-cover"
+              className="h-24 w-24 rounded-xl border border-ocean-200/70 object-cover"
             />
           ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-stone-200 bg-amber-100 text-2xl font-semibold text-amber-700">
+            <div className="flex h-24 w-24 items-center justify-center rounded-xl border border-ocean-200/70 bg-amber-100 text-2xl font-semibold text-amber-700">
               {location.name.charAt(0).toUpperCase()}
             </div>
           )}
 
           <div className="min-w-0 flex-1">
-            <h2 className="text-xl font-semibold text-stone-900">{location.name}</h2>
-            {center?.name && <p className="mt-1 text-sm text-stone-600">{center.name}</p>}
-            <p className="mt-1 text-sm text-stone-600">{location.address} · ZIP {location.zip_code}</p>
-            {location.phone && <p className="mt-1 text-sm text-stone-600">Phone: {location.phone}</p>}
+            <h2 className="text-xl font-semibold text-ocean-900">{location.name}</h2>
+            {center?.name && <p className="mt-1 text-sm text-ocean-900/70">{center.name}</p>}
+            <p className="mt-1 text-sm text-ocean-900/70">{location.address} · ZIP {location.zip_code}</p>
+            {location.phone && <p className="mt-1 text-sm text-ocean-900/70">Phone: {location.phone}</p>}
 
             <div className="mt-2 flex flex-wrap gap-2">
               {center?.approved && (
                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">Approved organization</span>
               )}
               {location.profile_complete && (
-                <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-800">Location profile complete</span>
+                <span className="rounded-full bg-ocean-100 px-2 py-0.5 text-xs font-medium text-ocean-900">Location profile complete</span>
               )}
               {location.supports_transport && (
-                <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700">Transport available</span>
+                <span className="rounded-full bg-ocean-100 px-2 py-0.5 text-xs font-medium text-ocean-700">Transport available</span>
               )}
             </div>
 
-            <p className="mt-3 text-sm text-stone-700">{location.resident_count ?? 'Unknown'} residents at this location</p>
+            <p className="mt-3 text-sm text-ocean-900">{location.resident_count ?? 'Unknown'} residents at this location</p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h3 className="text-base font-semibold text-stone-900">Upcoming Request Slots</h3>
+      <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
+        <h3 className="text-base font-semibold text-ocean-900">Upcoming Request Slots</h3>
         {requestSlots && requestSlots.length > 0 ? (
           <ul className="mt-3 space-y-2">
             {requestSlots.map((slot: any) => (
-              <li key={slot.id} className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
-                <p className="font-medium text-stone-900">{formatDate(slot.requested_date)}</p>
+              <li key={slot.id} className="rounded-lg border border-ocean-200/70 bg-ocean-50 px-3 py-2 text-sm text-ocean-900">
+                <p className="font-medium text-ocean-900">{formatDate(slot.requested_date)}</p>
                 <p className="mt-0.5">{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</p>
-                {slot.notes && <p className="mt-1 text-xs text-stone-600">{slot.notes}</p>}
+                {slot.notes && <p className="mt-1 text-xs text-ocean-900/70">{slot.notes}</p>}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-stone-600">No upcoming request slots posted.</p>
+          <p className="mt-3 text-sm text-ocean-900/70">No upcoming request slots posted.</p>
         )}
       </div>
 

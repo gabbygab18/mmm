@@ -67,10 +67,10 @@ function parseStatusFilters(value: string | string[] | undefined) {
 }
 
 const STATUS_STYLES: Record<RequestStatus, string> = {
-  initiated: 'bg-stone-100 text-stone-800',
-  matched: 'bg-stone-100 text-stone-800',
+  initiated: 'bg-ocean-100 text-ocean-800',
+  matched: 'bg-ocean-100 text-ocean-800',
   accepted: 'bg-emerald-100 text-emerald-800',
-  completed: 'bg-brand-100 text-brand-800',
+  completed: 'bg-ocean-100 text-ocean-800',
   cancelled: 'bg-rose-100 text-rose-800',
 }
 
@@ -452,35 +452,35 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <a
           href="/dashboard/admin/users"
-          className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-colors hover:border-brand-300 hover:bg-brand-50"
+          className="rounded-xl border border-ocean-200/70 bg-[#fdfaf3] p-4 shadow-sm transition-colors hover:border-ocean-400 hover:bg-ocean-50"
         >
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Total accounts</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-900">{totalUsersCount ?? 0}</p>
-          <p className="mt-1 text-xs font-medium text-brand-700">Manage users →</p>
+          <p className="font-poppins text-[11px] font-semibold uppercase tracking-wide text-ocean-900/60">Total accounts</p>
+          <p className="mt-1 font-garamond text-2xl font-bold text-ocean-900">{totalUsersCount ?? 0}</p>
+          <p className="mt-1 font-poppins text-xs font-medium text-ocean-700">Manage users →</p>
         </a>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Open flags</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-900">{openFlags.length}</p>
+        <div className="rounded-xl border border-ocean-200/70 bg-[#fdfaf3] p-4 shadow-sm">
+          <p className="font-poppins text-[11px] font-semibold uppercase tracking-wide text-ocean-900/60">Open flags</p>
+          <p className="mt-1 font-garamond text-2xl font-bold text-ocean-900">{openFlags.length}</p>
         </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Recent requests</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-900">{requestRows.length}</p>
+        <div className="rounded-xl border border-ocean-200/70 bg-[#fdfaf3] p-4 shadow-sm">
+          <p className="font-poppins text-[11px] font-semibold uppercase tracking-wide text-ocean-900/60">Recent requests</p>
+          <p className="mt-1 font-garamond text-2xl font-bold text-ocean-900">{requestRows.length}</p>
         </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Completed events</p>
-          <p className="mt-1 text-2xl font-semibold text-stone-900">{completedEventRows.length}</p>
+        <div className="rounded-xl border border-ocean-200/70 bg-[#fdfaf3] p-4 shadow-sm">
+          <p className="font-poppins text-[11px] font-semibold uppercase tracking-wide text-ocean-900/60">Completed events</p>
+          <p className="mt-1 font-garamond text-2xl font-bold text-ocean-900">{completedEventRows.length}</p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Event Filters</h2>
-        <p className="mt-1 text-xs text-stone-600">
+      <div className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-5 shadow-sm">
+        <h2 className="font-garamond text-[20px] font-bold text-ocean-900">Event Filters</h2>
+        <p className="mt-1 font-poppins text-xs text-ocean-900/70">
           Shared filters are applied to both Media Library and Request/Event Oversight. Status filters apply to Oversight only.
         </p>
 
-        <form action="/dashboard/admin/oversight" className="mt-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 md:grid-cols-2 lg:grid-cols-4">
+        <form action="/dashboard/admin/oversight" className="mt-4 grid gap-3 rounded-xl border border-ocean-200/70 bg-white/70 p-4 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <label htmlFor="admin-filter-musician" className="mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500">Musician</label>
+            <label htmlFor="admin-filter-musician" className="mb-1 block font-poppins text-xs font-medium uppercase tracking-wide text-ocean-900/60">Musician</label>
             <input
               id="admin-filter-musician"
               list="admin-filter-musicians"
@@ -488,12 +488,12 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               name="musician"
               defaultValue={musicianFilter}
               placeholder="Type a musician name"
-              className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-ocean-300 bg-white px-3 py-2 font-poppins text-sm text-ocean-900"
             />
           </div>
 
           <div>
-            <label htmlFor="admin-filter-center" className="mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500">Center</label>
+            <label htmlFor="admin-filter-center" className="mb-1 block font-poppins text-xs font-medium uppercase tracking-wide text-ocean-900/60">Center</label>
             <input
               id="admin-filter-center"
               list="admin-filter-centers"
@@ -501,38 +501,38 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               name="center"
               defaultValue={centerFilter}
               placeholder="Type a center name"
-              className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-ocean-300 bg-white px-3 py-2 font-poppins text-sm text-ocean-900"
             />
           </div>
 
           <div>
-            <label htmlFor="admin-filter-from-date" className="mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500">From date</label>
+            <label htmlFor="admin-filter-from-date" className="mb-1 block font-poppins text-xs font-medium uppercase tracking-wide text-ocean-900/60">From date</label>
             <input
               id="admin-filter-from-date"
               type="date"
               name="fromDate"
               defaultValue={fromDateFilter}
-              className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-ocean-300 bg-white px-3 py-2 font-poppins text-sm text-ocean-900"
             />
           </div>
 
           <div>
-            <label htmlFor="admin-filter-to-date" className="mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500">To date</label>
+            <label htmlFor="admin-filter-to-date" className="mb-1 block font-poppins text-xs font-medium uppercase tracking-wide text-ocean-900/60">To date</label>
             <input
               id="admin-filter-to-date"
               type="date"
               name="toDate"
               defaultValue={toDateFilter}
-              className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-ocean-300 bg-white px-3 py-2 font-poppins text-sm text-ocean-900"
             />
           </div>
 
-          <div className="rounded border border-stone-200 bg-white p-3 md:col-span-2 lg:col-span-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-stone-500">Oversight status filter</p>
-            <div className="mt-2 flex flex-wrap gap-3 text-sm text-stone-700">
+          <div className="rounded-lg border border-ocean-200/70 bg-white p-3 md:col-span-2 lg:col-span-4">
+            <p className="font-poppins text-xs font-medium uppercase tracking-wide text-ocean-900/60">Oversight status filter</p>
+            <div className="mt-2 flex flex-wrap gap-3 font-poppins text-sm text-ocean-900">
               {(['initiated', 'accepted', 'completed', 'cancelled'] as RequestStatus[]).map((status) => (
                 <label key={status} className="inline-flex items-center gap-2">
-                  <input type="checkbox" name="status" value={status} defaultChecked={statusFilterSet.has(status)} className="h-4 w-4" />
+                  <input type="checkbox" name="status" value={status} defaultChecked={statusFilterSet.has(status)} className="h-4 w-4 rounded border-ocean-400 text-ocean-700 focus:ring-ocean-500" />
                   <span className="capitalize">{getStatusLabel(status)}</span>
                 </label>
               ))}
@@ -542,13 +542,13 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           <div className="flex flex-wrap items-center gap-2 lg:col-span-2 lg:justify-end">
             <button
               type="submit"
-              className="rounded border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
+              className="rounded-lg border border-ocean-800/60 bg-white px-3 py-2 font-poppins text-sm font-medium text-ocean-900 transition hover:bg-ocean-900/5"
             >
               Apply filters
             </button>
             <a
               href="/dashboard/admin/oversight"
-              className="rounded border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
+              className="rounded-lg border border-ocean-300 px-3 py-2 font-poppins text-sm font-medium text-ocean-900 transition hover:bg-ocean-900/5"
             >
               Clear all
             </a>
@@ -567,42 +567,42 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           ))}
         </datalist>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-semibold uppercase tracking-wide text-stone-500">Quick actions</span>
-          <a href={buildFilterHref({ statuses: ['completed'] })} className="rounded-full border border-stone-300 px-2.5 py-1 font-medium text-stone-700 hover:bg-stone-100">
+        <div className="mt-3 flex flex-wrap items-center gap-2 font-poppins text-xs">
+          <span className="font-semibold uppercase tracking-wide text-ocean-900/60">Quick actions</span>
+          <a href={buildFilterHref({ statuses: ['completed'] })} className="rounded-full border border-ocean-300 px-2.5 py-1 font-medium text-ocean-900 transition hover:bg-ocean-900/5">
             Completed only
           </a>
-          <a href={buildFilterHref({ statuses: ['cancelled'] })} className="rounded-full border border-stone-300 px-2.5 py-1 font-medium text-stone-700 hover:bg-stone-100">
+          <a href={buildFilterHref({ statuses: ['cancelled'] })} className="rounded-full border border-ocean-300 px-2.5 py-1 font-medium text-ocean-900 transition hover:bg-ocean-900/5">
             Cancelled only
           </a>
           <a
             href={buildFilterHref({ fromDate: toIsoDate(thirtyDaysAgo), toDate: toIsoDate(today), statuses: ['completed'] })}
-            className="rounded-full border border-stone-300 px-2.5 py-1 font-medium text-stone-700 hover:bg-stone-100"
+            className="rounded-full border border-ocean-300 px-2.5 py-1 font-medium text-ocean-900 transition hover:bg-ocean-900/5"
           >
             Completed last 30 days
           </a>
           <a
             href={buildFilterHref({ fromDate: null, toDate: null, statuses: [], musician: null, center: null })}
-            className="rounded-full border border-stone-300 px-2.5 py-1 font-medium text-stone-700 hover:bg-stone-100"
+            className="rounded-full border border-ocean-300 px-2.5 py-1 font-medium text-ocean-900 transition hover:bg-ocean-900/5"
           >
             Reset filters
           </a>
         </div>
       </div>
 
-      <div id="account-moderation" className="scroll-mt-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Account Moderation</h2>
+      <div id="account-moderation" className="scroll-mt-6 rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-5 shadow-sm">
+        <h2 className="font-garamond text-[20px] font-bold text-ocean-900">Account Moderation</h2>
         {(musicianStatusView === 'pending' || centerStatusView === 'pending') && (
-          <p className="mt-1 text-xs font-medium text-brand-700">
+          <p className="mt-1 font-poppins text-xs font-medium text-ocean-700">
             Showing accounts awaiting review. <a href="/dashboard/admin/oversight" className="underline">Clear</a>
           </p>
         )}
         {!hasAnyAccountFilter ? (
-          <p className="mt-3 text-sm text-stone-600">
+          <p className="mt-3 font-poppins text-sm text-ocean-900/70">
             Use “View all” on the cards above, or search by musician or center, to load accounts for moderation.
           </p>
         ) : filteredMusicians.length === 0 && filteredCenters.length === 0 ? (
-          <p className="mt-3 text-sm text-stone-600">
+          <p className="mt-3 font-poppins text-sm text-ocean-900/70">
             {musicianStatusView === 'pending' || centerStatusView === 'pending'
               ? 'No accounts are awaiting review right now.'
               : 'No account records matched the current filters.'}
@@ -613,21 +613,21 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               const accountFlags = openFlagsByMusicianId.get(musician.id) ?? []
 
               return (
-                <li key={`musician-${musician.id}`} className="rounded-lg border border-stone-200 p-4">
+                <li key={`musician-${musician.id}`} className="rounded-lg border border-ocean-200/70 bg-white p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-medium text-stone-900">{musician.name}</p>
-                      <p className="text-sm text-stone-600">Musician · ZIP {musician.zip_code}</p>
-                      <p className="text-xs text-stone-500">Profile complete: {musician.profile_complete ? 'Yes' : 'No'}</p>
+                      <p className="font-poppins font-medium text-ocean-900">{musician.name}</p>
+                      <p className="font-poppins text-sm text-ocean-900/70">Musician · ZIP {musician.zip_code}</p>
+                      <p className="font-poppins text-xs text-ocean-900/60">Profile complete: {musician.profile_complete ? 'Yes' : 'No'}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {musician.deleted_at && (
-                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-800">
+                        <span className="rounded-full bg-rose-100 px-2 py-0.5 font-poppins text-xs font-medium text-rose-800">
                           Deleted
                         </span>
                       )}
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        className={`rounded-full px-2 py-0.5 font-poppins text-xs font-medium ${
                           musician.approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                         }`}
                       >
@@ -637,16 +637,25 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <form action={toggleMusicianApprovalAction}>
-                      <input type="hidden" name="id" value={musician.id} />
-                      <input type="hidden" name="approved" value={String(musician.approved)} />
-                      <button
-                        type="submit"
-                        className="rounded border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                    {!musician.approved && !musician.profile_complete ? (
+                      <span
+                        title="Profile isn't finished yet — nothing to review"
+                        className="rounded-lg border border-ocean-200/70 px-3 py-1.5 font-poppins text-sm font-medium text-ocean-900/30"
                       >
-                        {musician.approved ? 'Disable profile' : 'Re-enable profile'}
-                      </button>
-                    </form>
+                        Re-enable profile
+                      </span>
+                    ) : (
+                      <form action={toggleMusicianApprovalAction}>
+                        <input type="hidden" name="id" value={musician.id} />
+                        <input type="hidden" name="approved" value={String(musician.approved)} />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-ocean-800/60 px-3 py-1.5 font-poppins text-sm font-medium text-ocean-900 transition hover:bg-ocean-900/5"
+                        >
+                          {musician.approved ? 'Disable profile' : 'Re-enable profile'}
+                        </button>
+                      </form>
+                    )}
                   </div>
 
                   <form action={createMusicianFlag} className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -657,11 +666,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                       required
                       minLength={3}
                       placeholder="Flag reason (internal only)"
-                      className="rounded border border-stone-300 px-3 py-2 text-sm"
+                      className="rounded-lg border border-ocean-300 px-3 py-2 font-poppins text-sm text-ocean-900"
                     />
                     <button
                       type="submit"
-                      className="rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100"
+                      className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 font-poppins text-sm font-medium text-rose-700 transition hover:bg-rose-100"
                     >
                       Add flag
                     </button>
@@ -669,23 +678,23 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
                   {accountFlags.length > 0 && (
                     <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">Open moderation flags</p>
+                      <p className="font-poppins text-xs font-semibold uppercase tracking-wide text-rose-700">Open moderation flags</p>
                       <ul className="mt-2 space-y-2">
                         {accountFlags.map((flag) => (
-                          <li key={flag.id} className="rounded border border-rose-200 bg-white p-2">
-                            <p className="text-sm text-rose-900">{flag.reason}</p>
-                            <p className="mt-1 text-xs text-rose-700">Opened {new Date(flag.created_at).toLocaleString()}</p>
+                          <li key={flag.id} className="rounded-lg border border-rose-200 bg-white p-2">
+                            <p className="font-poppins text-sm text-rose-900">{flag.reason}</p>
+                            <p className="mt-1 font-poppins text-xs text-rose-700">Opened {new Date(flag.created_at).toLocaleString()}</p>
                             <form action={resolveFlag} className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
                               <input type="hidden" name="flag_id" value={flag.id} />
                               <input
                                 type="text"
                                 name="resolution_notes"
                                 placeholder="Resolution notes (optional)"
-                                className="rounded border border-rose-300 px-3 py-2 text-sm"
+                                className="rounded-lg border border-rose-300 px-3 py-2 font-poppins text-sm text-ocean-900"
                               />
                               <button
                                 type="submit"
-                                className="rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+                                className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 font-poppins text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
                               >
                                 Resolve
                               </button>
@@ -703,21 +712,21 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               const accountFlags = openFlagsByCenterId.get(center.id) ?? []
 
               return (
-                <li key={`center-${center.id}`} className="rounded-lg border border-stone-200 p-4">
+                <li key={`center-${center.id}`} className="rounded-lg border border-ocean-200/70 bg-white p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-medium text-stone-900">{center.name}</p>
-                      <p className="text-sm text-stone-600">Center · Residents: {center.resident_count ?? 'Unknown'}</p>
-                      <p className="text-xs text-stone-500">Profile complete: {center.profile_complete ? 'Yes' : 'No'}</p>
+                      <p className="font-poppins font-medium text-ocean-900">{center.name}</p>
+                      <p className="font-poppins text-sm text-ocean-900/70">Center · Residents: {center.resident_count ?? 'Unknown'}</p>
+                      <p className="font-poppins text-xs text-ocean-900/60">Profile complete: {center.profile_complete ? 'Yes' : 'No'}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {center.deleted_at && (
-                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-800">
+                        <span className="rounded-full bg-rose-100 px-2 py-0.5 font-poppins text-xs font-medium text-rose-800">
                           Deleted
                         </span>
                       )}
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        className={`rounded-full px-2 py-0.5 font-poppins text-xs font-medium ${
                           center.approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                         }`}
                       >
@@ -725,7 +734,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                       </span>
                       {center.approved && (
                         <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          className={`rounded-full px-2 py-0.5 font-poppins text-xs font-medium ${
                             center.confirmed ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                           }`}
                         >
@@ -736,23 +745,32 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <form action={toggleCenterApprovalAction}>
-                      <input type="hidden" name="id" value={center.id} />
-                      <input type="hidden" name="approved" value={String(center.approved)} />
-                      <button
-                        type="submit"
-                        className="rounded border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                    {!center.approved && !center.profile_complete ? (
+                      <span
+                        title="Profile isn't finished yet — nothing to review"
+                        className="rounded-lg border border-ocean-200/70 px-3 py-1.5 font-poppins text-sm font-medium text-ocean-900/30"
                       >
-                        {center.approved ? 'Disable profile' : 'Re-enable profile'}
-                      </button>
-                    </form>
+                        Re-enable profile
+                      </span>
+                    ) : (
+                      <form action={toggleCenterApprovalAction}>
+                        <input type="hidden" name="id" value={center.id} />
+                        <input type="hidden" name="approved" value={String(center.approved)} />
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-ocean-800/60 px-3 py-1.5 font-poppins text-sm font-medium text-ocean-900 transition hover:bg-ocean-900/5"
+                        >
+                          {center.approved ? 'Disable profile' : 'Re-enable profile'}
+                        </button>
+                      </form>
+                    )}
                     {center.approved && (
                       <form action={toggleCenterConfirmedAction}>
                         <input type="hidden" name="id" value={center.id} />
                         <input type="hidden" name="confirmed" value={String(center.confirmed)} />
                         <button
                           type="submit"
-                          className="rounded border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                          className="rounded-lg border border-ocean-800/60 px-3 py-1.5 font-poppins text-sm font-medium text-ocean-900 transition hover:bg-ocean-900/5"
                         >
                           {center.confirmed ? 'Unconfirm' : 'Confirm'}
                         </button>
@@ -768,11 +786,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                       required
                       minLength={3}
                       placeholder="Flag reason (internal only)"
-                      className="rounded border border-stone-300 px-3 py-2 text-sm"
+                      className="rounded-lg border border-ocean-300 px-3 py-2 font-poppins text-sm text-ocean-900"
                     />
                     <button
                       type="submit"
-                      className="rounded border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-100"
+                      className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 font-poppins text-sm font-medium text-rose-700 transition hover:bg-rose-100"
                     >
                       Add flag
                     </button>
@@ -780,23 +798,23 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
                   {accountFlags.length > 0 && (
                     <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-rose-700">Open moderation flags</p>
+                      <p className="font-poppins text-xs font-semibold uppercase tracking-wide text-rose-700">Open moderation flags</p>
                       <ul className="mt-2 space-y-2">
                         {accountFlags.map((flag) => (
-                          <li key={flag.id} className="rounded border border-rose-200 bg-white p-2">
-                            <p className="text-sm text-rose-900">{flag.reason}</p>
-                            <p className="mt-1 text-xs text-rose-700">Opened {new Date(flag.created_at).toLocaleString()}</p>
+                          <li key={flag.id} className="rounded-lg border border-rose-200 bg-white p-2">
+                            <p className="font-poppins text-sm text-rose-900">{flag.reason}</p>
+                            <p className="mt-1 font-poppins text-xs text-rose-700">Opened {new Date(flag.created_at).toLocaleString()}</p>
                             <form action={resolveFlag} className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
                               <input type="hidden" name="flag_id" value={flag.id} />
                               <input
                                 type="text"
                                 name="resolution_notes"
                                 placeholder="Resolution notes (optional)"
-                                className="rounded border border-rose-300 px-3 py-2 text-sm"
+                                className="rounded-lg border border-rose-300 px-3 py-2 font-poppins text-sm text-ocean-900"
                               />
                               <button
                                 type="submit"
-                                className="rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+                                className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 font-poppins text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
                               >
                                 Resolve
                               </button>
@@ -813,9 +831,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         )}
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold">Event Oversight and Media</h2>
-        <p className="mt-1 text-xs text-stone-600">
+      <div className="rounded-2xl border border-ocean-200/70 bg-[#fdfaf3] p-5 shadow-sm">
+        <h2 className="font-garamond text-[20px] font-bold text-ocean-900">Event Oversight and Media</h2>
+        <p className="mt-1 font-poppins text-xs text-ocean-900/70">
           Filter to load matching events, update status when needed, and manage media on completed events in one place.
         </p>
         {displayedOversightRequests.length > 0 ? (
@@ -825,23 +843,23 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               const location = request.center_location_id ? locationById.get(request.center_location_id) : null
               const centerName = location ? centerNameById.get(location.center_id) ?? 'Unknown center' : 'Unknown center'
               return (
-                <li key={request.id} className="rounded-lg border border-stone-200 p-4">
+                <li key={request.id} className="rounded-lg border border-ocean-200/70 bg-white p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-medium text-stone-900">{musicianName} @ {centerName}</p>
-                      <p className="text-sm text-stone-600">
+                      <p className="font-poppins font-medium text-ocean-900">{musicianName} @ {centerName}</p>
+                      <p className="font-poppins text-sm text-ocean-900/70">
                         {formatDateLabel(request.requested_date)} · {formatTimeLabel(request.requested_start_time)} - {formatTimeLabel(request.requested_end_time)}
                       </p>
-                      <p className="text-xs text-stone-500">Updated {new Date(request.updated_at).toLocaleString()}</p>
+                      <p className="font-poppins text-xs text-ocean-900/60">Updated {new Date(request.updated_at).toLocaleString()}</p>
                     </div>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[request.status] ?? 'bg-stone-100 text-stone-800'}`}>
+                    <span className={`rounded-full px-2 py-0.5 font-poppins text-xs font-medium ${STATUS_STYLES[request.status] ?? 'bg-ocean-100 text-ocean-800'}`}>
                       {getStatusLabel(request.status)}
                     </span>
                   </div>
 
                   <form action={updateRequestStatusByAdmin} className="mt-3 grid gap-2 sm:grid-cols-[auto_1fr_auto]">
                     <input type="hidden" name="request_id" value={request.id} />
-                    <select name="next_status" defaultValue={request.status} className="rounded border border-stone-300 px-2 py-2 text-sm">
+                    <select name="next_status" defaultValue={request.status} className="rounded-lg border border-ocean-300 px-2 py-2 font-poppins text-sm text-ocean-900">
                       <option value="initiated">initiated</option>
                       <option value="accepted">scheduled</option>
                       <option value="completed">completed</option>
@@ -851,11 +869,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                       type="text"
                       name="reason"
                       placeholder="Reason (support note)"
-                      className="rounded border border-stone-300 px-3 py-2 text-sm"
+                      className="rounded-lg border border-ocean-300 px-3 py-2 font-poppins text-sm text-ocean-900"
                     />
                     <button
                       type="submit"
-                      className="rounded border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                      className="rounded-lg border border-ocean-800/60 px-3 py-2 font-poppins text-sm font-medium text-ocean-900 transition hover:bg-ocean-900/5"
                     >
                       Apply status
                     </button>
@@ -866,7 +884,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             })}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-stone-600">
+          <p className="mt-3 font-poppins text-sm text-ocean-900/70">
             {hasAnyUnifiedFilter
               ? 'No events matched the current filters. Try widening the date range or removing one filter.'
               : 'Apply at least one filter above to load matching events and media items.'}

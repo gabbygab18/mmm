@@ -8,7 +8,7 @@
  */
 
 import { Resend } from 'resend'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import type { Database } from './supabase/types'
 
 // Provisioned in Vercel (Production + Preview) alongside RESEND_API_KEY —
@@ -47,13 +47,76 @@ interface NotifyPayload extends AlertPayload {
   recipientEmail?: string | null
   subject?: string
   body?: string
+  /** Rich version of `body` — e.g. the request-journey checklist. Falls back
+      to plain-text `body` when omitted. */
+  html?: string
+  /** Skip the in-app alert insert — for alert types a DB trigger already
+      creates the alert for (request_initiated, proposal_suggested), so this
+      only needs to run the email side without inserting a duplicate row. */
+  skipInAppAlert?: boolean
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/** Where a request/performance is in its lifecycle, for the step checklist
+    appended to journey emails. The two "cancelled" variants exist because
+    cancelling before vs. after acceptance leaves a different number of
+    earlier steps checked off. */
+export type RequestJourneyStage =
+  | 'sent'
+  | 'accepted'
+  | 'completed'
+  | 'cancelled_before_accept'
+  | 'cancelled_after_accept'
+
+const JOURNEY_STEPS = ['Request sent', 'Accepted & scheduled', 'Performance completed']
+
+function renderJourneyStepsHtml(stage: RequestJourneyStage): string {
+  const isCancelled = stage === 'cancelled_before_accept' || stage === 'cancelled_after_accept'
+  const completedCount =
+    stage === 'sent' || stage === 'cancelled_before_accept' ? 1 : stage === 'accepted' || stage === 'cancelled_after_accept' ? 2 : 3
+
+  const items = JOURNEY_STEPS.map((label, index) => {
+    const done = index + 1 <= completedCount
+    const style = done ? 'text-decoration: line-through; color: #6b7280;' : 'color: #0f2a4a;'
+    const marker = done ? '✓' : '○'
+    return `<li style="margin: 4px 0; ${style}"><span style="display: inline-block; width: 18px;">${marker}</span>${escapeHtml(label)}</li>`
+  }).join('')
+
+  const cancelledLine = isCancelled
+    ? `<li style="margin: 4px 0; color: #b91c1c; font-weight: 600;"><span style="display: inline-block; width: 18px;">✕</span>Cancelled</li>`
+    : ''
+
+  return `<ul style="list-style: none; padding: 0; margin: 16px 0; font-family: sans-serif; font-size: 14px;">${items}${cancelledLine}</ul>`
+}
+
+/**
+ * Wraps a plain-text email body plus a request-journey checklist into HTML —
+ * completed steps render struck through, so the recipient can see at a
+ * glance where things stand (sent → accepted & scheduled → completed, or
+ * cancelled partway through).
+ */
+export function buildRequestJourneyEmailHtml(bodyText: string, stage: RequestJourneyStage): string {
+  const paragraphs = bodyText
+    .split('\n\n')
+    .map((para) => `<p style="margin: 0 0 12px 0;">${escapeHtml(para).replace(/\n/g, '<br/>')}</p>`)
+    .join('')
+
+  return `<div style="font-family: sans-serif; color: #0f2a4a; font-size: 14px; line-height: 1.5;">${paragraphs}<p style="margin: 16px 0 4px 0; font-weight: 600;">Request status:</p>${renderJourneyStepsHtml(stage)}</div>`
 }
 
 /**
  * Create an in-app alert (notification)
  */
 export async function createAlert(payload: AlertPayload) {
-  const supabase = await createSupabaseServerClient()
+  const supabase = createSupabaseAdminClient()
 
   const { error } = await supabase.rpc('create_alert_for_user', {
     p_user_id: payload.userId,
@@ -73,23 +136,30 @@ export async function createAlert(payload: AlertPayload) {
 }
 
 /**
- * Check if we should send an email (daily throttle)
- * Returns true if no email of this type was sent to user in past 24 hours
+ * Check if we should send an email.
+ *
+ * No time-based throttle — every distinct account event should reach the
+ * user. The only thing blocked is an exact re-send of the same
+ * (user, type, request) triple, so a duplicate trigger firing twice for the
+ * same request doesn't double-email. Account-level events (no
+ * relatedRequestId — approval, confirmation, password change, etc.) always
+ * send.
  */
 export async function shouldSendEmail(
   userId: string,
-  alertType: AlertType
+  alertType: AlertType,
+  relatedRequestId?: string,
 ): Promise<boolean> {
-  const supabase = await createSupabaseServerClient()
+  if (!relatedRequestId) return true
 
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const supabase = createSupabaseAdminClient()
 
   const { data, error } = await supabase
     .from('notifications_log')
     .select('id')
     .eq('user_id', userId)
     .eq('alert_type', alertType)
-    .gte('sent_at', twentyFourHoursAgo)
+    .eq('related_request_id', relatedRequestId)
     .limit(1)
 
   if (error) {
@@ -104,7 +174,7 @@ export async function shouldSendEmail(
  * Log an email send in notifications_log (for throttling)
  */
 export async function logEmailSend(payload: EmailPayload) {
-  const supabase = await createSupabaseServerClient()
+  const supabase = createSupabaseAdminClient()
 
   const { data, error } = await supabase.from('notifications_log').insert({
     user_id: payload.userId,
@@ -129,7 +199,7 @@ export async function logEmailSend(payload: EmailPayload) {
  * Get recipient's email from auth.users (requires admin access or service role)
  */
 export async function getRecipientEmail(userId: string): Promise<string | null> {
-  const supabase = await createSupabaseServerClient()
+  const supabase = createSupabaseAdminClient()
 
   const { data, error } = await supabase
     .from('users')
@@ -159,15 +229,19 @@ export async function notifyUser(payload: NotifyPayload) {
   try {
     console.log(`[notifyUser] Starting notification for user=${payload.userId}, type=${payload.alertType}`)
 
-    // Always create in-app alert
-    const alertCreated = await createAlert({
-      userId: payload.userId,
-      alertType: payload.alertType,
-      title: payload.title,
-      message: payload.message,
-      relatedRequestId: payload.relatedRequestId,
-    })
-    console.log(`[notifyUser] Alert created=${alertCreated} for user=${payload.userId}`)
+    // Create the in-app alert, unless a DB trigger already creates one for
+    // this event (request_initiated / proposal_suggested) — doing both
+    // doubled up the alert every time either of those fired.
+    if (!payload.skipInAppAlert) {
+      const alertCreated = await createAlert({
+        userId: payload.userId,
+        alertType: payload.alertType,
+        title: payload.title,
+        message: payload.message,
+        relatedRequestId: payload.relatedRequestId,
+      })
+      console.log(`[notifyUser] Alert created=${alertCreated} for user=${payload.userId}`)
+    }
 
     // In-app alert is complete; email logging is optional.
     if (!payload.recipientEmail || !payload.subject || !payload.body) {
@@ -176,7 +250,7 @@ export async function notifyUser(payload: NotifyPayload) {
     }
 
     // Check throttle for email
-    const canSendEmail = await shouldSendEmail(payload.userId, payload.alertType)
+    const canSendEmail = await shouldSendEmail(payload.userId, payload.alertType, payload.relatedRequestId)
     if (!canSendEmail) {
       console.log(`[notifyUser] Throttled email for user=${payload.userId}, type=${payload.alertType}`)
       return
@@ -204,6 +278,7 @@ export async function notifyUser(payload: NotifyPayload) {
       replyTo: EMAIL_REPLY_TO,
       subject: payload.subject,
       text: payload.body,
+      ...(payload.html ? { html: payload.html } : {}),
     })
 
     if (sendError) {

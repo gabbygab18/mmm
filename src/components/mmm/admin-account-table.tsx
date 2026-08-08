@@ -81,7 +81,7 @@ export function AdminAccountTable({
               </span>
             )}
             {!row.profileComplete && (
-              <span className="rounded-full bg-stone-100 px-2.5 py-0.5 font-poppins text-[10.5px] font-medium text-stone-700">
+              <span className="rounded-full bg-ocean-100 px-2.5 py-0.5 font-poppins text-[10.5px] font-medium text-ocean-900">
                 Profile unfinished
               </span>
             )}
@@ -116,7 +116,16 @@ export function AdminAccountTable({
               </form>
             )}
 
-            {!row.deletedAt && (
+            {!row.deletedAt && !row.approved && !row.profileComplete && (
+              <span
+                title="Profile isn't finished yet — nothing to review"
+                className="rounded-lg border border-ocean-200/70 px-3.5 py-1.5 font-poppins text-[11px] font-bold uppercase tracking-[0.1em] text-ocean-900/30"
+              >
+                Approve
+              </span>
+            )}
+
+            {!row.deletedAt && (row.approved || row.profileComplete) && (
               <form action={action}>
                 <input type="hidden" name="id" value={row.id} />
                 <input type="hidden" name="approved" value={String(row.approved)} />

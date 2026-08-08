@@ -63,31 +63,31 @@ export default async function MusicianDiscoverSlotsPage({ searchParams }: { sear
     })) ?? []
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 font-poppins">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Nearby Posted Request Slots</h1>
-          <p className="mt-1 text-sm text-stone-600">Open center request slots within your travel radius for the next 60 days.</p>
-          <p className="mt-1 text-xs text-stone-500">Range: {baseRadius} mi base + {radiusBoost} mi expansion = {effectiveRadius} mi</p>
-          {slots && slots.length > 0 && <p className="mt-2 text-xs text-stone-500">Showing {slots.length} slot{slots.length !== 1 ? 's' : ''}</p>}
+          <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Nearby Posted Request Slots</h1>
+          <p className="mt-1 text-sm text-ocean-900/70">Open center request slots within your travel radius for the next 60 days.</p>
+          <p className="mt-1 text-xs text-ocean-900/60">Range: {baseRadius} mi base + {radiusBoost} mi expansion = {effectiveRadius} mi</p>
+          {slots && slots.length > 0 && <p className="mt-2 text-xs text-ocean-900/60">Showing {slots.length} slot{slots.length !== 1 ? 's' : ''}</p>}
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-brand-200 bg-brand-50 p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-ocean-200 bg-ocean-50 p-1">
             <Link
               href={`/dashboard/musician/discover-slots?radiusBoost=${Math.max(radiusBoost - 5, 0)}`}
-              className="rounded-md border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
+              className="rounded-md border border-ocean-200 bg-white px-2 py-1 text-xs font-semibold text-ocean-700 transition hover:bg-ocean-100"
             >
               -5 mi
             </Link>
             <Link
               href="/dashboard/musician/discover-slots"
-              className="rounded-md border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
+              className="rounded-md border border-ocean-200 bg-white px-2 py-1 text-xs font-semibold text-ocean-700 transition hover:bg-ocean-100"
             >
               Reset
             </Link>
             <Link
               href={`/dashboard/musician/discover-slots?radiusBoost=${Math.min(radiusBoost + 5, 30)}`}
-              className="rounded-md border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
+              className="rounded-md border border-ocean-200 bg-white px-2 py-1 text-xs font-semibold text-ocean-700 transition hover:bg-ocean-100"
             >
               +5 mi
             </Link>

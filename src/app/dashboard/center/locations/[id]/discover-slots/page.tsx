@@ -76,38 +76,38 @@ export default async function CenterDiscoverSlotsPage({
     })) ?? []
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 font-poppins">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Nearby Musician Availability Slots</h1>
-          <p className="mt-1 text-sm text-stone-600">Posted musician availability within range of this location for the next 60 days.</p>
-          <p className="mt-1 text-xs text-stone-500">Distance expansion: +{radiusBoost} mi</p>
-          {slots && slots.length > 0 && <p className="mt-2 text-xs text-stone-500">Showing {slots.length} slot{slots.length !== 1 ? 's' : ''}</p>}
+          <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Nearby Musician Availability Slots</h1>
+          <p className="mt-1 text-sm text-ocean-900/70">Posted musician availability within range of this location for the next 60 days.</p>
+          <p className="mt-1 text-xs text-ocean-900/60">Distance expansion: +{radiusBoost} mi</p>
+          {slots && slots.length > 0 && <p className="mt-2 text-xs text-ocean-900/60">Showing {slots.length} slot{slots.length !== 1 ? 's' : ''}</p>}
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-brand-200 bg-brand-50 p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-ocean-200 bg-ocean-50 p-1">
             <Link
               href={`/dashboard/center/locations/${id}/discover-slots?radiusBoost=${Math.max(radiusBoost - 5, 0)}`}
-              className="rounded-md border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
+              className="rounded-md border border-ocean-200 bg-white px-2 py-1 text-xs font-semibold text-ocean-700 transition hover:bg-ocean-100"
             >
               -5 mi
             </Link>
             <Link
               href={`/dashboard/center/locations/${id}/discover-slots`}
-              className="rounded-md border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
+              className="rounded-md border border-ocean-200 bg-white px-2 py-1 text-xs font-semibold text-ocean-700 transition hover:bg-ocean-100"
             >
               Reset
             </Link>
             <Link
               href={`/dashboard/center/locations/${id}/discover-slots?radiusBoost=${Math.min(radiusBoost + 5, 30)}`}
-              className="rounded-md border border-brand-200 bg-white px-2 py-1 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
+              className="rounded-md border border-ocean-200 bg-white px-2 py-1 text-xs font-semibold text-ocean-700 transition hover:bg-ocean-100"
             >
               +5 mi
             </Link>
           </div>
           <Link
             href={`/dashboard/center/locations/${id}/discover`}
-            className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+            className="rounded-lg border border-ocean-300 px-3 py-1.5 text-sm font-medium text-ocean-900 transition hover:bg-ocean-50"
           >
             Back to discover
           </Link>

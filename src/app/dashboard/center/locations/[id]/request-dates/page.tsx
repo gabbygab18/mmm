@@ -197,7 +197,7 @@ export default function CenterLocationRequestDatesPage() {
   }
 
   if (loading) {
-    return <p className="text-sm text-stone-500">Loading request slots...</p>
+    return <p className="text-sm text-ocean-900/60">Loading request slots...</p>
   }
 
   const calendarDays = buildCalendarDays(visibleMonth)
@@ -206,41 +206,41 @@ export default function CenterLocationRequestDatesPage() {
   const selectedDateSlots = rows.filter((row) => row.requested_date === selectedDate)
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 font-poppins">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Request Slots</h1>
-          <p className="mt-1 text-sm text-stone-600">Post open date/time slots for {locationName || 'this location'} using a calendar picker.</p>
+          <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Request Slots</h1>
+          <p className="mt-1 text-sm text-ocean-900/70">Post open date/time slots for {locationName || 'this location'} using a calendar picker.</p>
         </div>
         <Link
           href="/dashboard/center"
-          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+          className="rounded-lg border border-ocean-300 px-3 py-1.5 text-sm font-medium text-ocean-900 transition hover:bg-ocean-50"
         >
           Back to dashboard
         </Link>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))}
-              className="rounded-md border border-stone-200 px-2.5 py-1 text-sm text-stone-600 transition hover:bg-stone-50"
+              className="rounded-md border border-ocean-200/70 px-2.5 py-1 text-sm text-ocean-900/70 transition hover:bg-ocean-50"
             >
               Prev
             </button>
-            <h2 className="text-base font-semibold text-stone-900">{monthLabel}</h2>
+            <h2 className="text-base font-semibold text-ocean-900">{monthLabel}</h2>
             <button
               type="button"
               onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))}
-              className="rounded-md border border-stone-200 px-2.5 py-1 text-sm text-stone-600 transition hover:bg-stone-50"
+              className="rounded-md border border-ocean-200/70 px-2.5 py-1 text-sm text-ocean-900/70 transition hover:bg-ocean-50"
             >
               Next
             </button>
           </div>
 
-          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-stone-400">
+          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-ocean-900/40">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
               <div key={day}>{day}</div>
             ))}
@@ -260,13 +260,13 @@ export default function CenterLocationRequestDatesPage() {
                   onClick={() => setSelectedDate(dayValue)}
                   className={[
                     'min-h-[74px] rounded-xl border px-2 py-2 text-left transition',
-                    isSelected ? 'border-brand-400 bg-brand-50 shadow-sm' : 'border-stone-200 bg-white hover:border-brand-300',
-                    isCurrentMonth ? 'text-stone-900' : 'text-stone-300',
+                    isSelected ? 'border-ocean-400 bg-ocean-50 shadow-sm' : 'border-ocean-200/70 bg-white hover:border-ocean-300',
+                    isCurrentMonth ? 'text-ocean-900' : 'text-ocean-300',
                   ].join(' ')}
                 >
                   <div className="text-sm font-medium">{day.getDate()}</div>
                   {slotCount > 0 && (
-                    <div className="mt-2 inline-block rounded-full bg-brand-100 px-2 py-0.5 text-[11px] font-semibold text-brand-800">
+                    <div className="mt-2 inline-block rounded-full bg-ocean-100 px-2 py-0.5 text-[11px] font-semibold text-ocean-900">
                       {slotCount} slot{slotCount === 1 ? '' : 's'}
                     </div>
                   )}
@@ -276,10 +276,10 @@ export default function CenterLocationRequestDatesPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-stone-500">Selected date</p>
-            <p className="mt-1 text-lg font-semibold text-stone-900">{formatDateLabel(selectedDate)}</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-ocean-900/60">Selected date</p>
+            <p className="mt-1 text-lg font-semibold text-ocean-900">{formatDateLabel(selectedDate)}</p>
           </div>
 
           <TimeGridPicker
@@ -292,19 +292,19 @@ export default function CenterLocationRequestDatesPage() {
             accent="brand"
           />
 
-          <label className="block text-sm font-medium text-stone-800">
-            Notes <span className="text-xs font-normal text-stone-500">optional</span>
+          <label className="block text-sm font-medium text-ocean-900">
+            Notes <span className="text-xs font-normal text-ocean-900/60">optional</span>
             <input
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
               placeholder="Afternoon program, piano welcome, etc."
-              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
+              className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-700 focus:ring"
             />
           </label>
 
-          <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Preview</p>
-            <p className="mt-1 text-sm text-stone-800">{formatDateLabel(selectedDate)} • {formatTimeLabel(startTime)} - {formatTimeLabel(endTime)}</p>
+          <div className="rounded-xl border border-ocean-200/70 bg-ocean-50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ocean-900/60">Preview</p>
+            <p className="mt-1 text-sm text-ocean-900">{formatDateLabel(selectedDate)} • {formatTimeLabel(startTime)} - {formatTimeLabel(endTime)}</p>
           </div>
 
           {error && <p className="text-sm font-medium text-red-700">{error}</p>}
@@ -312,22 +312,22 @@ export default function CenterLocationRequestDatesPage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:opacity-60"
+            className="w-full rounded-lg bg-ocean-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ocean-700 disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Add request slot'}
           </button>
         </form>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-stone-900">Slots on {formatDateLabel(selectedDate)}</h2>
+      <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
+        <h2 className="font-garamond text-lg font-bold text-ocean-900">Slots on {formatDateLabel(selectedDate)}</h2>
         {selectedDateSlots.length > 0 ? (
           <ul className="mt-3 space-y-2">
             {selectedDateSlots.map((row) => (
-              <li key={row.id} className="flex items-start justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
+              <li key={row.id} className="flex items-start justify-between gap-3 rounded-lg border border-ocean-200/70 bg-ocean-50 px-3 py-2">
                 <div>
-                  <p className="text-sm font-medium text-stone-900">{formatTimeLabel(row.start_time)} - {formatTimeLabel(row.end_time)}</p>
-                  {row.notes && <p className="text-xs text-stone-600">{row.notes}</p>}
+                  <p className="text-sm font-medium text-ocean-900">{formatTimeLabel(row.start_time)} - {formatTimeLabel(row.end_time)}</p>
+                  {row.notes && <p className="text-xs text-ocean-900/70">{row.notes}</p>}
                 </div>
                 <button
                   type="button"
@@ -340,7 +340,7 @@ export default function CenterLocationRequestDatesPage() {
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-sm text-stone-500">No slots posted for this date yet.</p>
+          <p className="mt-3 text-sm text-ocean-900/60">No slots posted for this date yet.</p>
         )}
       </div>
     </section>

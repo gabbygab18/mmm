@@ -161,14 +161,16 @@ export default function SuggestAlternateTimePage() {
       return
     }
 
-    notifyProposalSuggestedAction(requestId).catch(() => {})
+    // Awaited: navigating away right after firing this would abort the
+    // in-flight server action before the email/alert send completes.
+    await notifyProposalSuggestedAction(requestId).catch(() => {})
 
     router.push('/dashboard/requests')
     router.refresh()
   }
 
   if (loading) {
-    return <p className="text-sm text-stone-500">Loading request...</p>
+    return <p className="text-sm text-ocean-900/60">Loading request...</p>
   }
 
   const calendarDays = buildCalendarDays(visibleMonth)
@@ -176,15 +178,15 @@ export default function SuggestAlternateTimePage() {
   const selectedDateObject = new Date(`${selectedDate}T00:00:00`)
 
   return (
-    <section className="space-y-6">
+    <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 font-poppins">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Suggest Alternate Time</h1>
-          <p className="mt-1 text-sm text-stone-600">Propose a new date/time window using the same calendar-style picker.</p>
+          <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Suggest Alternate Time</h1>
+          <p className="mt-1 text-sm text-ocean-900/70">Propose a new date/time window using the same calendar-style picker.</p>
         </div>
         <Link
           href="/dashboard/requests"
-          className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
+          className="rounded-lg border border-ocean-300 px-3 py-1.5 text-sm font-medium text-ocean-900 transition hover:bg-ocean-50"
         >
           Back to requests
         </Link>
@@ -196,28 +198,28 @@ export default function SuggestAlternateTimePage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-          <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))}
-                className="rounded-md border border-stone-200 px-2.5 py-1 text-sm text-stone-600 transition hover:bg-stone-50"
+                className="rounded-md border border-ocean-200/70 px-2.5 py-1 text-sm text-ocean-900/70 transition hover:bg-ocean-50"
               >
                 Prev
               </button>
-              <h2 className="text-base font-semibold text-stone-900">{monthLabel}</h2>
+              <h2 className="text-base font-semibold text-ocean-900">{monthLabel}</h2>
               <button
                 type="button"
                 onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))}
-                className="rounded-md border border-stone-200 px-2.5 py-1 text-sm text-stone-600 transition hover:bg-stone-50"
+                className="rounded-md border border-ocean-200/70 px-2.5 py-1 text-sm text-ocean-900/70 transition hover:bg-ocean-50"
               >
                 Next
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-stone-400">
+            <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-ocean-900/40">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                 <div key={day}>{day}</div>
               ))}
@@ -236,8 +238,8 @@ export default function SuggestAlternateTimePage() {
                     onClick={() => setSelectedDate(dayValue)}
                     className={[
                       'min-h-[64px] rounded-xl border px-2 py-2 text-left transition',
-                      isSelected ? 'border-brand-400 bg-brand-50 shadow-sm' : 'border-stone-200 bg-white hover:border-brand-300',
-                      isCurrentMonth ? 'text-stone-900' : 'text-stone-300',
+                      isSelected ? 'border-ocean-400 bg-ocean-50 shadow-sm' : 'border-ocean-200/70 bg-white hover:border-ocean-300',
+                      isCurrentMonth ? 'text-ocean-900' : 'text-ocean-300',
                     ].join(' ')}
                   >
                     <div className="text-sm font-medium">{day.getDate()}</div>
@@ -247,10 +249,10 @@ export default function SuggestAlternateTimePage() {
             </div>
           </div>
 
-          <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="space-y-4 rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-stone-500">Selected date</p>
-              <p className="mt-1 text-lg font-semibold text-stone-900">{formatDateLabel(selectedDate)}</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-ocean-900/60">Selected date</p>
+              <p className="mt-1 text-lg font-semibold text-ocean-900">{formatDateLabel(selectedDate)}</p>
             </div>
 
             <TimeGridPicker
@@ -263,21 +265,21 @@ export default function SuggestAlternateTimePage() {
               accent="brand"
             />
 
-            <div className="rounded-xl border border-stone-200 bg-stone-50 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Preview</p>
-              <p className="mt-1 text-sm text-stone-800">{formatDateLabel(selectedDate)} • {formatTimeLabel(startTime)} - {formatTimeLabel(endTime)}</p>
+            <div className="rounded-xl border border-ocean-200/70 bg-ocean-50 p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ocean-900/60">Preview</p>
+              <p className="mt-1 text-sm text-ocean-900">{formatDateLabel(selectedDate)} • {formatTimeLabel(startTime)} - {formatTimeLabel(endTime)}</p>
             </div>
           </div>
         </div>
 
-        <label className="block text-sm font-medium text-stone-800">
-          Notes <span className="text-xs font-normal text-stone-500">optional</span>
+        <label className="block text-sm font-medium text-ocean-900">
+          Notes <span className="text-xs font-normal text-ocean-900/60">optional</span>
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             rows={3}
             placeholder="Share why this alternate time works better."
-            className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 outline-none ring-brand-500 focus:ring"
+            className="mt-1 w-full rounded-lg border border-ocean-300 px-3 py-2 outline-none ring-ocean-700 focus:ring"
           />
         </label>
 
@@ -286,28 +288,28 @@ export default function SuggestAlternateTimePage() {
         <button
           type="submit"
           disabled={saving || requestStatus !== 'initiated'}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-ocean-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {saving ? 'Submitting...' : 'Send alternate proposal'}
         </button>
       </form>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-semibold text-stone-900">Proposal history</h2>
+      <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
+        <h2 className="font-garamond text-lg font-bold text-ocean-900">Proposal history</h2>
         {history.length > 0 ? (
           <ul className="mt-3 space-y-2">
             {history.map((proposal) => (
-              <li key={proposal.id} className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-700">
-                <p className="font-medium text-stone-900">
+              <li key={proposal.id} className="rounded-lg border border-ocean-200/70 bg-ocean-50 px-3 py-2 text-sm text-ocean-900">
+                <p className="font-medium text-ocean-900">
                   {formatDateLabel(proposal.proposed_date)} • {formatTimeLabel(proposal.proposed_start_time)} - {formatTimeLabel(proposal.proposed_end_time)}
                 </p>
-                <p className="text-xs text-stone-500">{proposal.proposal_status} • {new Date(proposal.created_at).toLocaleString()}</p>
-                {proposal.notes && <p className="mt-1 text-xs text-stone-600">{proposal.notes}</p>}
+                <p className="text-xs text-ocean-900/60">{proposal.proposal_status} • {new Date(proposal.created_at).toLocaleString()}</p>
+                {proposal.notes && <p className="mt-1 text-xs text-ocean-900/70">{proposal.notes}</p>}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-sm text-stone-500">No proposals yet.</p>
+          <p className="mt-2 text-sm text-ocean-900/60">No proposals yet.</p>
         )}
       </div>
     </section>

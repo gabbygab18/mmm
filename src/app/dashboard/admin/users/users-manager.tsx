@@ -25,7 +25,7 @@ export type AdminUserRow = {
 const ROLE_STYLES: Record<string, string> = {
   musician: 'bg-emerald-100 text-emerald-800',
   center_coordinator: 'bg-sky-100 text-sky-800',
-  admin: 'bg-brand-100 text-brand-800',
+  admin: 'bg-ocean-200 text-ocean-900',
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -35,8 +35,8 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 function RoleBadge({ role }: { role: string | null }) {
-  if (!role) return <span className="text-stone-400">—</span>
-  const cls = ROLE_STYLES[role] ?? 'bg-stone-100 text-stone-700'
+  if (!role) return <span className="text-ocean-900/40">—</span>
+  const cls = ROLE_STYLES[role] ?? 'bg-ocean-100 text-ocean-900'
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>
       {ROLE_LABELS[role] ?? role}
@@ -96,7 +96,7 @@ function highlightJson(value: unknown) {
       let cls = 'text-amber-600'
       if (/^"/.test(match)) cls = /:$/.test(match) ? 'text-sky-700' : 'text-emerald-700'
       else if (/true|false/.test(match)) cls = 'text-violet-700'
-      else if (/null/.test(match)) cls = 'text-stone-400'
+      else if (/null/.test(match)) cls = 'text-ocean-900/40'
       return `<span class="${cls}">${match}</span>`
     },
   )
@@ -104,9 +104,9 @@ function highlightJson(value: unknown) {
 
 function Field({ label, children, mono }: { label: string; children: ReactNode; mono?: boolean }) {
   return (
-    <div className="grid grid-cols-[130px_1fr] gap-3 border-b border-stone-100 py-2 last:border-0">
-      <div className="text-xs text-stone-500">{label}</div>
-      <div className={`break-all text-sm text-stone-800 ${mono ? 'font-mono text-[13px]' : ''}`}>{children}</div>
+    <div className="grid grid-cols-[130px_1fr] gap-3 border-b border-ocean-100 py-2 last:border-0">
+      <div className="text-xs text-ocean-900/60">{label}</div>
+      <div className={`break-all text-sm text-ocean-900 ${mono ? 'font-mono text-[13px]' : ''}`}>{children}</div>
     </div>
   )
 }
@@ -142,8 +142,8 @@ function RoleEditor({ user, canEdit }: { user: AdminUserRow; canEdit: boolean })
   }
 
   return (
-    <div className="mt-4 rounded-xl border border-stone-200 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-stone-500">Role</p>
+    <div className="mt-4 rounded-xl border border-ocean-200/70 p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-ocean-900/60">Role</p>
       {canEdit ? (
         <>
           <div className="mt-2 flex items-center gap-2">
@@ -154,7 +154,7 @@ function RoleEditor({ user, canEdit }: { user: AdminUserRow; canEdit: boolean })
                 setSaved(false)
               }}
               disabled={isPending}
-              className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+              className="flex-1 rounded-lg border border-ocean-300 bg-white px-3 py-2 text-sm text-ocean-900 focus:border-ocean-700 focus:outline-none focus:ring-1 focus:ring-ocean-700 disabled:opacity-50"
             >
               {ROLE_OPTIONS.map((r) => (
                 <option key={r} value={r}>
@@ -165,7 +165,7 @@ function RoleEditor({ user, canEdit }: { user: AdminUserRow; canEdit: boolean })
             <button
               onClick={save}
               disabled={!changed || isPending}
-              className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-50"
+              className="rounded-lg bg-ocean-800 px-3 py-2 text-sm font-medium text-white hover:bg-ocean-700 disabled:opacity-50"
             >
               {isPending ? 'Saving…' : 'Update role'}
             </button>
@@ -174,7 +174,7 @@ function RoleEditor({ user, canEdit }: { user: AdminUserRow; canEdit: boolean })
           {saved && !changed && <p className="mt-2 text-xs text-emerald-600">Role updated.</p>}
         </>
       ) : (
-        <p className="mt-2 text-sm text-stone-500">
+        <p className="mt-2 text-sm text-ocean-900/60">
           You can’t change your own role here. Ask another admin.
         </p>
       )}
@@ -215,23 +215,23 @@ function Drawer({
   ].filter(Boolean) as { label: string; at: string; tag: string }[]
 
   return (
-    <aside className="flex w-full max-w-[460px] shrink-0 flex-col border-l border-stone-200 bg-white">
-      <div className="flex items-center gap-1 border-b border-stone-200 px-3">
+    <aside className="flex w-full max-w-[460px] shrink-0 flex-col border-l border-ocean-200/70 bg-white">
+      <div className="flex items-center gap-1 border-b border-ocean-200/70 px-3">
         {(['overview', 'logs', 'raw'] as const).map((id) => (
           <button
             key={id}
             onClick={() => setTab(id)}
             className={`relative px-3 py-3 text-sm capitalize transition-colors ${
-              tab === id ? 'text-stone-900' : 'text-stone-500 hover:text-stone-700'
+              tab === id ? 'text-ocean-900' : 'text-ocean-900/60 hover:text-ocean-900'
             }`}
           >
             {id === 'raw' ? 'Raw JSON' : id}
-            {tab === id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded bg-brand-600" />}
+            {tab === id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded bg-ocean-800" />}
           </button>
         ))}
         <button
           onClick={onClose}
-          className="ml-auto rounded p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+          className="ml-auto rounded p-1.5 text-ocean-900/40 hover:bg-ocean-100 hover:text-ocean-900"
           aria-label="Close panel"
         >
           {Icon.x('h-4 w-4')}
@@ -242,14 +242,14 @@ function Drawer({
         {tab === 'overview' && (
           <div className="p-4">
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-stone-100 text-stone-500">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ocean-100 text-ocean-900/60">
                 {Icon.user('h-5 w-5')}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-sm font-semibold text-stone-900">
-                  {user.displayName || <span className="text-stone-400">No display name</span>}
+                <div className="truncate text-sm font-semibold text-ocean-900">
+                  {user.displayName || <span className="text-ocean-900/40">No display name</span>}
                 </div>
-                <div className="truncate text-xs text-stone-500">{user.email}</div>
+                <div className="truncate text-xs text-ocean-900/60">{user.email}</div>
               </div>
               {banned && (
                 <span className="ml-auto rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-800">
@@ -258,7 +258,7 @@ function Drawer({
               )}
             </div>
 
-            <div className="rounded-xl border border-stone-200 px-4">
+            <div className="rounded-xl border border-ocean-200/70 px-4">
               <Field label="User UID" mono>{user.id}</Field>
               <Field label="Display name">{user.displayName || '—'}</Field>
               <Field label="Email">{user.email}</Field>
@@ -287,26 +287,26 @@ function Drawer({
 
         {tab === 'logs' && (
           <div className="p-4">
-            <ol className="relative border-l border-stone-200 pl-5">
+            <ol className="relative border-l border-ocean-200/70 pl-5">
               {logs.map((log, i) => (
                 <li key={i} className="mb-5 last:mb-0">
-                  <span className="absolute -left-[5px] mt-1.5 h-2.5 w-2.5 rounded-full bg-brand-500 ring-4 ring-white" />
-                  <div className="text-sm text-stone-800">{log.label}</div>
-                  <div className="mt-0.5 flex items-center gap-2 text-xs text-stone-500">
-                    <code className="rounded bg-stone-100 px-1.5 py-0.5 text-brand-700">{log.tag}</code>
+                  <span className="absolute -left-[5px] mt-1.5 h-2.5 w-2.5 rounded-full bg-ocean-700 ring-4 ring-white" />
+                  <div className="text-sm text-ocean-900">{log.label}</div>
+                  <div className="mt-0.5 flex items-center gap-2 text-xs text-ocean-900/60">
+                    <code className="rounded bg-ocean-100 px-1.5 py-0.5 text-ocean-700">{log.tag}</code>
                     <span>{fmt(log.at)}</span>
                   </div>
                 </li>
               ))}
             </ol>
-            <p className="mt-4 text-xs text-stone-400">
+            <p className="mt-4 text-xs text-ocean-900/40">
               Derived from the account record. Full sign-in history requires the GoTrue audit log.
             </p>
           </div>
         )}
 
         {tab === 'raw' && (
-          <pre className="m-4 overflow-x-auto rounded-lg border border-stone-200 bg-stone-50 p-4 font-mono text-[13px] leading-relaxed">
+          <pre className="m-4 overflow-x-auto rounded-lg border border-ocean-200/70 bg-ocean-50 p-4 font-mono text-[13px] leading-relaxed">
             <code dangerouslySetInnerHTML={{ __html: highlightJson(user.raw) }} />
           </pre>
         )}
@@ -329,22 +329,22 @@ function ConfirmDelete({
   if (!ids) return null
   const n = ids.length
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 p-4" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ocean-950/40 p-4" onClick={onCancel}>
       <div
-        className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-5 shadow-xl"
+        className="w-full max-w-md rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-poppins text-base font-semibold text-stone-900">
+        <h2 className="font-poppins text-base font-semibold text-ocean-900">
           Delete {n} user{n > 1 ? 's' : ''}?
         </h2>
-        <p className="mt-2 text-sm text-stone-600">
+        <p className="mt-2 text-sm text-ocean-900/70">
           This permanently removes {n > 1 ? 'these accounts' : 'this account'} and all associated auth data. This cannot be undone.
         </p>
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onCancel}
             disabled={busy}
-            className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+            className="rounded-lg border border-ocean-300 px-3 py-1.5 text-sm font-medium text-ocean-900 hover:bg-ocean-50 disabled:opacity-50"
           >
             Cancel
           </button>
@@ -421,9 +421,9 @@ export function UsersManager({ users, currentUserId }: { users: AdminUserRow[]; 
   const selectedCount = selected.size
 
   return (
-    <section className="mx-auto flex h-[calc(100vh-8rem)] max-w-[1240px] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+    <section className="mx-auto flex h-[calc(100vh-8rem)] max-w-[1240px] flex-col overflow-hidden rounded-2xl border border-ocean-200/70 bg-white font-poppins shadow-sm">
       {/* Toolbar */}
-      <div className="flex h-14 shrink-0 items-center gap-3 border-b border-stone-200 px-4">
+      <div className="flex h-14 shrink-0 items-center gap-3 border-b border-ocean-200/70 px-4">
         {selectedCount > 0 ? (
           <>
             <button
@@ -434,7 +434,7 @@ export function UsersManager({ users, currentUserId }: { users: AdminUserRow[]; 
             </button>
             <button
               onClick={() => setSelected(new Set())}
-              className="rounded-lg border border-stone-300 p-1.5 text-stone-500 hover:bg-stone-50"
+              className="rounded-lg border border-ocean-300 p-1.5 text-ocean-900/60 hover:bg-ocean-50"
               aria-label="Clear selection"
             >
               {Icon.x('h-4 w-4')}
@@ -442,16 +442,17 @@ export function UsersManager({ users, currentUserId }: { users: AdminUserRow[]; 
           </>
         ) : (
           <>
-            <h1 className="font-poppins text-sm font-semibold text-stone-900">Users</h1>
+            {/* No h1 here — the page above already has one; a second h1 in
+                this toolbar was a duplicate heading. */}
             <div className="relative ml-auto">
-              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400">
+              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ocean-900/40">
                 {Icon.search('h-4 w-4')}
               </span>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search by email, name, or UID"
-                className="w-72 rounded-lg border border-stone-300 bg-white py-1.5 pl-8 pr-3 text-sm text-stone-800 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                className="w-72 rounded-lg border border-ocean-300 bg-white py-1.5 pl-8 pr-3 text-sm text-ocean-900 placeholder:text-ocean-900/40 focus:border-ocean-700 focus:outline-none focus:ring-1 focus:ring-ocean-700"
               />
             </div>
           </>
@@ -466,14 +467,14 @@ export function UsersManager({ users, currentUserId }: { users: AdminUserRow[]; 
       <div className="flex min-h-0 flex-1">
         <div className="min-w-0 flex-1 overflow-auto">
           <table className="w-full min-w-[720px] border-collapse text-left">
-            <thead className="sticky top-0 z-10 bg-stone-50">
-              <tr className="border-b border-stone-200 text-xs font-medium text-stone-500">
+            <thead className="sticky top-0 z-10 bg-ocean-50">
+              <tr className="border-b border-ocean-200/70 text-xs font-medium text-ocean-900/60">
                 <th className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
                     checked={allVisibleSelected}
                     onChange={toggleAll}
-                    className="h-4 w-4 cursor-pointer accent-brand-600"
+                    className="h-4 w-4 cursor-pointer accent-ocean-800"
                     aria-label="Select all"
                   />
                 </th>
@@ -492,8 +493,8 @@ export function UsersManager({ users, currentUserId }: { users: AdminUserRow[]; 
                   <tr
                     key={u.id}
                     onClick={() => setOpenId(u.id)}
-                    className={`cursor-pointer border-b border-stone-100 text-sm transition-colors ${
-                      isOpen ? 'bg-brand-50' : 'hover:bg-stone-50'
+                    className={`cursor-pointer border-b border-ocean-100 text-sm transition-colors ${
+                      isOpen ? 'bg-ocean-50' : 'hover:bg-ocean-50'
                     }`}
                   >
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -501,30 +502,30 @@ export function UsersManager({ users, currentUserId }: { users: AdminUserRow[]; 
                         type="checkbox"
                         checked={selected.has(u.id)}
                         onChange={() => toggleOne(u.id)}
-                        className="h-4 w-4 cursor-pointer accent-brand-600"
+                        className="h-4 w-4 cursor-pointer accent-ocean-800"
                         aria-label={`Select ${u.email}`}
                       />
                     </td>
                     <td className="px-2 py-3">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 text-stone-500">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-ocean-100 text-ocean-900/60">
                         {Icon.user('h-3.5 w-3.5')}
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-[13px] text-stone-600">{u.id}</td>
-                    <td className="px-4 py-3 text-stone-800">
-                      {u.displayName || <span className="text-stone-300">—</span>}
+                    <td className="px-4 py-3 font-mono text-[13px] text-ocean-900/70">{u.id}</td>
+                    <td className="px-4 py-3 text-ocean-900">
+                      {u.displayName || <span className="text-ocean-300">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-stone-700">{u.email}</td>
+                    <td className="px-4 py-3 text-ocean-900">{u.email}</td>
                     <td className="px-4 py-3"><RoleBadge role={u.role} /></td>
-                    <td className="px-2 py-3 text-stone-300">
-                      {Icon.chevron(`h-4 w-4 ${isOpen ? 'text-stone-500' : ''}`)}
+                    <td className="px-2 py-3 text-ocean-300">
+                      {Icon.chevron(`h-4 w-4 ${isOpen ? 'text-ocean-900/60' : ''}`)}
                     </td>
                   </tr>
                 )
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center text-sm text-stone-500">
+                  <td colSpan={7} className="px-4 py-16 text-center text-sm text-ocean-900/60">
                     No users match “{query}”.
                   </td>
                 </tr>
@@ -545,9 +546,9 @@ export function UsersManager({ users, currentUserId }: { users: AdminUserRow[]; 
       </div>
 
       {/* Footer */}
-      <div className="flex h-9 shrink-0 items-center border-t border-stone-200 px-4 text-xs text-stone-500">
+      <div className="flex h-9 shrink-0 items-center border-t border-ocean-200/70 px-4 text-xs text-ocean-900/60">
         Total: {users.length} user{users.length !== 1 ? 's' : ''}
-        {selectedCount > 0 && <span className="ml-2 text-stone-600">· {selectedCount} selected</span>}
+        {selectedCount > 0 && <span className="ml-2 text-ocean-900/70">· {selectedCount} selected</span>}
       </div>
 
       <ConfirmDelete ids={pendingDelete} busy={isPending} onCancel={() => setPendingDelete(null)} onConfirm={runDelete} />
