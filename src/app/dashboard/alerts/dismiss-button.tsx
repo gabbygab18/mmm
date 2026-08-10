@@ -6,10 +6,13 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 
 interface DismissButtonProps {
   alertId: string
+  /** Whether this alert was still counted in the sidebar badge — lets the
+      badge decrement instantly instead of waiting on router.refresh(). */
+  unread?: boolean
   onDismiss?: () => void
 }
 
-export function DismissAlertButton({ alertId, onDismiss }: DismissButtonProps) {
+export function DismissAlertButton({ alertId, unread = false, onDismiss }: DismissButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -18,10 +21,11 @@ export function DismissAlertButton({ alertId, onDismiss }: DismissButtonProps) {
     try {
       const supabase = createSupabaseBrowserClient()
       await supabase.from('alerts').update({ dismissed: true }).eq('id', alertId)
-      window.dispatchEvent(new CustomEvent('alerts:dismissed', { detail: { alertId } }))
+      window.dispatchEvent(new CustomEvent('alerts:dismissed', { detail: { alertId, unread } }))
       // The unread badge count is fetched server-side in the dashboard
       // layout — a plain client write here never reaches it, so the red
-      // dot stayed stale until a manual reload without this.
+      // dot stayed stale until a manual reload without this. The event above
+      // already dropped the badge instantly; this just re-syncs the true count.
       router.refresh()
     } catch (e) {
       console.error('[DismissAlertButton] Error:', e)

@@ -109,7 +109,12 @@ export function buildRequestJourneyEmailHtml(bodyText: string, stage: RequestJou
     .map((para) => `<p style="margin: 0 0 12px 0;">${escapeHtml(para).replace(/\n/g, '<br/>')}</p>`)
     .join('')
 
-  return `<div style="font-family: sans-serif; color: #0f2a4a; font-size: 14px; line-height: 1.5;">${paragraphs}<p style="margin: 16px 0 4px 0; font-weight: 600;">Request status:</p>${renderJourneyStepsHtml(stage)}</div>`
+  const content = `<div style="font-family: sans-serif; color: #0f2a4a; font-size: 14px; line-height: 1.5;">${paragraphs}<p style="margin: 16px 0 4px 0; font-weight: 600;">Request status:</p>${renderJourneyStepsHtml(stage)}</div>`
+
+  // Full document, not a bare <div> — some spam filters and mail clients
+  // penalize HTML email bodies missing a doctype/head, which the fragment
+  // version sent.
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Margaret's MemoryCare Music</title></head><body style="margin: 0; padding: 24px; background: #f5f5f0;">${content}</body></html>`
 }
 
 /**

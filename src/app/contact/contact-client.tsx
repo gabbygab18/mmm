@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
-import { Field, TextField, inputClass, labelClass } from '@/components/mmm/form-kit'
+import { Field, PhoneField, TextField, inputClass, labelClass } from '@/components/mmm/form-kit'
 import { HumanCheck, type HumanCheckValue } from '@/components/mmm/human-check'
 import { SOCIAL_URLS } from '@/lib/mmm/social'
 import { Lines } from '@/components/mmm/lines'
@@ -148,7 +148,7 @@ export function ContactClient({ content }: { content: Record<string, string> }) 
             <div className="mt-6 space-y-5">
               <TextField label="Full Name" value={fullName} onChange={setFullName} autoComplete="name" />
               <TextField label="E-mail Address" type="email" value={email} onChange={setEmail} autoComplete="email" inputMode="email" />
-              <TextField label="Phone Number" value={phone} onChange={setPhone} autoComplete="tel" inputMode="tel" />
+              <PhoneField label="Phone Number" value={phone} onChange={setPhone} autoComplete="tel" />
               <Field label="Message" htmlFor="contact-message">
                 <textarea
                   id="contact-message"

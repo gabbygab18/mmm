@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
@@ -23,7 +23,21 @@ import type { ProfileTable } from '@/lib/mmm/profile-photo'
 
 type Role = string | null
 
-type NavItem = { href: string; label: string; icon: string; prefix?: boolean }
+type NavItem = { href: string; label: string; icon: string; prefix?: boolean; children?: NavItem[] }
+
+// "Profile" expands into Edit Profile / Profile Overview, matching the
+// approved Edit Profile design — replaces the old single link straight to
+// Account Settings.
+const PROFILE_NAV_ITEM: NavItem = {
+  href: '/dashboard/account',
+  label: 'Profile',
+  icon: 'profile',
+  prefix: true,
+  children: [
+    { href: '/dashboard/account/edit', label: 'Edit Profile', icon: 'profile' },
+    { href: '/dashboard/account', label: 'Profile Overview', icon: 'profile' },
+  ],
+}
 
 const NAV: Record<string, NavItem[]> = {
   musician: [
@@ -35,7 +49,7 @@ const NAV: Record<string, NavItem[]> = {
     { href: '/dashboard/requests', label: 'Requests', icon: 'bookings', prefix: true },
     { href: '/education', label: 'Resources', icon: 'resources' },
     { href: '/dashboard/alerts', label: 'Notifications', icon: 'notifications' },
-    { href: '/dashboard/account', label: 'Profile', icon: 'profile' },
+    PROFILE_NAV_ITEM,
   ],
   center_coordinator: [
     { href: '/dashboard/center', label: 'Dashboard', icon: 'dashboard' },
@@ -47,7 +61,7 @@ const NAV: Record<string, NavItem[]> = {
     // page is built.
     { href: '/education', label: 'Resources', icon: 'resources' },
     { href: '/dashboard/alerts', label: 'Notifications', icon: 'notifications' },
-    { href: '/dashboard/account', label: 'Profile', icon: 'profile' },
+    PROFILE_NAV_ITEM,
   ],
   admin: [
     // Order follows the approved design. Song Library, Performance Video and
@@ -74,6 +88,28 @@ function NavIcon({ name, className = 'h-6 w-6' }: { name: string; className?: st
     // eslint-disable-next-line @next/next/no-img-element
     <img src={`/mmm/nav/${name}.png`} alt="" className={`${className} shrink-0 object-contain`} />
   )
+}
+
+/**
+ * Mirrors the server-fetched unread count in local state so the sidebar
+ * badge can drop the instant an alert is dismissed, instead of waiting on
+ * the router.refresh() round trip (previously the visible lag on dismiss).
+ */
+function useUnreadAlertCount(serverCount: number) {
+  const [count, setCount] = useState(serverCount)
+
+  useEffect(() => setCount(serverCount), [serverCount])
+
+  useEffect(() => {
+    function handleDismissed(e: Event) {
+      const detail = (e as CustomEvent<{ unread?: boolean }>).detail
+      if (detail?.unread) setCount((c) => Math.max(0, c - 1))
+    }
+    window.addEventListener('alerts:dismissed', handleDismissed)
+    return () => window.removeEventListener('alerts:dismissed', handleDismissed)
+  }, [])
+
+  return count
 }
 
 function useSignOut() {
@@ -136,30 +172,63 @@ function Sidebar({
           const active = isActive(item)
           const badgeCount = badgeCountFor(item, unreadAlertCount, pendingRequestCount)
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? 'page' : undefined}
-              className={`flex items-center gap-4 rounded-xl px-4 py-3 font-poppins text-[14px] leading-tight transition xl:text-[16.3px] ${
-                active ? 'bg-ocean-300/45 font-semibold text-white shadow-inner' : 'text-white/95 hover:bg-white/10'
-              }`}
-            >
-              <span className="relative">
-                <NavIcon name={item.icon} />
-                {badgeCount > 0 && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-ocean-900 bg-red-500"
-                  />
-                )}
-              </span>
-              <span className="flex-1">{item.label}</span>
-              {badgeCount > 0 && (
-                <span className="rounded-full bg-red-500 px-1.5 py-0.5 font-poppins text-[10px] font-bold leading-none text-white">
-                  {badgeCount > 99 ? '99+' : badgeCount}
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={`flex items-center gap-4 rounded-xl px-4 py-3 font-poppins text-[14px] leading-tight transition xl:text-[16.3px] ${
+                  active ? 'bg-ocean-300/45 font-semibold text-white shadow-inner' : 'text-white/95 hover:bg-white/10'
+                }`}
+              >
+                <span className="relative">
+                  <NavIcon name={item.icon} />
+                  {badgeCount > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-ocean-900 bg-red-500"
+                    />
+                  )}
                 </span>
+                <span className="flex-1">{item.label}</span>
+                {badgeCount > 0 && (
+                  <span className="rounded-full bg-red-500 px-1.5 py-0.5 font-poppins text-[10px] font-bold leading-none text-white">
+                    {badgeCount > 99 ? '99+' : badgeCount}
+                  </span>
+                )}
+                {item.children && (
+                  <svg
+                    className={`h-3.5 w-3.5 shrink-0 transition-transform ${active ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                  </svg>
+                )}
+              </Link>
+
+              {item.children && active && (
+                <div className="ml-[42px] mt-1 space-y-0.5 border-l border-white/20 pl-3">
+                  {item.children.map((child) => {
+                    const childActive = pathname === child.href
+                    return (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        aria-current={childActive ? 'page' : undefined}
+                        className={`block rounded-lg px-3 py-2 font-poppins text-[13px] transition xl:text-[14.5px] ${
+                          childActive ? 'bg-ocean-300/45 font-semibold text-white' : 'text-white/85 hover:bg-white/10'
+                        }`}
+                      >
+                        {child.label}
+                      </Link>
+                    )
+                  })}
+                </div>
               )}
-            </Link>
+            </div>
           )
         })}
       </nav>
@@ -266,6 +335,7 @@ export function AuthGuardShell({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const signOut = useSignOut()
+  const liveUnreadAlertCount = useUnreadAlertCount(unreadAlertCount)
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -328,7 +398,7 @@ export function AuthGuardShell({
             role={role}
             avatarUrl={avatarUrl}
             photoTable={photoTable}
-            unreadAlertCount={unreadAlertCount}
+            unreadAlertCount={liveUnreadAlertCount}
             pendingRequestCount={pendingRequestCount}
           />
         </aside>
@@ -341,7 +411,7 @@ export function AuthGuardShell({
         </main>
       </div>
 
-      <TabBar role={role} unreadAlertCount={unreadAlertCount} pendingRequestCount={pendingRequestCount} />
+      <TabBar role={role} unreadAlertCount={liveUnreadAlertCount} pendingRequestCount={pendingRequestCount} />
     </div>
   )
 }

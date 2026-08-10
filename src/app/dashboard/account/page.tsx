@@ -5,11 +5,13 @@ import { getOwnProfilePhotoUrl, profileTableForRole } from '@/lib/mmm/profile-ph
 import { AccountSettingsForm } from './account-settings-form'
 import { ProfilePhotoSection } from './profile-photo-section'
 
-// Edit-profile wizard per role — same 5-step flow as registration, opened at
-// step 2 and prefilled from what's already saved (see /onboarding/*).
+// Edit Profile — a single-page form prefilled from what's already saved
+// (see /dashboard/account/edit). Distinct from /onboarding/*, which is the
+// first-time wizard (account creation step + Volunteer Agreement) still used
+// to complete a profile for the first time.
 const EDIT_PROFILE_HREF: Record<string, string> = {
-  musician: '/onboarding/musician',
-  center_coordinator: '/onboarding/center',
+  musician: '/dashboard/account/edit',
+  center_coordinator: '/dashboard/account/edit',
 }
 
 export default async function AccountSettingsPage() {

@@ -169,7 +169,7 @@ export default function AlertsPage() {
                   {/* Actions */}
                   <div className="flex flex-shrink-0 flex-col items-end gap-2">
                     {!alert.dismissed && (
-                      <DismissAlertButton alertId={alert.id} onDismiss={() => dismissAlert(alert.id)} />
+                      <DismissAlertButton alertId={alert.id} unread={!alert.read} onDismiss={() => dismissAlert(alert.id)} />
                     )}
                     {alert.dismissed && (
                       <span className="font-poppins text-xs text-ocean-900/50">Dismissed</span>

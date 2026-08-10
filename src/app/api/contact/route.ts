@@ -93,6 +93,11 @@ export async function POST(request: Request) {
   if (message.length > 4000) {
     return NextResponse.json({ error: 'Message is too long.' }, { status: 400 })
   }
+  // contact_inquiries.phone is varchar(40) — reject rather than let a long
+  // paste silently fail the whole insert (nothing stored, no e-mails sent).
+  if (phone.length > 40) {
+    return NextResponse.json({ error: 'Phone number is too long.' }, { status: 400 })
+  }
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
   if (!(await verifyTurnstile(token, ip))) {
