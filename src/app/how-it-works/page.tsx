@@ -12,24 +12,23 @@ export const metadata: Metadata = {
 }
 
 const MUSICIAN_STEPS = [
-  { title: 'Create Your Profile', body: 'Complete your registration and share your musical background, performance experience, and contact information.' },
-  { title: 'Browse Participating Facilities', body: 'Explore participating memory care communities to learn about their locations and volunteer opportunities.' },
-  { title: 'Request an Introduction', body: 'Select a participating facility and submit a request for an introduction through the MMM team.' },
-  { title: 'Review & Connect', body: 'The MMM team reviews your request and helps facilitate your first connection with the selected community.' },
-  { title: 'Prepare for Your Performance', body: 'Once connected, coordinate the details for your upcoming visit.' },
-  { title: 'Schedule Your Performance', body: 'Coordinate a date and time that works for both you and the facility.' },
-  { title: 'Share the Joy of Music', body: 'Perform for residents and create meaningful moments through live music and connection.' },
-  { title: 'Track Your Volunteer Hours', body: 'Log your completed performances and volunteer hours through your musician profile.' },
+  { title: 'Register', body: 'Create your musician profile and share your information.' },
+  { title: 'Review & Approval', body: 'MMM staff will review and approve your registration.' },
+  { title: 'Browse Facilities', body: 'Explore memory care communities that are open to live music.' },
+  { title: 'Send Message', body: 'Send a message to inquire if they are open for live music.' },
+  { title: 'Connect', body: 'Communicate and coordinate details directly.' },
+  { title: 'Schedule', body: 'Confirm the date, time, and performance details.' },
+  { title: 'Give Feedback', body: 'Share your performance experience and provide suggestions.' },
 ]
 
 const FACILITY_STEPS = [
-  { title: 'Register Your Community', body: 'Create a facility profile and provide information about your community, activities program, and primary contact.' },
-  { title: 'Submit Your Registration', body: 'Submit your completed registration for review by the MMM team.' },
-  { title: 'MMM Reviews Your Registration', body: 'Our team reviews your information and activates your facility profile once approved.' },
-  { title: 'Receive Interested Musicians', body: 'Receive volunteer requests from musicians interested in serving your community.' },
-  { title: 'Schedule a Performance', body: 'Work with the MMM team and the volunteer musician to confirm the performance date, time, and any special requests.' },
-  { title: 'Welcome Live Music to Your Community', body: 'Host meaningful live music experiences that bring joy, comfort, and connection to your residents.' },
-  { title: 'Build Lasting Partnerships', body: 'Continue requesting performances and invite volunteer musicians back for future visits.' },
+  { title: 'Register', body: 'Create your community profile and share your information.' },
+  { title: 'Review & Approval', body: 'MMM staff will review and approve your registration.' },
+  { title: 'Browse Musicians', body: 'Explore musician profiles and view their videos and information.' },
+  { title: 'View Profile & Videos', body: 'Watch performance videos and learn more about the musician.' },
+  { title: 'Send Message', body: 'Send a message to ask if they are available for live music.' },
+  { title: 'Connect', body: 'Confirm the date, time, and performance details.' },
+  { title: 'Submit Feedback', body: "Rate the musician's performance and provide your facility's input." },
 ]
 
 function PathColumn({
@@ -59,18 +58,25 @@ function PathColumn({
         </h2>
       </div>
 
-      <ol className="relative mt-6 space-y-5 sm:mt-9 sm:space-y-7">
+      <ol className="relative mt-6 sm:mt-9">
         {steps.map((step, i) => (
-          <li key={step.title} className="relative flex gap-2.5 sm:gap-5">
-            <div className="flex flex-col items-center">
-              <span className="z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ocean-300 font-poppins text-[11px] font-bold text-white sm:h-9 sm:w-9 sm:text-[14px]">
-                {i + 1}
-              </span>
-              {i < steps.length - 1 && (
-                <span className="mt-1 w-0 flex-1 border-l-2 border-dotted border-ocean-400/80" aria-hidden="true" />
-              )}
-            </div>
-            <div className="pb-1">
+          <li key={step.title} className={`relative flex items-start gap-2.5 sm:gap-5 ${i < steps.length - 1 ? 'pb-5 sm:pb-7' : ''}`}>
+            {/* Absolutely positioned against the li (not stretched via flex)
+                so `bottom-0` reaches the li's own padding-bottom — i.e. all
+                the way down to the next circle — regardless of how tall this
+                step's text happens to be. align-items: stretch only fills the
+                content box, which stops short of the padding; that was the
+                previous "cut off" line. */}
+            {i < steps.length - 1 && (
+              <span
+                className="absolute left-[13px] top-7 bottom-0 border-l-2 border-dotted border-ocean-400/80 sm:left-[17px] sm:top-9"
+                aria-hidden="true"
+              />
+            )}
+            <span className="z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ocean-300 font-poppins text-[11px] font-bold text-white sm:h-9 sm:w-9 sm:text-[14px]">
+              {i + 1}
+            </span>
+            <div>
               <h3 className="font-garamond text-[13.5px] font-bold leading-tight text-ocean-900 sm:text-[21px] lg:text-[23.4px]">
                 {step.title}
               </h3>

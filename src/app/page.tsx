@@ -10,12 +10,13 @@ import { getSiteContent } from '@/lib/mmm/site-content'
  */
 
 const STEPS = [
-  { n: 1, icon: '/mmm/home-step-1-profile.png', title: 'Create Your Profile' },
-  { n: 2, icon: '/mmm/home-step-2-browse.png', title: 'Browse Participating Communities' },
-  { n: 3, icon: '/mmm/home-step-3-interest.png', title: 'Express Interest' },
-  { n: 4, icon: '/mmm/home-step-4-connect.png', title: 'Review & Connect' },
-  { n: 5, icon: '/mmm/home-step-5-schedule.png', title: 'Schedule Your Performance' },
-  { n: 6, icon: '/mmm/home-step-6-share.png', title: 'Share the Joy of Live Music' },
+  { n: 1, icon: '/mmm/home-step-1-register.png', title: 'Register', body: 'Create your musician profile and share your information.' },
+  { n: 2, icon: '/mmm/home-step-2-review.png', title: 'Review & Approval', body: 'MMM staff will review and approve your registration.' },
+  { n: 3, icon: '/mmm/home-step-3-browse.png', title: 'Browse Facilities', body: 'Explore memory care communities that are open to live music.' },
+  { n: 4, icon: '/mmm/home-step-4-send.png', title: 'Send Message', body: 'Send a message to inquire if they are open for live music.' },
+  { n: 5, icon: '/mmm/home-step-5-connect.png', title: 'Connect', body: 'Communicate and coordinate details directly.' },
+  { n: 6, icon: '/mmm/home-step-6-schedule.png', title: 'Schedule', body: 'Confirm the date, time, and performance details.' },
+  { n: 7, icon: '/mmm/home-step-7-feedback.png', title: 'Give Feedback', body: 'Share your performance experience and provide suggestions.' },
 ]
 
 const BENEFITS = [
@@ -121,18 +122,21 @@ export default async function Home() {
           {/* No grid-template below md: undefined columns fall back to one
               implicit column per row, i.e. the steps simply stack — same
               fallback the original 3-step version relied on. */}
-          <div className="mt-9 grid items-start gap-y-8 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-3">
+          <div className="mt-9 grid items-start gap-y-8 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-x-2.5">
             {STEPS.map((step, i) => (
               <div key={step.n} className="contents">
                 <div className="flex flex-col items-center text-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={step.icon} alt="" className="h-36 w-36 object-contain md:h-16 md:w-16" />
+                  <img src={step.icon} alt="" className="h-28 w-28 object-contain md:h-24 md:w-24" />
                   <h3 className="mt-3 max-w-[180px] font-garamond text-[19px] font-bold leading-snug text-ocean-900 md:max-w-[130px] md:text-[14px]">
                     {step.title}
                   </h3>
+                  <p className="mt-1 max-w-[190px] font-poppins text-[12px] leading-snug text-ocean-900/75 md:max-w-[135px] md:text-[10.3px]">
+                    {step.body}
+                  </p>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className="hidden items-center justify-center self-center md:flex" aria-hidden="true">
+                  <div className="hidden items-center justify-center self-center pt-14 md:flex" aria-hidden="true">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/mmm/icon-arrow.png" alt="" className="h-5 w-auto" />
                   </div>
