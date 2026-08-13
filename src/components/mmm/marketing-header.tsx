@@ -230,27 +230,54 @@ export function MarketingHeader() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-ocean-800 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400 lg:hidden"
-        >
-          {open ? (
-            <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-              <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
-            </svg>
+        {/* Mobile: quick Sign In (or dashboard access if already signed in),
+            plus the hamburger — a returning user shouldn't have to open the
+            full menu just to get to their account. Hamburger itself is
+            unchanged. */}
+        <div className="flex items-center gap-2 lg:hidden">
+          {identity ? (
+            <Link
+              href={identity.dashboardHref}
+              aria-label="Go to your dashboard"
+              className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-ocean-800 font-poppins text-[12px] font-bold text-white"
+            >
+              {identity.avatarUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={identity.avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                initial
+              )}
+            </Link>
           ) : (
-            <svg className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <rect x="3" y="5" width="18" height="2.6" rx="1.3" />
-              <rect x="3" y="10.7" width="18" height="2.6" rx="1.3" />
-              <rect x="3" y="16.4" width="18" height="2.6" rx="1.3" />
-            </svg>
+            <Link
+              href="/login"
+              className="shrink-0 rounded-lg border-2 border-ocean-900 bg-transparent px-4 py-2 font-poppins text-[11px] font-bold uppercase tracking-[0.12em] text-ocean-900 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400"
+            >
+              Sign In
+            </Link>
           )}
-        </button>
+
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-ocean-800 transition hover:bg-ocean-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400"
+          >
+            {open ? (
+              <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            ) : (
+              <svg className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="2.6" rx="1.3" />
+                <rect x="3" y="10.7" width="18" height="2.6" rx="1.3" />
+                <rect x="3" y="16.4" width="18" height="2.6" rx="1.3" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu panel */}
