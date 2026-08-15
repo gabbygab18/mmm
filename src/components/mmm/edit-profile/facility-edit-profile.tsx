@@ -9,11 +9,15 @@ import {
   CONTACT_METHODS,
   DAYS_OF_WEEK,
   DIRECTOR_JOB_TITLES,
+  GENRES,
   PERFORMANCE_LENGTH,
   PERFORMANCE_LOCATIONS,
+  PERFORMANCE_TYPES,
   TIME_OF_DAY,
   VISIT_FREQUENCY,
 } from '@/lib/mmm/options'
+
+const COMMUNITY_TYPES = ['Private Community', 'Public Community'] as const
 
 export type FacilityEditProfileData = {
   id: string
@@ -32,6 +36,14 @@ export type FacilityEditProfileData = {
   performance_location: string | null
   preferred_length: string | null
   scheduling_notes: string | null
+  about_description: string | null
+  established_year: number | null
+  community_type: string | null
+  highlights: string[] | null
+  testimonial_quote: string | null
+  testimonial_author: string | null
+  preferred_music_styles: string[] | null
+  preferred_performance_types: string[] | null
 }
 
 export type FacilityLocationEditData = {
@@ -80,8 +92,19 @@ export function FacilityEditProfile({
   const [preferredLength, setPreferredLength] = useState(center.preferred_length ?? '')
   const [notes, setNotes] = useState(center.scheduling_notes ?? '')
 
+  const [aboutDescription, setAboutDescription] = useState(center.about_description ?? '')
+  const [establishedYear, setEstablishedYear] = useState(center.established_year ? String(center.established_year) : '')
+  const [communityType, setCommunityType] = useState(center.community_type ?? '')
+  const [preferredMusicStyles, setPreferredMusicStyles] = useState<string[]>(center.preferred_music_styles ?? [])
+  const [preferredPerformanceTypes, setPreferredPerformanceTypes] = useState<string[]>(center.preferred_performance_types ?? [])
+  const [highlightsText, setHighlightsText] = useState((center.highlights ?? []).join('\n'))
+  const [testimonialQuote, setTestimonialQuote] = useState(center.testimonial_quote ?? '')
+  const [testimonialAuthor, setTestimonialAuthor] = useState(center.testimonial_author ?? '')
+
   const toggleDay = (day: string) =>
     setPreferredDays((cur) => (cur.includes(day) ? cur.filter((d) => d !== day) : [...cur, day]))
+  const toggleInList = (setter: (fn: (cur: string[]) => string[]) => void, value: string) =>
+    setter((cur) => (cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value]))
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault()
@@ -121,6 +144,17 @@ export function FacilityEditProfile({
         performance_location: performanceLocation || null,
         preferred_length: preferredLength || null,
         scheduling_notes: notes.trim() || null,
+        about_description: aboutDescription.trim() || null,
+        established_year: establishedYear.trim() ? Number(establishedYear.trim()) : null,
+        community_type: communityType || null,
+        preferred_music_styles: preferredMusicStyles,
+        preferred_performance_types: preferredPerformanceTypes,
+        highlights: highlightsText
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean),
+        testimonial_quote: testimonialQuote.trim() || null,
+        testimonial_author: testimonialAuthor.trim() || null,
       })
       .eq('id', center.id)
 
@@ -224,6 +258,59 @@ export function FacilityEditProfile({
                 placeholder="Share any preferences or special considerations"
               />
             </Field>
+          </div>
+        </SectionCard>
+
+        <SectionCard number={5} title="Facility Profile Page" subtitle="What musicians see when they view your community's public profile.">
+          <div className="space-y-5">
+            <Field label="About this Community (Optional)">
+              <textarea
+                className={`${editInputClass} min-h-[96px] resize-none`}
+                maxLength={600}
+                value={aboutDescription}
+                onChange={(e) => setAboutDescription(e.target.value)}
+                placeholder="A short description of your community — shown on your public profile."
+              />
+            </Field>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <SelectField label="Community Type (Optional)" value={communityType} onChange={setCommunityType} options={COMMUNITY_TYPES} placeholder="Select community type" />
+              <TextField
+                label="Established Year (Optional)"
+                value={establishedYear}
+                onChange={(v) => setEstablishedYear(v.replace(/\D/g, '').slice(0, 4))}
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="e.g. 2018"
+              />
+            </div>
+
+            <PillGroup label="Preferred Music Styles (Optional)" options={GENRES} selected={preferredMusicStyles} onToggle={(v) => toggleInList(setPreferredMusicStyles, v)} />
+            <PillGroup label="Preferred Performance Types (Optional)" options={PERFORMANCE_TYPES} selected={preferredPerformanceTypes} onToggle={(v) => toggleInList(setPreferredPerformanceTypes, v)} />
+
+            <Field label="What Makes Us Special (Optional)">
+              <p className="-mt-1 mb-1.5 font-poppins text-[11.5px] text-ocean-900/60">One highlight per line.</p>
+              <textarea
+                className={`${editInputClass} min-h-[96px] resize-none`}
+                maxLength={600}
+                value={highlightsText}
+                onChange={(e) => setHighlightsText(e.target.value)}
+                placeholder={'Family-like environment with personalized care\nBeautiful outdoor garden and walking paths'}
+              />
+            </Field>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Notes from the Community (Optional)">
+                <textarea
+                  className={`${editInputClass} min-h-[80px] resize-none`}
+                  maxLength={300}
+                  value={testimonialQuote}
+                  onChange={(e) => setTestimonialQuote(e.target.value)}
+                  placeholder="A short quote about hosting live music, shown on your public profile."
+                />
+              </Field>
+              <TextField label="Quote Attribution (Optional)" value={testimonialAuthor} onChange={setTestimonialAuthor} placeholder="e.g. Activities Team" />
+            </div>
           </div>
         </SectionCard>
       </div>

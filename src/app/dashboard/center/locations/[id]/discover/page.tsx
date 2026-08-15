@@ -34,13 +34,23 @@ type NearbyMusicianRow = {
   has_own_transport: boolean | null
 }
 
-export default async function CenterLocationDiscoverPage({ params }: { params: Promise<{ id: string }> }) {
+const PAGE_SIZE = 20
+
+export default async function CenterLocationDiscoverPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ page?: string }>
+}) {
   const role = await getCurrentUserRole()
   if (role !== 'center_coordinator') redirect('/dashboard')
 
   const user = await requireAuthenticatedUser()
   const supabase = await createSupabaseServerClient()
   const { id } = await params
+  const { page: pageParam } = await searchParams
+  const page = Math.max(1, Number(pageParam) || 1)
 
   // Check if center's own profile is complete
   const { data: centerProfile, error: profileError } = await supabase
@@ -110,13 +120,23 @@ export default async function CenterLocationDiscoverPage({ params }: { params: P
     : { data: [] as { musician_id: string }[] }
   const favoritedIds = new Set((favoriteRows ?? []).map((row) => row.musician_id))
 
+  const totalResults = typedNearbyMusicians.length
+  const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * PAGE_SIZE
+  const pageMusicians = typedNearbyMusicians.slice(pageStart, pageStart + PAGE_SIZE)
+
   return (
     <section className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 font-poppins">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Browse Nearby Musicians</h1>
           <p className="mt-1 text-sm text-ocean-900/70">Approved, profile-complete musicians who can travel to this location.</p>
-          {nearbyMusicians && nearbyMusicians.length > 0 && <p className="mt-2 text-xs text-ocean-900/60">Showing {nearbyMusicians.length} result{nearbyMusicians.length !== 1 ? 's' : ''}</p>}
+          {totalResults > 0 && (
+            <p className="mt-2 text-xs text-ocean-900/60">
+              Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, totalResults)} of {totalResults} result{totalResults !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -136,9 +156,9 @@ export default async function CenterLocationDiscoverPage({ params }: { params: P
 
       {error && <p className="text-sm font-medium text-red-700">{error.message}</p>}
 
-      {nearbyMusicians && nearbyMusicians.length > 0 ? (
+      {pageMusicians.length > 0 ? (
         <ul className="grid gap-4 lg:grid-cols-2">
-          {typedNearbyMusicians.map((musician) => (
+          {pageMusicians.map((musician) => (
             <li key={musician.musician_id} className="overflow-hidden rounded-2xl border border-ocean-200/70 bg-white shadow-sm">
               <div className="flex gap-4 p-4">
                 {musician.profile_image_url ? (
@@ -213,6 +233,47 @@ export default async function CenterLocationDiscoverPage({ params }: { params: P
       ) : (
         <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 text-sm text-ocean-900/70 shadow-sm">
           No nearby musicians found yet for this location.
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1.5">
+          <Link
+            href={`/dashboard/center/locations/${id}/discover?page=${Math.max(1, currentPage - 1)}`}
+            aria-disabled={currentPage <= 1}
+            aria-label="Previous page"
+            className={`flex h-8 w-8 items-center justify-center rounded-lg border border-ocean-300 text-ocean-900 transition hover:bg-ocean-50 ${
+              currentPage <= 1 ? 'pointer-events-none opacity-40' : ''
+            }`}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
+            </svg>
+          </Link>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+            <Link
+              key={n}
+              href={`/dashboard/center/locations/${id}/discover?page=${n}`}
+              aria-current={n === currentPage ? 'page' : undefined}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg border text-sm font-bold transition ${
+                n === currentPage ? 'border-ocean-900 bg-ocean-900 text-white' : 'border-ocean-300 text-ocean-900 hover:bg-ocean-50'
+              }`}
+            >
+              {n}
+            </Link>
+          ))}
+          <Link
+            href={`/dashboard/center/locations/${id}/discover?page=${Math.min(totalPages, currentPage + 1)}`}
+            aria-disabled={currentPage >= totalPages}
+            aria-label="Next page"
+            className={`flex h-8 w-8 items-center justify-center rounded-lg border border-ocean-300 text-ocean-900 transition hover:bg-ocean-50 ${
+              currentPage >= totalPages ? 'pointer-events-none opacity-40' : ''
+            }`}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
+            </svg>
+          </Link>
         </div>
       )}
     </section>

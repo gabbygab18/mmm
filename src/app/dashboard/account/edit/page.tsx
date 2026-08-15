@@ -46,7 +46,7 @@ export default async function EditProfilePage() {
   const { data: center } = await supabase
     .from('centers')
     .select(
-      'id, name, phone, website, director_first_name, director_last_name, director_email, director_phone, director_job_title, preferred_contact_method, preferred_days, visit_frequency, preferred_time, performance_location, preferred_length, scheduling_notes, profile_complete',
+      'id, name, phone, website, director_first_name, director_last_name, director_email, director_phone, director_job_title, preferred_contact_method, preferred_days, visit_frequency, preferred_time, performance_location, preferred_length, scheduling_notes, profile_complete, about_description, established_year, community_type, highlights, testimonial_quote, testimonial_author, preferred_music_styles, preferred_performance_types',
     )
     .eq('user_id', user.id)
     .maybeSingle()
