@@ -148,9 +148,11 @@ export default async function CenterProfilePage({
       </div>
 
       <div className="rounded-2xl border border-ocean-200/70 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          {/* Identity */}
-          <div className="flex flex-1 gap-4">
+        <div className="flex flex-col gap-6">
+          {/* Identity — full width, so a long facility name never has to
+              fight two fixed-width side columns for room (that's what forced
+              an ugly mid-word wrap before). */}
+          <div className="flex gap-4">
             {center.profile_image_url ? (
               <img
                 src={center.profile_image_url}
@@ -183,30 +185,31 @@ export default async function CenterProfilePage({
             </div>
           </div>
 
-          {/* Stats — sans-serif for the numbers: Cormorant Garamond's "1"
-              renders as a serif stroke that reads like a capital "I". */}
-          <div className="grid shrink-0 grid-cols-2 gap-2.5 sm:grid-cols-4 lg:w-[340px]">
-            <div className="rounded-xl border border-ocean-200/70 px-3 py-3 text-center">
-              <p className="font-poppins text-2xl font-extrabold text-ocean-900">{allLocations.length}</p>
-              <p className="mt-0.5 text-[10.5px] leading-tight text-ocean-900/70">Participating Communit{allLocations.length === 1 ? 'y' : 'ies'}</p>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+            {/* Stats — sans-serif for the numbers: Cormorant Garamond's "1"
+                renders as a serif stroke that reads like a capital "I". */}
+            <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-4">
+              <div className="rounded-xl border border-ocean-200/70 px-3 py-3 text-center">
+                <p className="font-poppins text-2xl font-extrabold text-ocean-900">{allLocations.length}</p>
+                <p className="mt-0.5 text-[10.5px] leading-tight text-ocean-900/70">Participating Communit{allLocations.length === 1 ? 'y' : 'ies'}</p>
+              </div>
+              <div className="rounded-xl border border-ocean-200/70 px-3 py-3 text-center">
+                <p className="font-poppins text-2xl font-extrabold text-ocean-900">{residentsServed}+</p>
+                <p className="mt-0.5 text-[10.5px] leading-tight text-ocean-900/70">Residents Served</p>
+              </div>
+              <div className="rounded-xl border border-ocean-200/70 px-3 py-3 text-center">
+                <p className="font-poppins text-2xl font-extrabold text-ocean-900">{completedCount ?? 0}</p>
+                <p className="mt-0.5 text-[10.5px] leading-tight text-ocean-900/70">Performances Hosted</p>
+              </div>
+              <div className="rounded-xl border border-ocean-200/70 px-3 py-3 text-center">
+                <p className="font-poppins text-2xl font-extrabold text-ocean-900">{memberSinceYear}</p>
+                <p className="mt-0.5 text-[10.5px] leading-tight text-ocean-900/70">Member Since</p>
+              </div>
             </div>
-            <div className="rounded-xl border border-ocean-200/70 px-3 py-3 text-center">
-              <p className="font-poppins text-2xl font-extrabold text-ocean-900">{residentsServed}+</p>
-              <p className="mt-0.5 text-[10.5px] leading-tight text-ocean-900/70">Residents Served</p>
-            </div>
-            <div className="rounded-xl border border-ocean-200/70 px-3 py-3 text-center">
-              <p className="font-poppins text-2xl font-extrabold text-ocean-900">{completedCount ?? 0}</p>
-              <p className="mt-0.5 text-[10.5px] leading-tight text-ocean-900/70">Performances Hosted</p>
-            </div>
-            <div className="rounded-xl border border-ocean-200/70 px-3 py-3 text-center">
-              <p className="font-poppins text-2xl font-extrabold text-ocean-900">{memberSinceYear}</p>
-              <p className="mt-0.5 text-[10.5px] leading-tight text-ocean-900/70">Member Since</p>
-            </div>
-          </div>
 
-          {/* Contact info */}
-          <div className="rounded-xl border border-ocean-200/70 bg-ocean-50 p-4 lg:w-[240px] lg:shrink-0">
-            <h3 className="font-poppins text-[13px] font-bold text-ocean-900">Contact Information</h3>
+            {/* Contact info */}
+            <div className="rounded-xl border border-ocean-200/70 bg-ocean-50 p-4 lg:w-[260px] lg:shrink-0">
+              <h3 className="font-poppins text-[13px] font-bold text-ocean-900">Contact Information</h3>
             <div className="mt-2 space-y-2 text-sm text-ocean-900/80">
               {center.website && (
                 <div className="flex items-center gap-2">
@@ -255,6 +258,7 @@ export default async function CenterProfilePage({
                 <p className="italic text-ocean-900/50">No contact details on file yet.</p>
               )}
             </div>
+          </div>
           </div>
         </div>
       </div>

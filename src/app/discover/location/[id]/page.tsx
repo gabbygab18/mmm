@@ -111,15 +111,6 @@ export default async function LocationProfilePage({ params }: { params: Promise<
 
   const locationDisplayImageUrl = getDisplayImageUrl(location.location_image_url, center?.profile_image_url)
 
-  // "View other locations" only means something when there's somewhere else
-  // to go — a center with just this one location would just show a thinner
-  // duplicate of this same page.
-  const { count: siblingLocationCount } = await supabase
-    .from('center_locations')
-    .select('id', { count: 'exact', head: true })
-    .eq('center_id', location.center_id)
-  const hasMultipleLocations = (siblingLocationCount ?? 0) > 1
-
   const { data: requestSlots } = await supabase
     .from('center_request_dates')
     .select('id, requested_date, start_time, end_time, notes')
@@ -192,15 +183,6 @@ export default async function LocationProfilePage({ params }: { params: Promise<
       </div>
 
       <div className="mx-auto mt-5 max-w-5xl px-4 sm:px-6">
-        {hasMultipleLocations && center?.username && (
-          <Link
-            href={`/discover/center/${center.username}`}
-            className="mb-4 inline-block rounded-lg border border-ocean-300 bg-ocean-50 px-3 py-1.5 text-sm font-medium text-ocean-700 transition hover:bg-ocean-100"
-          >
-            View other locations ({siblingLocationCount})
-          </Link>
-        )}
-
         <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
           {/* ---- Left column ---- */}
           <div className="space-y-5">
@@ -347,6 +329,15 @@ export default async function LocationProfilePage({ params }: { params: Promise<
                 className="block rounded-lg bg-ocean-900 px-4 py-2.5 text-center text-sm font-bold text-white shadow-[inset_0_-2px_5px_rgba(0,0,0,0.25)] transition hover:bg-ocean-800"
               >
                 Request this Facility
+              </Link>
+            )}
+
+            {center?.username && (
+              <Link
+                href={`/discover/center/${center.username}`}
+                className="block rounded-lg border border-ocean-300 bg-white px-4 py-2.5 text-center text-sm font-bold text-ocean-900 transition hover:bg-ocean-50"
+              >
+                View Parent Organization
               </Link>
             )}
           </div>
