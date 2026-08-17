@@ -262,15 +262,19 @@ function Sidebar({
   )
 }
 
-/** Mobile bottom tab bar — the primary navigation on small screens. */
+/** Mobile bottom tab bar — the primary navigation on small screens. Also the
+    only sign-out path on mobile/tablet now that the top logo bar (which used
+    to hold it in its hamburger menu) is gone. */
 function TabBar({
   role,
   unreadAlertCount,
   pendingRequestCount,
+  onSignOut,
 }: {
   role: Role
   unreadAlertCount: number
   pendingRequestCount: number
+  onSignOut: () => void
 }) {
   const pathname = usePathname()
   const items = role ? (NAV[role] ?? []) : []
@@ -309,6 +313,19 @@ function TabBar({
             </li>
           )
         })}
+        <li className="flex-1">
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="flex min-w-[68px] flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-center text-white/95 transition hover:bg-white/10"
+          >
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l4-3-4-3M22 12H10" />
+            </svg>
+            <span className="font-poppins text-[8.5px] leading-tight text-white">Sign out</span>
+          </button>
+        </li>
       </ul>
     </nav>
   )
@@ -333,65 +350,11 @@ export function AuthGuardShell({
   /** Active ("initiated") request count — drives the red badge on Requests. */
   pendingRequestCount?: number
 }) {
-  const [menuOpen, setMenuOpen] = useState(false)
   const signOut = useSignOut()
   const liveUnreadAlertCount = useUnreadAlertCount(unreadAlertCount)
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      {/* Mobile: compact logo bar */}
-      <div className="flex shrink-0 items-center justify-between bg-[#faf4e7] px-4 py-2 lg:hidden">
-        <Link href="/dashboard" aria-label="Margaret's MemoryCare Music">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/mmm/logo.png" alt="Margaret's MemoryCare Music" className="h-12 w-auto" />
-        </Link>
-        <button
-          type="button"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-expanded={menuOpen}
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          className="rounded-md p-2 text-ocean-800 transition hover:bg-ocean-900/5"
-        >
-          <svg className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="2.6" rx="1.3" />
-            <rect x="3" y="10.7" width="18" height="2.6" rx="1.3" />
-            <rect x="3" y="16.4" width="18" height="2.6" rx="1.3" />
-          </svg>
-        </button>
-      </div>
-
-      {menuOpen && (
-        <div className="shrink-0 border-t border-ocean-900/10 bg-[#faf4e7] px-5 py-3 lg:hidden">
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-2">
-            {[
-              { label: 'Home', href: '/' },
-              { label: 'About', href: '/about' },
-              { label: 'How It Works', href: '/how-it-works' },
-              { label: 'Why Music Matters', href: '/why-music-matters' },
-              { label: 'FAQ', href: '/faq' },
-              { label: 'Contact', href: '/contact' },
-            ].map((l) => (
-              <li key={l.href}>
-                <Link
-                  href={l.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="block py-1 font-poppins text-[13px] text-ocean-900 transition hover:text-ocean-600"
-                >
-                  {l.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            onClick={signOut}
-            className="mt-2 font-poppins text-[13px] font-bold text-ocean-900 underline"
-          >
-            Sign out
-          </button>
-        </div>
-      )}
-
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-[260px] shrink-0 lg:block xl:w-[300px]">
           <Sidebar
@@ -411,7 +374,7 @@ export function AuthGuardShell({
         </main>
       </div>
 
-      <TabBar role={role} unreadAlertCount={liveUnreadAlertCount} pendingRequestCount={pendingRequestCount} />
+      <TabBar role={role} unreadAlertCount={liveUnreadAlertCount} pendingRequestCount={pendingRequestCount} onSignOut={signOut} />
     </div>
   )
 }
