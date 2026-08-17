@@ -115,7 +115,7 @@ export default async function Home() {
         style={{ background: 'linear-gradient(120deg, #faf4e7 0%, #eaf1f8 45%, #cfe0ef 100%)' }}
       >
         <div className="mx-auto max-w-[1200px] px-6 py-14 sm:px-8">
-          <h2 className="text-center font-poppins text-[13px] font-bold uppercase tracking-[0.22em] text-ocean-900">
+          <h2 className="text-center font-poppins text-[16px] font-bold uppercase tracking-[0.22em] text-ocean-900 md:text-[18px]">
             {t('home.how.title')}
           </h2>
 
@@ -127,11 +127,11 @@ export default async function Home() {
               <div key={step.n} className="contents">
                 <div className="flex flex-col items-center text-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={step.icon} alt="" className="h-28 w-28 object-contain md:h-24 md:w-24" />
-                  <h3 className="mt-3 max-w-[180px] font-garamond text-[19px] font-bold leading-snug text-ocean-900 md:max-w-[130px] md:text-[14px]">
+                  <img src={step.icon} alt="" className="h-28 w-28 object-contain md:h-28 md:w-28" />
+                  <h3 className="mt-3 max-w-[180px] font-garamond text-[19px] font-bold leading-snug text-ocean-900 md:max-w-[165px] md:text-[17px]">
                     {step.title}
                   </h3>
-                  <p className="mt-1 max-w-[190px] font-poppins text-[12px] leading-snug text-ocean-900/75 md:max-w-[135px] md:text-[10.3px]">
+                  <p className="mt-1 max-w-[190px] font-poppins text-[12px] leading-snug text-ocean-900/75 md:max-w-[165px] md:text-[13px]">
                     {step.body}
                   </p>
                 </div>
