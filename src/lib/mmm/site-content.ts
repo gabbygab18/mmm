@@ -166,6 +166,14 @@ export const CONTENT_GROUPS: ContentGroup[] = [
             key: 'wmm.hero.body',
             label: 'Sub-heading',
             multiline: true,
+            // Was briefly hard-broken to match desktop's 5-line wrap exactly,
+            // but that forced the mobile block 5 lines tall regardless of its
+            // much smaller type — taller than the clear space above the
+            // photo's subjects, so the last line ran into them. Left to wrap
+            // naturally, mobile's smaller font fits more words per line and
+            // needs fewer of them, keeping the block short enough to clear
+            // the photo — the actual constraint here outweighs matching
+            // desktop's exact break points.
             default:
               'Music reaches places words cannot. For individuals living with dementia and memory loss, music can unlock memories, lift spirits, and create moments of joy and connection.',
           },

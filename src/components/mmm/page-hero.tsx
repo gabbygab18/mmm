@@ -48,6 +48,15 @@ export function PageHero({
   mobileHeroImage,
   mobileHeroAspect,
   mobileCopyBand,
+  /** Vertical anchor within the mobile copy band. Centring works when the
+      photo is light throughout, but a photo with a busy/dark lower half
+      (people, furniture) needs the copy pinned to the lighter top instead —
+      centring in a shrunk band still risked drifting into it as the text
+      wrapped to a different number of lines. */
+  mobileCopyAlign = 'center',
+  /** Copy band for tablets (`sm` up to `lg`). Falls back to `copyBand`, so
+      pages that don't set it keep the previous two-tier behaviour exactly. */
+  tabletCopyBand,
 }: {
   photo?: string
   photoAlt?: string
@@ -70,6 +79,8 @@ export function PageHero({
   mobileHeroImage?: string
   mobileHeroAspect?: string
   mobileCopyBand?: string
+  mobileCopyAlign?: 'center' | 'start'
+  tabletCopyBand?: string
 }) {
   const centered = align === 'center'
 
@@ -94,6 +105,7 @@ export function PageHero({
               '--hero-ar-m': mobileHeroAspect ?? heroAspect,
               '--hero-ar': heroAspect,
               '--copy-band-m': mobileCopyBand ?? copyBand,
+              '--copy-band-t': tabletCopyBand ?? copyBand,
               '--copy-band': copyBand,
             } as React.CSSProperties
           }
@@ -119,14 +131,18 @@ export function PageHero({
               for wrapped text without clipping. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 h-[var(--copy-band-m)] bg-gradient-to-b from-ocean-950/55 via-ocean-950/25 to-transparent sm:h-[var(--copy-band)]"
+            className="pointer-events-none absolute inset-x-0 top-0 h-[var(--copy-band-m)] bg-gradient-to-b from-ocean-950/55 via-ocean-950/25 to-transparent sm:h-[var(--copy-band-t)] lg:h-[var(--copy-band)]"
           />
           {/* items-center on a short mobile crop still let tall (wrapped)
               text touch the box's top edge — which sits flush against the
               header above it, no gap at all. pt-6 reserves breathing room on
               phones specifically; sm:pt-0 leaves the taller desktop bands,
               where centering already had room, untouched. */}
-          <div className="absolute inset-x-0 top-0 flex h-[var(--copy-band-m)] items-center pt-6 sm:h-[var(--copy-band)] sm:pt-0">
+          <div
+            className={`absolute inset-x-0 top-0 flex h-[var(--copy-band-m)] pt-6 sm:h-[var(--copy-band-t)] sm:items-center sm:pt-0 lg:h-[var(--copy-band)] ${
+              mobileCopyAlign === 'start' ? 'items-start' : 'items-center'
+            }`}
+          >
             <div className="mx-auto w-full max-w-[1200px] px-5 sm:px-8">
               <div className={`${copyWidth} ${centered ? 'mx-auto text-center' : ''}`}>{children}</div>
             </div>

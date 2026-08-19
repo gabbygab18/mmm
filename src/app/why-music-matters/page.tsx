@@ -90,15 +90,53 @@ export default async function WhyMusicMattersPage() {
         heroImage="/mmm/pages/wmm-hero.png"
         heroAspect="1100 / 545"
         mobileHeroAspect="1100 / 620"
-        copyBand="100%"
-        mobileCopyBand="100%"
-        copyWidth="max-w-[470px]"
+        // Centred within the full band, the copy sat noticeably lower than
+        // /about's hero (which centres within its top 62%). Trimmed so the
+        // block lifts toward the same height — not all the way to 62%, since
+        // this hero's body copy runs several lines longer than /about's
+        // two-line subtitle and would ride up into the header.
+        copyBand="82%"
+        // Tablet needs a little more trim than desktop: the band is the same
+        // wide shape but far shorter in absolute pixels there, while the copy
+        // barely shrinks, so the same percentage leaves the block sitting
+        // lower in the frame than it does on a full-width desktop hero.
+        tabletCopyBand="76%"
+        // Centring — even in a shrunk band — kept drifting the text down
+        // toward the couple in the photo as it wrapped to more/fewer lines.
+        // Pinned to the top instead: it stays in the lighter upper portion
+        // of the photo no matter how many lines the copy wraps to. The band
+        // height still sizes the scrim behind it, so it's kept tall enough
+        // to cover the text plus some breathing room.
+        mobileCopyBand="72%"
+        mobileCopyAlign="start"
+        // Narrower on mobile only — Tria's reference wraps the body into
+        // several short lines rather than our 3 longer ones. A width cap
+        // reflows it that way for any edit to the copy, instead of baking
+        // one specific wrap into the CMS content as hard breaks (which held
+        // regardless of how much text was there, and is what pushed the
+        // block tall enough to overlap the photo before).
+        // Percentage, not a fixed px: the photo's clear left area is a share
+        // of the image width, so it grows with the viewport while a fixed
+        // cap would not — at wider phone widths the text drifted out of it.
+        // Held through tablet for the same reason: 470px of a ~700px tablet
+        // container is two thirds of the width, which ran the copy straight
+        // over the couple. The fixed px only takes over at `lg`, where it
+        // already works out to roughly the same share of the container.
+        copyWidth="max-w-[44%] sm:max-w-[46%] lg:max-w-[470px]"
         tailColor="#1e5aa0"
       >
-        <h1 className="landing-rise font-garamond text-[26px] font-semibold leading-[1.02] text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.8)] sm:text-[38px] md:text-[48px] lg:text-[68.5px]">
+        {/* Tria's spec, confirmed over Slack: title 23.5px Cormorant Garamond,
+            body 7.8px Poppins — her reference screenshot only looks bigger
+            because the Figma frame itself was captured zoomed in; these are
+            the real values at mobile width. */}
+        <h1 className="landing-rise font-garamond text-[23.5px] font-semibold leading-[1.02] text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.8)] sm:text-[38px] md:text-[48px] lg:text-[68.5px]">
           <Lines text={t('wmm.hero.title')} />
         </h1>
-        <p className="landing-rise landing-delay-1 mt-3 font-poppins text-[11.5px] leading-snug text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.8)] sm:text-[15px] md:text-[17px] lg:text-[20.9px]">
+        {/* Body size tracks the copy column's width so the block keeps the
+            same proportions the desktop hero has (20.9px in a 470px column).
+            The old 15/17px were sized for a full-width tablet column and ran
+            several lines too tall once that column was capped. */}
+        <p className="landing-rise landing-delay-1 mt-2 font-poppins text-[7.8px] leading-tight text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.8)] sm:mt-3 sm:leading-snug sm:text-[12px] md:text-[14px] lg:text-[20.9px]">
           <Lines text={t('wmm.hero.body')} />
         </p>
       </PageHero>
