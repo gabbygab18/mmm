@@ -47,7 +47,7 @@ const NAV: Record<string, NavItem[]> = {
     { href: '/dashboard/musician/hours', label: 'Volunteer Hours', icon: 'hours' },
     { href: '/dashboard/musician/discover', label: 'Participating Facilities', icon: 'facilities' },
     { href: '/dashboard/requests', label: 'Requests', icon: 'bookings', prefix: true },
-    { href: '/education', label: 'Resources', icon: 'resources' },
+    { href: '/dashboard/education', label: 'Resources', icon: 'resources' },
     { href: '/dashboard/alerts', label: 'Notifications', icon: 'notifications' },
     PROFILE_NAV_ITEM,
   ],
@@ -59,7 +59,7 @@ const NAV: Record<string, NavItem[]> = {
     // "Hours of Music" pointed at /dashboard/center/hours, which has never
     // existed — every facility user had a dead link here. Removed until the
     // page is built.
-    { href: '/education', label: 'Resources', icon: 'resources' },
+    { href: '/dashboard/education', label: 'Resources', icon: 'resources' },
     { href: '/dashboard/alerts', label: 'Notifications', icon: 'notifications' },
     PROFILE_NAV_ITEM,
   ],
@@ -72,7 +72,7 @@ const NAV: Record<string, NavItem[]> = {
     { href: '/dashboard/admin/facilities', label: 'Facilities', icon: 'facilities', prefix: true },
     { href: '/dashboard/schedule', label: 'Bookings', icon: 'bookings' },
     { href: '/dashboard/admin/oversight', label: 'Oversight', icon: 'reports' },
-    { href: '/education', label: 'Education Library', icon: 'education' },
+    { href: '/dashboard/education', label: 'Education Library', icon: 'education' },
     { href: '/dashboard/alerts', label: 'Announcement', icon: 'announcement' },
     { href: '/dashboard/admin/reports', label: 'Reports', icon: 'analytics' },
     { href: '/dashboard/admin/categories', label: 'Categories', icon: 'adminresources' },
@@ -262,72 +262,263 @@ function Sidebar({
   )
 }
 
-/** Mobile bottom tab bar — the primary navigation on small screens. Also the
-    only sign-out path on mobile/tablet now that the top logo bar (which used
-    to hold it in its hamburger menu) is gone. */
-function TabBar({
+/** A small circular icon button, styled to match the requested Facebook-style
+    top bar: a dark filled circle holding one glyph, red dot/count badge in
+    the corner. */
+function TopBarIconButton({
+  icon,
+  iconNode,
+  href,
+  onClick,
+  badgeCount,
+  active,
+  label,
+}: {
+  /** Nav icon asset name — ignored when `iconNode` is given. */
+  icon?: string
+  /** Custom glyph for buttons with no matching nav asset (e.g. the "More" ellipsis). */
+  iconNode?: React.ReactNode
+  href?: string
+  onClick?: () => void
+  badgeCount?: number
+  active?: boolean
+  label: string
+}) {
+  const content = (
+    <span
+      className={`relative flex h-10 w-10 items-center justify-center rounded-full transition ${
+        active ? 'bg-white/25' : 'bg-white/10 hover:bg-white/20'
+      }`}
+    >
+      {iconNode ?? <NavIcon name={icon ?? ''} className="h-5 w-5" />}
+      {!!badgeCount && badgeCount > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-[#0d3763] bg-red-500 px-1 font-poppins text-[9px] font-bold text-white">
+          {badgeCount > 99 ? '99+' : badgeCount}
+        </span>
+      )}
+    </span>
+  )
+
+  // title: a real hover tooltip (aria-label alone is announced to screen
+  // readers but shows nothing on hover) — the button/link name.
+  if (href) {
+    return (
+      <Link href={href} aria-label={label} title={label} className="shrink-0">
+        {content}
+      </Link>
+    )
+  }
+  return (
+    <button type="button" onClick={onClick} aria-label={label} title={label} className="shrink-0">
+      {content}
+    </button>
+  )
+}
+
+/** Three-dot "More" glyph — no nav asset covers "open the full menu," so this
+    stays a hand-drawn dot row, same as the earlier grid/hamburger icons. */
+function MoreDotsIcon() {
+  return (
+    <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="12" r="2.2" />
+      <circle cx="12" cy="12" r="2.2" />
+      <circle cx="19" cy="12" r="2.2" />
+    </svg>
+  )
+}
+
+/** Mobile top bar — a Facebook-style row of circular icon buttons, using the
+    same icon set as the sidebar rather than a text hamburger. Home links
+    straight to the role's dashboard; a "More" dots button opens the full
+    slide-down sheet with every other nav item; Requests and Notifications
+    are one tap away with their badge counts; the avatar opens a small
+    dropdown for Profile and Sign out. Every button carries a `title` so
+    hovering shows the name of where it goes, not just an icon. */
+function MobileNav({
   role,
+  avatarUrl,
   unreadAlertCount,
   pendingRequestCount,
   onSignOut,
 }: {
   role: Role
+  avatarUrl?: string | null
   unreadAlertCount: number
   pendingRequestCount: number
   onSignOut: () => void
 }) {
   const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const [avatarOpen, setAvatarOpen] = useState(false)
   const items = role ? (NAV[role] ?? []) : []
   const isActive = (i: NavItem) => (i.prefix ? pathname.startsWith(i.href) : pathname === i.href)
+  // Dashboard is always the first entry per role (see NAV above) — Home goes
+  // straight there instead of toggling the sheet.
+  const homeHref = items[0]?.href ?? '/dashboard'
+
+  // Close whatever's open whenever the route actually changes (a link was
+  // followed), not just on click.
+  useEffect(() => {
+    setOpen(false)
+    setAvatarOpen(false)
+  }, [pathname])
 
   return (
-    <nav
-      aria-label="Dashboard"
-      className="shrink-0 overflow-x-auto lg:hidden"
-      style={{ background: 'linear-gradient(180deg, #0d3763 0%, #2f6ba8 100%)' }}
-    >
-      <ul className="flex min-w-max items-stretch justify-around gap-1 px-2 py-2">
-        {items.map((item) => {
-          const active = isActive(item)
-          const badgeCount = badgeCountFor(item, unreadAlertCount, pendingRequestCount)
-          return (
-            <li key={item.href} className="flex-1">
-              <Link
-                href={item.href}
-                aria-current={active ? 'page' : undefined}
-                className={`flex min-w-[68px] flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-center transition ${
-                  active ? 'bg-white/15' : 'hover:bg-white/10'
-                }`}
+    <div className="relative z-30 shrink-0 lg:hidden">
+      <div
+        className="flex items-center justify-between gap-2 px-4 py-2.5"
+        style={{ background: 'linear-gradient(180deg, #124273 0%, #0a2f5a 100%)' }}
+      >
+        <TopBarIconButton
+          icon="dashboard"
+          href={homeHref}
+          label="Dashboard"
+          active={pathname === homeHref}
+        />
+
+        <div className="flex items-center gap-2.5">
+          {/* Requests dropped from the quick row — a calendar-icon button and
+              the dots-menu button sitting right next to each other read as
+              two menus, not "one shortcut + one everything-else." Requests
+              is still one tap away inside the sheet, which is why the badge
+              moved onto the dots button instead of disappearing. */}
+          <TopBarIconButton
+            iconNode={<MoreDotsIcon />}
+            label={open ? 'Close menu' : 'Open menu'}
+            active={open}
+            badgeCount={pendingRequestCount}
+            onClick={() => {
+              setAvatarOpen(false)
+              setOpen((v) => !v)
+            }}
+          />
+          <TopBarIconButton
+            icon="notifications"
+            href="/dashboard/alerts"
+            label="Notifications"
+            active={pathname === '/dashboard/alerts'}
+            badgeCount={unreadAlertCount}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false)
+              setAvatarOpen((v) => !v)
+            }}
+            aria-label="Account"
+            title="Account"
+            aria-expanded={avatarOpen}
+            className="flex shrink-0 items-center gap-1 rounded-full py-1 pl-1 pr-2 transition hover:bg-white/10"
+          >
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="" className="h-9 w-9 rounded-full border-2 border-white/70 object-cover" />
+            ) : (
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white/70 bg-white/10">
+                <NavIcon name="profile" className="h-5 w-5" />
+              </span>
+            )}
+            <svg
+              className={`h-3.5 w-3.5 shrink-0 text-white transition-transform ${avatarOpen ? 'rotate-180' : ''}`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {(open || avatarOpen) && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => {
+            setOpen(false)
+            setAvatarOpen(false)
+          }}
+          className="fixed inset-0 z-40 bg-ocean-950/50"
+        />
+      )}
+
+      {open && (
+        <nav
+          aria-label="Dashboard"
+          className="absolute inset-x-0 top-full z-50 max-h-[75vh] overflow-y-auto rounded-b-2xl px-4 pb-4 pt-3 shadow-2xl"
+          style={{ background: 'linear-gradient(180deg, #124273 0%, #0a2f5a 100%)' }}
+        >
+          <ul className="grid grid-cols-3 gap-2">
+            {items.map((item) => {
+              const active = isActive(item)
+              const badgeCount = badgeCountFor(item, unreadAlertCount, pendingRequestCount)
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={`flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center transition ${
+                      active ? 'bg-white/15' : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <span className="relative">
+                      <NavIcon name={item.icon} className="h-7 w-7" />
+                      {badgeCount > 0 && (
+                        <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 font-poppins text-[9px] font-bold text-white">
+                          {badgeCount > 99 ? '99+' : badgeCount}
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-poppins text-[10.5px] leading-tight text-white">{item.label}</span>
+                  </Link>
+                </li>
+              )
+            })}
+            <li>
+              <button
+                type="button"
+                onClick={onSignOut}
+                className="flex w-full flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center text-white/95 transition hover:bg-white/10"
               >
-                <span className="relative">
-                  <NavIcon name={item.icon} className="h-6 w-6" />
-                  {badgeCount > 0 && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-[#0d3763] bg-red-500"
-                    />
-                  )}
-                </span>
-                <span className="font-poppins text-[8.5px] leading-tight text-white">{item.label}</span>
-              </Link>
+                <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l4-3-4-3M22 12H10" />
+                </svg>
+                <span className="font-poppins text-[10.5px] leading-tight text-white">Sign out</span>
+              </button>
             </li>
-          )
-        })}
-        <li className="flex-1">
+          </ul>
+        </nav>
+      )}
+
+      {avatarOpen && (
+        <div
+          className="absolute right-4 top-full z-50 mt-1 w-56 overflow-hidden rounded-2xl shadow-2xl"
+          style={{ background: 'linear-gradient(180deg, #124273 0%, #0a2f5a 100%)' }}
+        >
+          {PROFILE_NAV_ITEM.children?.map((child) => (
+            <Link
+              key={child.href}
+              href={child.href}
+              className={`block px-4 py-3 font-poppins text-[13px] transition ${
+                pathname === child.href ? 'bg-white/15 font-semibold text-white' : 'text-white/90 hover:bg-white/10'
+              }`}
+            >
+              {child.label}
+            </Link>
+          ))}
           <button
             type="button"
             onClick={onSignOut}
-            className="flex min-w-[68px] flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-center text-white/95 transition hover:bg-white/10"
+            className="block w-full border-t border-white/15 px-4 py-3 text-left font-poppins text-[13px] text-white/90 transition hover:bg-white/10"
           >
-            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l4-3-4-3M22 12H10" />
-            </svg>
-            <span className="font-poppins text-[8.5px] leading-tight text-white">Sign out</span>
+            Sign out
           </button>
-        </li>
-      </ul>
-    </nav>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -355,6 +546,14 @@ export function AuthGuardShell({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
+      <MobileNav
+        role={role}
+        avatarUrl={avatarUrl}
+        unreadAlertCount={liveUnreadAlertCount}
+        pendingRequestCount={pendingRequestCount}
+        onSignOut={signOut}
+      />
+
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-[260px] shrink-0 lg:block xl:w-[300px]">
           <Sidebar
@@ -373,8 +572,6 @@ export function AuthGuardShell({
           <div className="px-4 py-5 sm:px-6 lg:px-7">{children}</div>
         </main>
       </div>
-
-      <TabBar role={role} unreadAlertCount={liveUnreadAlertCount} pendingRequestCount={pendingRequestCount} onSignOut={signOut} />
     </div>
   )
 }

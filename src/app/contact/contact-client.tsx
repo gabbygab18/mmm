@@ -94,18 +94,32 @@ export function ContactClient({ content }: { content: Record<string, string> }) 
           style={{ height: 'clamp(260px, 34vw, 560px)' }}
         />
 
-        <div className="mx-auto max-w-[1200px] px-5 pt-6 text-center sm:px-8 sm:pt-8 lg:pt-9">
+        <div className="mx-auto max-w-[1200px] px-5 pt-10 text-center sm:px-8 sm:pt-8 lg:pt-9">
           {/* White, as drawn — the swoosh is pale under the centre of the line,
               so the shadow does the lifting. */}
           <h1 className="landing-rise font-garamond text-[26px] font-bold leading-tight text-white [text-shadow:0_2px_12px_rgba(10,47,90,0.75)] sm:text-[40px] lg:text-[56px] xl:text-[65.9px]">
             We&apos;d Love to Hear from You!
           </h1>
-          <p className="landing-rise landing-delay-1 mx-auto mt-3 max-w-[720px] font-poppins text-[12.5px] leading-relaxed text-ocean-900 sm:text-[15px] lg:text-[17.3px]">
+          {/* White + shadow, not the hero image's dark ocean-900 — that relied
+              on always sitting over the pale photo, but the photo is a
+              fixed-height absolutely-positioned layer while this text flows
+              normally. At ~1024px and below the wrapped title+body grew
+              taller than the image, so the dark text spilled onto the plain
+              navy page background beneath it and became unreadable. White
+              with a shadow reads fine on either. */}
+          <p className="landing-rise landing-delay-1 mx-auto mt-3 max-w-[720px] font-poppins text-[12.5px] leading-relaxed text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.75)] sm:text-[15px] lg:text-[17.3px]">
             <Lines text={t('contact.hero.body')} />
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-[1200px] items-start gap-10 px-5 pb-14 pt-9 sm:px-8 sm:pb-16 sm:pt-12 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-16 lg:pt-14">
+        {/* The 2-column split used to kick in at `lg` (1024px) — right at that
+            width the 0.92fr email-card column has so little room left after
+            the icon + padding that the card reads as flush against the page
+            edge (same squeeze class as the earlier How It Works mobile bug).
+            Deferred to `xl` (1280px) so 1024px stays single-column, full
+            width, with room to breathe; the 2-column layout only appears
+            once there's actually space for it. */}
+        <div className="mx-auto grid max-w-[1200px] items-start gap-10 px-5 pb-14 pt-9 sm:px-8 sm:pb-16 sm:pt-12 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] xl:gap-16 xl:pt-14">
           {/* ---- Send us a message ---- */}
           <div className="rounded-2xl border-2 border-ocean-900 bg-[#faf4e7] px-4 py-7 shadow-2xl sm:rounded-3xl sm:px-8 sm:py-9 lg:px-10">
             <h2 className="text-center font-garamond text-[26px] font-bold text-ocean-900 sm:text-[25.8px]">
@@ -279,7 +293,7 @@ export function ContactClient({ content }: { content: Record<string, string> }) 
               </p>
             </div>
 
-            <div className="relative min-h-[200px] sm:min-h-[280px]">
+            <div className="relative min-h-[280px] sm:min-h-[320px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <picture>
                 <source srcSet="/mmm/mobile/contact-map.png" media="(max-width: 639px)" />
@@ -318,7 +332,11 @@ function ContactCard({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={icon} alt="" className="h-10 w-10 shrink-0 object-contain sm:h-14 sm:w-14" />
-      <div>
+      {/* min-w-0: a flex item's default min-width is auto (its content's
+          natural width), which let the long e-mail address push past the
+          card edge — break-words alone can't wrap what the flex layout
+          never let shrink. */}
+      <div className="min-w-0">
         <h3 className="font-garamond text-[17px] font-bold text-ocean-900 sm:text-[25.8px]">{title}</h3>
         {lines.map((line) => (
           <p key={line} className="break-words font-poppins text-[10px] leading-snug text-ocean-900 sm:text-[14px] lg:text-[16px]">

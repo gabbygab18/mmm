@@ -250,9 +250,14 @@ export default async function MusicianDiscoverPage({ searchParams }: { searchPar
                     {center.center_name.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <div className="min-w-0">
-                  <p className="text-lg font-semibold text-ocean-900">{center.center_name}</p>
-                  <p className="text-sm text-ocean-900/70">{center.location_name} · ZIP {center.location_zip_code}</p>
+                <div className="min-w-0 flex-1">
+                  {/* break-words: some centers register with an e-mail address
+                      as their display name, one unbroken "word" — min-w-0
+                      alone lets the box shrink, but the text itself just kept
+                      running past that width and got sliced off by the
+                      card's overflow-hidden instead of wrapping. */}
+                  <p className="break-words text-lg font-semibold text-ocean-900">{center.center_name}</p>
+                  <p className="break-words text-sm text-ocean-900/70">{center.location_name} · ZIP {center.location_zip_code}</p>
                   <p className="mt-1 text-sm text-ocean-900/70">{locationResidentCountById.get(center.location_id) ?? 'Unknown'} residents</p>
                   <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-amber-700">{formatDistance(center.distance_miles)}</p>
                   <div className="mt-2 flex flex-wrap gap-2">

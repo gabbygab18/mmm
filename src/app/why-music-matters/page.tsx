@@ -76,18 +76,29 @@ export default async function WhyMusicMattersPage() {
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
 
-      {/* ============ Hero ============ */}
+      {/* ============ Hero ============
+          The photo has a bright white transition band partway down, which
+          white hero text is unreadable over. Rather than crop tightly to
+          dodge it — that turned out fragile, since a short box then clips
+          (via overflow-hidden) whatever text doesn't fit at a given wrap
+          length — PageHero now scrims the whole band with a dark gradient,
+          which guarantees contrast regardless of what's in the photo
+          underneath. mobileHeroAspect here just needs to be tall enough for
+          the wrapped title+body to never clip; it no longer has to dodge
+          anything in the image itself. */}
       <PageHero
         heroImage="/mmm/pages/wmm-hero.png"
         heroAspect="1100 / 545"
+        mobileHeroAspect="1100 / 620"
         copyBand="100%"
+        mobileCopyBand="100%"
         copyWidth="max-w-[470px]"
         tailColor="#1e5aa0"
       >
-        <h1 className="landing-rise font-garamond text-[26px] font-semibold leading-[1.02] text-white drop-shadow-md sm:text-[38px] md:text-[48px] lg:text-[68.5px]">
+        <h1 className="landing-rise font-garamond text-[26px] font-semibold leading-[1.02] text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.8)] sm:text-[38px] md:text-[48px] lg:text-[68.5px]">
           <Lines text={t('wmm.hero.title')} />
         </h1>
-        <p className="landing-rise landing-delay-1 mt-3 font-poppins text-[11.5px] leading-snug text-white drop-shadow sm:text-[15px] md:text-[17px] lg:text-[20.9px]">
+        <p className="landing-rise landing-delay-1 mt-3 font-poppins text-[11.5px] leading-snug text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.8)] sm:text-[15px] md:text-[17px] lg:text-[20.9px]">
           <Lines text={t('wmm.hero.body')} />
         </p>
       </PageHero>

@@ -50,17 +50,17 @@ function PathColumn({
       style={{ background: 'linear-gradient(180deg, #faf4e7 0%, #e6eef7 45%, #c9dcee 100%)' }}
     >
       <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:gap-5 sm:text-left">
-        <span className="flex h-[62px] w-[62px] shrink-0 items-center justify-center rounded-full bg-ocean-900 text-white sm:h-[86px] sm:w-[86px] lg:h-[104px] lg:w-[104px]">
+        <span className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-full bg-ocean-900 text-white sm:h-[86px] sm:w-[86px] lg:h-[104px] lg:w-[104px]">
           {icon}
         </span>
-        <h2 className="w-full border-b-2 border-ocean-400/70 pb-2 font-garamond text-[19px] font-bold text-ocean-900 sm:text-[30px] lg:text-[41px]">
+        <h2 className="w-full border-b-2 border-ocean-400/70 pb-2 font-garamond text-[24px] font-bold text-ocean-900 sm:text-[30px] lg:text-[41px]">
           {title}
         </h2>
       </div>
 
       <ol className="relative mt-6 sm:mt-9">
         {steps.map((step, i) => (
-          <li key={step.title} className={`relative flex items-start gap-2.5 sm:gap-5 ${i < steps.length - 1 ? 'pb-5 sm:pb-7' : ''}`}>
+          <li key={step.title} className={`relative flex items-start gap-3 sm:gap-5 ${i < steps.length - 1 ? 'pb-5 sm:pb-7' : ''}`}>
             {/* Absolutely positioned against the li (not stretched via flex)
                 so `bottom-0` reaches the li's own padding-bottom — i.e. all
                 the way down to the next circle — regardless of how tall this
@@ -69,18 +69,18 @@ function PathColumn({
                 previous "cut off" line. */}
             {i < steps.length - 1 && (
               <span
-                className="absolute left-[13px] top-7 bottom-0 border-l-2 border-dotted border-ocean-400/80 sm:left-[17px] sm:top-9"
+                className="absolute left-[15px] top-8 bottom-0 border-l-2 border-dotted border-ocean-400/80 sm:left-[17px] sm:top-9"
                 aria-hidden="true"
               />
             )}
-            <span className="z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ocean-300 font-poppins text-[11px] font-bold text-white sm:h-9 sm:w-9 sm:text-[14px]">
+            <span className="z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ocean-300 font-poppins text-[12.5px] font-bold text-white sm:h-9 sm:w-9 sm:text-[14px]">
               {i + 1}
             </span>
             <div>
-              <h3 className="font-garamond text-[13.5px] font-bold leading-tight text-ocean-900 sm:text-[21px] lg:text-[23.4px]">
+              <h3 className="font-garamond text-[16px] font-bold leading-tight text-ocean-900 sm:text-[21px] lg:text-[23.4px]">
                 {step.title}
               </h3>
-              <p className="mt-1 font-poppins text-[9px] leading-snug text-ocean-900/90 sm:text-[11px] lg:text-[12.3px]">{step.body}</p>
+              <p className="mt-1 font-poppins text-[11px] leading-snug text-ocean-900/90 sm:text-[11px] lg:text-[12.3px]">{step.body}</p>
             </div>
           </li>
         ))}
@@ -88,7 +88,7 @@ function PathColumn({
 
       <Link
         href={href}
-        className="mt-6 block rounded-lg bg-ocean-800 px-3 py-2.5 text-center font-poppins text-[8.5px] font-bold uppercase tracking-[0.1em] text-white sm:mt-9 sm:px-6 sm:py-3 sm:text-[12.2px] sm:tracking-[0.14em] shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400"
+        className="mt-6 block rounded-lg bg-ocean-800 px-5 py-2.5 text-center font-poppins text-[11px] font-bold uppercase tracking-[0.12em] text-white sm:mt-9 sm:px-6 sm:py-3 sm:text-[12.2px] sm:tracking-[0.14em] shadow-[inset_0_-2px_5px_rgba(0,0,0,0.3),0_2px_6px_rgba(7,37,68,0.35)] transition hover:bg-ocean-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-400"
       >
         {cta}
       </Link>
@@ -136,7 +136,10 @@ export default async function HowItWorksPage() {
 
       {/* ============ The two paths ============ */}
       <section style={{ background: 'linear-gradient(180deg, #0f3b6b 0%, #1e5aa0 55%, #4882bf 100%)' }}>
-        <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-3 px-3 py-10 sm:gap-6 sm:px-6 sm:py-14 lg:gap-10 lg:px-8 lg:py-16">
+        {/* grid-cols-2 was unconditional — the two columns squeezed side by
+            side even on a phone screen, forcing the numbered step list into
+            an unreadably narrow strip. Now stacks to one column below sm. */}
+        <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-6 px-3 py-10 sm:grid-cols-2 sm:gap-6 sm:px-6 sm:py-14 lg:gap-10 lg:px-8 lg:py-16">
           <PathColumn
             title="For Musicians"
             href="/register/musician"

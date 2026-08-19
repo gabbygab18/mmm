@@ -40,11 +40,22 @@ export function FaqClient({ content }: { content: Record<string, string> }) {
     <main className="bg-ocean-900 font-sans">
       <MarketingHeader />
 
-      {/* ============ Hero ============ */}
+      {/* ============ Hero ============
+          Body paragraph was dark ocean-900, which only reads on the hero
+          photo's pale area — this photo turns white early (~33% down), and
+          there's no dedicated mobile export, so wrapped text on narrow
+          phones could land on that white area or spill onto the plain dark
+          section below. Fixed with white text + PageHero's scrim (guarantees
+          contrast regardless of what's in the photo) instead of cropping
+          tightly to dodge the white area — a short crop just clips whatever
+          text doesn't fit via overflow-hidden. mobileHeroAspect only needs
+          enough room for the wrapped title+body to never clip. */}
       <PageHero
         heroImage="/mmm/pages/faq-hero.png"
         heroAspect="1100 / 355"
+        mobileHeroAspect="1100 / 480"
         copyBand="76%"
+        mobileCopyBand="90%"
         copyWidth="max-w-[580px]"
         align="left"
         tailColor="#0f3b6b"
@@ -52,7 +63,7 @@ export function FaqClient({ content }: { content: Record<string, string> }) {
         <h1 className="landing-rise font-garamond text-[22px] font-bold leading-tight text-white drop-shadow-md sm:text-[32px] md:text-[40px] lg:text-[52px]">
           <Lines text={t('faq.hero.title')} />
         </h1>
-        <p className="landing-rise landing-delay-1 mt-2 font-poppins text-[11px] leading-snug text-ocean-900 sm:text-[14px] md:text-[16px] lg:text-[19.5px]">
+        <p className="landing-rise landing-delay-1 mt-2 font-poppins text-[11px] leading-snug text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.8)] sm:text-[14px] md:text-[16px] lg:text-[19.5px]">
           <Lines text={t('faq.hero.body')} />
         </p>
       </PageHero>

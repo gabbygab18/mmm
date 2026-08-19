@@ -11,7 +11,11 @@ const QUICK_LINKS: Array<{ label: string; href: string }> = [
   { label: 'About Us', href: '/about' },
   { label: 'How It Works', href: '/how-it-works' },
   { label: 'Why Music Matters', href: '/why-music-matters' },
-  { label: 'Education', href: '/education' },
+  // The root /education page (the numbered first-time-volunteer lesson plan)
+  // moved to /dashboard/education, auth-protected — it was onboarding
+  // material, not general marketing content. This points at one of the
+  // still-public reading articles instead of a now-dead link.
+  { label: 'Education', href: '/education/science-of-music' },
   { label: 'FAQ', href: '/faq' },
   { label: 'Contact', href: '/contact' },
 ]

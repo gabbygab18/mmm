@@ -85,7 +85,30 @@ export default function AlertsPage() {
     setAlerts((prev) => prev.map((a) => (a.id === alertId ? { ...a, dismissed: true } : a)))
   }
 
+  async function deleteAlert(alertId: string) {
+    setAlerts((prev) => prev.filter((a) => a.id !== alertId))
+    const supabase = createSupabaseBrowserClient()
+    const { error } = await supabase.from('alerts').delete().eq('id', alertId)
+    if (error) {
+      console.error('[AlertsPage] Error deleting alert:', error)
+      loadAlerts() // row wasn't actually removed — resync from the server
+    }
+  }
+
+  async function clearDismissed() {
+    const dismissedIds = alerts.filter((a) => a.dismissed).map((a) => a.id)
+    if (dismissedIds.length === 0) return
+    setAlerts((prev) => prev.filter((a) => !a.dismissed))
+    const supabase = createSupabaseBrowserClient()
+    const { error } = await supabase.from('alerts').delete().in('id', dismissedIds)
+    if (error) {
+      console.error('[AlertsPage] Error clearing dismissed alerts:', error)
+      loadAlerts()
+    }
+  }
+
   const unreadCount = alerts.filter((a) => !a.read && !a.dismissed).length
+  const dismissedCount = alerts.filter((a) => a.dismissed).length
 
   const getAlertBadge = (alertType: string) => {
     const badges: Record<string, { bg: string; text: string; label: string }> = {
@@ -125,13 +148,22 @@ export default function AlertsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="font-garamond text-[28px] font-bold text-ocean-900">Notifications</h1>
           <p className="mt-1 font-poppins text-[12.5px] text-ocean-900/70">
             {unreadCount > 0 ? `${unreadCount} unread alert${unreadCount !== 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </div>
+        {dismissedCount > 0 && (
+          <button
+            type="button"
+            onClick={clearDismissed}
+            className="shrink-0 rounded-lg border border-ocean-300 px-3 py-1.5 font-poppins text-xs font-medium text-ocean-900 transition hover:bg-ocean-50"
+          >
+            Clear dismissed ({dismissedCount})
+          </button>
+        )}
       </div>
 
       {alerts.length === 0 ? (
@@ -153,27 +185,40 @@ export default function AlertsPage() {
                       : 'border-ocean-300 bg-ocean-50'
                 }`}
               >
-                <div className="flex items-start gap-4">
-                  {/* Badge */}
-                  <div className={`flex-shrink-0 rounded-full px-3 py-1 font-poppins text-xs font-medium ${badge.bg} ${badge.text}`}>
-                    {badge.label}
-                  </div>
+                {/* Badge+content and actions stack as two full-width rows on
+                    mobile — side by side, the fixed-width actions column left
+                    the content so little room that the title wrapped under
+                    the Dismiss button and Delete crowded right against it.
+                    They sit back on one row, actions as a right-aligned
+                    sidebar, once there's width to spare at sm. */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                  <div className="flex flex-1 min-w-0 items-start gap-3">
+                    {/* Badge */}
+                    <div className={`flex-shrink-0 rounded-full px-3 py-1 font-poppins text-xs font-medium ${badge.bg} ${badge.text}`}>
+                      {badge.label}
+                    </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-poppins font-semibold text-ocean-900">{alert.title}</h3>
-                    <p className="mt-1 font-poppins text-sm text-ocean-900/70">{alert.message}</p>
-                    <p className="mt-2 font-poppins text-xs text-ocean-900/50">{formatDate(alert.created_at)}</p>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-poppins font-semibold text-ocean-900 break-words">{alert.title}</h3>
+                      <p className="mt-1 font-poppins text-sm text-ocean-900/70 break-words">{alert.message}</p>
+                      <p className="mt-2 font-poppins text-xs text-ocean-900/50">{formatDate(alert.created_at)}</p>
+                    </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-shrink-0 flex-col items-end gap-2">
+                  <div className="flex flex-shrink-0 items-center justify-end gap-3 sm:flex-col sm:items-end sm:gap-2">
                     {!alert.dismissed && (
                       <DismissAlertButton alertId={alert.id} unread={!alert.read} onDismiss={() => dismissAlert(alert.id)} />
                     )}
-                    {alert.dismissed && (
-                      <span className="font-poppins text-xs text-ocean-900/50">Dismissed</span>
-                    )}
+                    {alert.dismissed && <span className="font-poppins text-xs text-ocean-900/50">Dismissed</span>}
+                    <button
+                      type="button"
+                      onClick={() => deleteAlert(alert.id)}
+                      className="font-poppins text-xs font-medium text-rose-700 transition hover:text-rose-900 hover:underline"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>

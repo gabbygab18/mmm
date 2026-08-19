@@ -14,7 +14,6 @@ const PUBLIC_PATHS = [
   '/verify-email',
   '/auth/confirm',
   '/get-started',
-  '/education',
   '/about',
   '/how-it-works',
   '/why-music-matters',
@@ -23,9 +22,11 @@ const PUBLIC_PATHS = [
   '/terms',
   '/privacy',
 ]
-// `/education` itself is listed above; the trailing slash opens its articles —
-// every link on /why-music-matters points at one, and without this they all
-// bounced signed-out readers to /login.
+// `/education` (bare, no trailing slash) is the first-time volunteer lesson
+// plan — that one now lives at /dashboard/education, auth-protected, since
+// it's onboarding material for signed-in musicians, not public marketing.
+// The trailing-slash prefix below still covers its public sub-articles
+// (/education/science-of-music etc.), which are general-audience reading.
 const PUBLIC_PREFIXES = ['/register', '/api/contact', '/education/']
 
 function isPublicPath(pathname: string) {
@@ -100,7 +101,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (hasSession && (pathname === '/login' || pathname === '/signup')) {
+  if (hasSession && (pathname === '/' || pathname === '/login' || pathname === '/signup')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

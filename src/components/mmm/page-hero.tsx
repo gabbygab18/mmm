@@ -108,7 +108,25 @@ export function PageHero({
               className="absolute inset-x-0 top-0 block w-full select-none"
             />
           </picture>
-          <div className="absolute inset-x-0 top-0 flex h-[var(--copy-band-m)] items-center sm:h-[var(--copy-band)]">
+          {/* Scrim: a top-anchored dark gradient over the photo. Chasing an
+              aspect-ratio number that dodges whatever's underneath the text
+              in the source photo (a white swoosh, in this case) is fragile —
+              it depends on the exact crop AND how many lines the text wraps
+              to, and shrinking the box to dodge one problem spot caused the
+              next one: overflow-hidden clipping the paragraph once it needed
+              more room than the shrunk box had. A scrim guarantees contrast
+              regardless of what's behind it, so the box can stay tall enough
+              for wrapped text without clipping. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-[var(--copy-band-m)] bg-gradient-to-b from-ocean-950/55 via-ocean-950/25 to-transparent sm:h-[var(--copy-band)]"
+          />
+          {/* items-center on a short mobile crop still let tall (wrapped)
+              text touch the box's top edge — which sits flush against the
+              header above it, no gap at all. pt-6 reserves breathing room on
+              phones specifically; sm:pt-0 leaves the taller desktop bands,
+              where centering already had room, untouched. */}
+          <div className="absolute inset-x-0 top-0 flex h-[var(--copy-band-m)] items-center pt-6 sm:h-[var(--copy-band)] sm:pt-0">
             <div className="mx-auto w-full max-w-[1200px] px-5 sm:px-8">
               <div className={`${copyWidth} ${centered ? 'mx-auto text-center' : ''}`}>{children}</div>
             </div>
