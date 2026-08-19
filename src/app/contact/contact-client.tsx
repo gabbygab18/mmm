@@ -97,7 +97,7 @@ export function ContactClient({ content }: { content: Record<string, string> }) 
         <div className="mx-auto max-w-[1200px] px-5 pt-10 text-center sm:px-8 sm:pt-8 lg:pt-9">
           {/* White, as drawn — the swoosh is pale under the centre of the line,
               so the shadow does the lifting. */}
-          <h1 className="landing-rise font-garamond text-[26px] font-bold leading-tight text-white [text-shadow:0_2px_12px_rgba(10,47,90,0.75)] sm:text-[40px] lg:text-[56px] xl:text-[65.9px]">
+          <h1 className="landing-rise font-garamond text-[26px] font-bold leading-tight text-white [text-shadow:0_2px_6px_rgba(6,20,40,0.95),0_4px_18px_rgba(6,20,40,0.85)] sm:text-[40px] lg:text-[56px] xl:text-[65.9px]">
             We&apos;d Love to Hear from You!
           </h1>
           {/* White + shadow, not the hero image's dark ocean-900 — that relied
@@ -107,7 +107,7 @@ export function ContactClient({ content }: { content: Record<string, string> }) 
               taller than the image, so the dark text spilled onto the plain
               navy page background beneath it and became unreadable. White
               with a shadow reads fine on either. */}
-          <p className="landing-rise landing-delay-1 mx-auto mt-3 max-w-[720px] font-poppins text-[12.5px] leading-relaxed text-white [text-shadow:0_1px_8px_rgba(10,47,90,0.75)] sm:text-[15px] lg:text-[17.3px]">
+          <p className="landing-rise landing-delay-1 mx-auto mt-3 max-w-[720px] font-poppins text-[12.5px] leading-relaxed text-white [text-shadow:0_1px_4px_rgba(6,20,40,0.95),0_3px_14px_rgba(6,20,40,0.85)] sm:text-[15px] lg:text-[17.3px]">
             <Lines text={t('contact.hero.body')} />
           </p>
         </div>
