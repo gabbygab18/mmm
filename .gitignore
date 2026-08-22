@@ -40,3 +40,6 @@ yarn-error.log*
 # Database exports — contain real user PII (emails, names, phone numbers).
 # Never commit these; they are local safety copies only.
 backups/
+
+# Local e-mail layout previews (scripts/preview-email.ts output).
+email-preview*.html

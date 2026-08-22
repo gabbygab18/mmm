@@ -395,11 +395,11 @@ export default async function RequestsPage({
 
   const [musiciansResult, locationsResult, proposalsResult] = await Promise.all([
     musicianIds.length
-      ? supabase.from('musicians').select('id, user_id, name, zip_code, profile_image_url').in('id', musicianIds)
-      : Promise.resolve({ data: [] as { id: string; user_id: string; name: string; zip_code: string; profile_image_url: string | null }[] }),
+      ? supabase.from('musicians').select('id, user_id, username, name, zip_code, profile_image_url, music_types, instruments').in('id', musicianIds)
+      : Promise.resolve({ data: [] as { id: string; user_id: string; username: string | null; name: string; zip_code: string; profile_image_url: string | null; music_types: string[] | null; instruments: string[] | null }[] }),
     locationIds.length
-      ? supabase.from('center_locations').select('id, name, center_id, location_image_url').in('id', locationIds)
-      : Promise.resolve({ data: [] as { id: string; name: string; center_id: string; location_image_url: string | null }[] }),
+      ? supabase.from('center_locations').select('id, name, center_id, location_image_url, zip_code').in('id', locationIds)
+      : Promise.resolve({ data: [] as { id: string; name: string; center_id: string; location_image_url: string | null; zip_code: string | null }[] }),
     requestIds.length
       ? supabase
           .from('request_time_proposals')
@@ -421,6 +421,36 @@ export default async function RequestsPage({
   const musicianMap = new Map((musicians ?? []).map((row) => [row.id, row]))
   const locationMap = new Map((locations ?? []).map((row) => [row.id, row]))
   const centerMap = new Map((centers ?? []).map((row) => [row.id, row]))
+
+  // Distance per musician/location pair, so a facility can judge a request
+  // without opening the profile. Resolved once per distinct pair rather than
+  // once per request — the same musician and venue recur across requests, and
+  // each lookup is its own round trip.
+  const distanceKey = (zip1: string, zip2: string) => `${zip1}|${zip2}`
+  const distancePairs = new Map<string, { zip1: string; zip2: string }>()
+  for (const request of requests) {
+    const musicianZip = request.musician_id ? musicianMap.get(request.musician_id)?.zip_code : null
+    const locationZip = request.center_location_id ? locationMap.get(request.center_location_id)?.zip_code : null
+    if (musicianZip && locationZip) {
+      distancePairs.set(distanceKey(musicianZip, locationZip), { zip1: musicianZip, zip2: locationZip })
+    }
+  }
+
+  const distanceByPair = new Map<string, number>()
+  await Promise.all(
+    Array.from(distancePairs.entries()).map(async ([key, { zip1, zip2 }]) => {
+      const { data } = await supabase.rpc('get_distance_miles', { zip1, zip2 })
+      if (typeof data === 'number') distanceByPair.set(key, data)
+    }),
+  )
+
+  /** "12.4 miles away", or null when either ZIP is unknown to the lookup. */
+  const distanceLabelFor = (musicianZip?: string | null, locationZip?: string | null) => {
+    if (!musicianZip || !locationZip) return null
+    const miles = distanceByPair.get(distanceKey(musicianZip, locationZip))
+    if (miles === undefined) return null
+    return `${miles.toFixed(1)} miles away`
+  }
 
   const latestPendingByRequest = new Map<string, ProposalRow>()
   for (const proposal of proposals ?? []) {
@@ -534,7 +564,22 @@ export default async function RequestsPage({
                     </div>
 
                     <div className="mt-2 grid gap-1 font-poppins text-sm text-ocean-900/80 sm:grid-cols-2">
-                      <p><span className="font-medium">Musician:</span> {musician?.name ?? 'Unknown'}{musician?.zip_code ? ` (ZIP ${musician.zip_code})` : ''}</p>
+                      <p>
+                        <span className="font-medium">Musician:</span>{' '}
+                        {musician ? (
+                          // Still a link to the full profile — the details
+                          // below just save the trip for the common case.
+                          <Link
+                            href={`/discover/musician/${musician.username ?? musician.id}`}
+                            className="font-semibold text-ocean-700 underline underline-offset-2 transition hover:text-ocean-900"
+                          >
+                            {musician.name}
+                          </Link>
+                        ) : (
+                          'Unknown'
+                        )}
+                        {musician?.zip_code ? ` (ZIP ${musician.zip_code})` : ''}
+                      </p>
                       <p>
                         <span className="font-medium">Current proposal:</span> {formatDateLabel(request.requested_date)}
                         {request.requested_start_time && request.requested_end_time
@@ -542,6 +587,29 @@ export default async function RequestsPage({
                           : ''}
                       </p>
                     </div>
+
+                    {/* Music types, instruments and distance inline, so a
+                        facility can size up a request without opening the
+                        profile first. */}
+                    {musician && (
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        {distanceLabelFor(musician.zip_code, location?.zip_code) && (
+                          <span className="rounded-full bg-amber-50 px-2 py-0.5 font-poppins text-xs font-semibold text-amber-700">
+                            {distanceLabelFor(musician.zip_code, location?.zip_code)}
+                          </span>
+                        )}
+                        {((musician.music_types ?? []) as string[]).map((type) => (
+                          <span key={`t-${type}`} className="rounded-full bg-ocean-100 px-2 py-0.5 font-poppins text-xs font-medium text-ocean-800">
+                            {type}
+                          </span>
+                        ))}
+                        {((musician.instruments ?? []) as string[]).map((instrument) => (
+                          <span key={`i-${instrument}`} className="rounded-full border border-ocean-200 px-2 py-0.5 font-poppins text-xs font-medium text-ocean-700">
+                            {instrument}
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
                     {latestPendingProposal && (
                       <p className="mt-2 font-poppins text-xs text-ocean-900/60">
