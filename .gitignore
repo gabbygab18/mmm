@@ -43,3 +43,8 @@ backups/
 
 # Local e-mail layout previews (scripts/preview-email.ts output).
 email-preview*.html
+
+# Staging Supabase DB password (local only, never commit).
+.staging-db-password.txt
+.staging-keys.json
+.staging.env
