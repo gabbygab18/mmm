@@ -539,21 +539,41 @@ export default async function RequestsPage({
             const primaryFallbackClass = showMusicianAsPrimary
               ? 'bg-amber-100 text-amber-700'
               : 'bg-ocean-100 text-ocean-700'
+            // Both profile routes accept a bare id, so the username is only a
+            // nicety here. Falls back to the requests list when the row is
+            // missing entirely, rather than building a link to nowhere.
+            const primaryProfileHref = showMusicianAsPrimary
+              ? musician
+                ? `/discover/musician/${musician.username ?? musician.id}`
+                : '/dashboard/requests'
+              : location
+                ? `/discover/location/${location.id}`
+                : '/dashboard/requests'
 
             return (
               <li key={request.id} className="rounded-2xl border border-ocean-200/70 bg-white p-4 shadow-sm">
                 <div className="flex gap-4">
-                  {primaryImageUrl ? (
-                    <img
-                      src={primaryImageUrl}
-                      alt={primaryName}
-                      className="h-14 w-14 flex-shrink-0 rounded-xl border border-ocean-200/70 object-cover"
-                    />
-                  ) : (
-                    <div className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-ocean-200/70 font-poppins text-sm font-semibold ${primaryFallbackClass}`}>
-                      {primaryName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  {/* The avatar goes wherever the name beside it goes. Which
+                      profile that is depends on who is looking: a facility
+                      sees the musician here, a musician sees the venue. */}
+                  <Link
+                    href={primaryProfileHref}
+                    aria-label={`View ${primaryName}'s profile`}
+                    title={`View ${primaryName}'s profile`}
+                    className="flex-shrink-0 rounded-xl transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean-500"
+                  >
+                    {primaryImageUrl ? (
+                      <img
+                        src={primaryImageUrl}
+                        alt={primaryName}
+                        className="h-14 w-14 rounded-xl border border-ocean-200/70 object-cover"
+                      />
+                    ) : (
+                      <div className={`flex h-14 w-14 items-center justify-center rounded-xl border border-ocean-200/70 font-poppins text-sm font-semibold ${primaryFallbackClass}`}>
+                        {primaryName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </Link>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center justify-between gap-2">
