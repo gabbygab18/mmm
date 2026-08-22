@@ -30,7 +30,7 @@ export function BroadcastForm() {
   const [confirming, setConfirming] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
+  const [result, setResult] = useState<{ sent: number; failed: number; total: number; skipped: number } | null>(null)
 
   // Keep the headline count honest as the selection changes — it is the one
   // number someone will read before committing to send.
@@ -72,7 +72,12 @@ export function BroadcastForm() {
       return
     }
 
-    setResult({ sent: outcome.sentCount, failed: outcome.failedCount, total: outcome.recipientCount })
+    setResult({
+      sent: outcome.sentCount,
+      failed: outcome.failedCount,
+      total: outcome.recipientCount,
+      skipped: outcome.skippedCount,
+    })
     setSubject('')
     setBody('')
   }
@@ -83,8 +88,14 @@ export function BroadcastForm() {
         <h2 className="font-garamond text-[22px] font-bold text-emerald-900">Broadcast sent</h2>
         <p className="mt-2 font-poppins text-sm text-emerald-900/80">
           Delivered to {result.sent} of {result.total} recipients.
-          {result.failed > 0 ? ` ${result.failed} could not be sent — check the server logs for details.` : ''}
+          {result.failed > 0 ? ` ${result.failed} could not be sent.` : ''}
         </p>
+        {result.skipped > 0 && (
+          <p className="mt-1.5 font-poppins text-xs text-emerald-900/70">
+            {result.skipped} test {result.skipped === 1 ? 'account was' : 'accounts were'} skipped — addresses on
+            placeholder domains like example.com cannot receive mail.
+          </p>
+        )}
         <button
           type="button"
           onClick={() => setResult(null)}
@@ -139,7 +150,8 @@ export function BroadcastForm() {
               : `This will reach ${recipientCount} ${recipientCount === 1 ? 'person' : 'people'}.`}
         </p>
         <p className="mt-1 font-poppins text-[11.5px] text-ocean-900/50">
-          Anyone who has turned e-mail notifications off, and any deleted account, is excluded automatically.
+          Excluded automatically: anyone who turned e-mail notifications off, deleted accounts, and test
+          accounts on placeholder domains such as example.com.
         </p>
       </div>
 

@@ -25,8 +25,28 @@ import { buildBroadcastEmailHtml } from '@/lib/email-template'
 export type BroadcastAudience = 'musician' | 'center_coordinator'
 
 export type BroadcastResult =
-  | { ok: true; recipientCount: number; sentCount: number; failedCount: number }
+  | { ok: true; recipientCount: number; sentCount: number; failedCount: number; skippedCount: number }
   | { ok: false; error: string }
+
+/**
+ * Addresses that can never receive mail.
+ *
+ * example.com and friends are reserved by RFC 2606 for documentation, and
+ * Resend rejects them outright — with a 422 that fails the WHOLE batch, not
+ * just the offending address. Several seeded test accounts use them, which is
+ * why an early broadcast reported 0 of 10 delivered: five example.com rows
+ * poisoned every batch they appeared in.
+ *
+ * Filtering them here means the real recipients get their mail, and the count
+ * shown to the admin reflects who can actually be reached.
+ */
+const UNROUTABLE_DOMAINS = ['example.com', 'example.org', 'example.net', 'test.com', 'invalid', 'local', 'localhost', 'test']
+
+function isUnroutableEmail(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase()
+  if (!domain) return true
+  return UNROUTABLE_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`))
+}
 
 const EMAIL_FROM = process.env.EMAIL_FROM_ADDRESS
   ? `Margaret’s MemoryCare Music <${process.env.EMAIL_FROM_ADDRESS}>`
@@ -46,7 +66,9 @@ type Recipient = { id: string; email: string }
  * has RLS visibility of the whole membership, and that is the point of the
  * feature.
  */
-async function resolveRecipients(audiences: BroadcastAudience[]): Promise<Recipient[]> {
+async function resolveRecipients(
+  audiences: BroadcastAudience[],
+): Promise<{ recipients: Recipient[]; skipped: number }> {
   const supabase = createSupabaseAdminClient()
 
   const { data: users, error } = await supabase
@@ -56,7 +78,7 @@ async function resolveRecipients(audiences: BroadcastAudience[]): Promise<Recipi
 
   if (error) {
     console.error('[broadcast] could not load recipients:', error.message)
-    return []
+    return { recipients: [], skipped: 0 }
   }
 
   // Deleted accounts keep their profile row (event history references it) but
@@ -71,11 +93,43 @@ async function resolveRecipients(audiences: BroadcastAudience[]): Promise<Recipi
     ...(deletedCenters ?? []).map((r) => r.user_id),
   ])
 
-  return (users ?? [])
+  const eligible = (users ?? [])
     .filter((u) => u.email_notifications_enabled !== false)
     .filter((u) => !deletedUserIds.has(u.id))
-    .filter((u) => Boolean(u.email) && !u.email.endsWith('@deleted.invalid'))
+    .filter((u) => Boolean(u.email))
+
+  const recipients = eligible
+    .filter((u) => !isUnroutableEmail(u.email))
     .map((u) => ({ id: u.id, email: u.email }))
+
+  return { recipients, skipped: eligible.length - recipients.length }
+}
+
+/**
+ * Single send, used as the fallback when a batch is rejected wholesale.
+ * Returns whether it went out, so the caller can count accurately instead of
+ * assuming the whole chunk failed.
+ */
+async function sendOne(recipient: Recipient, subject: string, text: string, html: string): Promise<boolean> {
+  if (!resend || !EMAIL_FROM) return false
+  try {
+    const { error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: recipient.email,
+      replyTo: EMAIL_REPLY_TO,
+      subject,
+      text,
+      html,
+    })
+    if (error) {
+      console.error(`[broadcast] send failed for ${recipient.email}:`, error)
+      return false
+    }
+    return true
+  } catch (e) {
+    console.error(`[broadcast] send threw for ${recipient.email}:`, e)
+    return false
+  }
 }
 
 /** How many people a broadcast would actually reach, for the confirm step. */
@@ -86,7 +140,7 @@ export async function countBroadcastRecipientsAction(
   if (role !== 'admin') return { count: 0 }
   if (audiences.length === 0) return { count: 0 }
 
-  const recipients = await resolveRecipients(audiences)
+  const { recipients } = await resolveRecipients(audiences)
   return { count: recipients.length }
 }
 
@@ -111,7 +165,7 @@ export async function sendBroadcastAction(
     return { ok: false, error: 'E-mail sending is not configured on this environment.' }
   }
 
-  const recipients = await resolveRecipients(audiences)
+  const { recipients, skipped } = await resolveRecipients(audiences)
   if (recipients.length === 0) {
     return { ok: false, error: 'No eligible recipients — everyone in that audience has e-mail notifications turned off, or the audience is empty.' }
   }
@@ -139,15 +193,24 @@ export async function sendBroadcastAction(
       )
 
       if (error) {
-        console.error('[broadcast] batch rejected:', error)
-        failedCount += chunk.length
+        // A batch is all-or-nothing: Resend rejects the entire call if any one
+        // address offends it, so a single bad row would otherwise cost
+        // everyone in the chunk their mail. Fall back to sending one at a time
+        // so the good addresses still get through and only the genuinely
+        // undeliverable ones are counted as failures.
+        console.error('[broadcast] batch rejected, retrying individually:', error)
+        const outcomes = await Promise.all(chunk.map((r) => sendOne(r, trimmedSubject, trimmedBody, html)))
+        sentCount += outcomes.filter(Boolean).length
+        failedCount += outcomes.filter((ok) => !ok).length
       } else {
         sentCount += data?.data?.length ?? chunk.length
       }
     } catch (e) {
       // One bad batch must not abandon the rest of the list.
-      console.error('[broadcast] batch threw:', e)
-      failedCount += chunk.length
+      console.error('[broadcast] batch threw, retrying individually:', e)
+      const outcomes = await Promise.all(chunk.map((r) => sendOne(r, trimmedSubject, trimmedBody, html)))
+      sentCount += outcomes.filter(Boolean).length
+      failedCount += outcomes.filter((ok) => !ok).length
     }
   }
 
@@ -178,5 +241,5 @@ export async function sendBroadcastAction(
     )
   }
 
-  return { ok: true, recipientCount: recipients.length, sentCount, failedCount }
+  return { ok: true, recipientCount: recipients.length, sentCount, failedCount, skippedCount: skipped }
 }
