@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { TimeGridPicker } from '@/app/components/TimeGridPicker'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
-import { notifyRequestInitiatedAction } from './actions'
+import { notifyRequestInitiatedAction, checkNewRequestConflictAction } from './actions'
 
 type Role = 'musician' | 'center_coordinator' | 'admin'
 
@@ -281,6 +281,13 @@ export default function NewRequestPage() {
       return
     }
 
+    // The calendar lets you page back into previous months, and nothing
+    // stopped a request being booked into a date that has already passed.
+    if (selectedDate < toDateInputValue(new Date())) {
+      setError('Please choose a date that has not already passed.')
+      return
+    }
+
     const musicianId = role === 'musician' ? ownMusicianId : selectedMusicianId
     if (!musicianId || !selectedCenterLocationId) {
       setError('Please select both a musician and a center location.')
@@ -288,6 +295,17 @@ export default function NewRequestPage() {
     }
 
     setSaving(true)
+
+    // Guard before writing anything: the musician may already be booked in
+    // this window, or have blocked the date out. Nothing checked this before,
+    // so overlapping requests could be created and even accepted.
+    const conflictMessage = await checkNewRequestConflictAction(musicianId, selectedDate, startTime, endTime)
+    if (conflictMessage) {
+      setError(conflictMessage)
+      setSaving(false)
+      return
+    }
+
     const supabase = createSupabaseBrowserClient()
 
     const { data: insertedRequest, error: insertError } = await supabase

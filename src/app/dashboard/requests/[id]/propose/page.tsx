@@ -13,7 +13,7 @@ import {
   toDateInputValue,
 } from '@/app/components/calendar-utils'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
-import { notifyProposalSuggestedAction } from './actions'
+import { notifyProposalSuggestedAction, checkProposalConflictAction } from './actions'
 
 type RequestProposal = {
   id: string
@@ -114,6 +114,16 @@ export default function SuggestAlternateTimePage() {
 
     if (!user) {
       setError('Session expired. Please sign in again.')
+      setSaving(false)
+      return
+    }
+
+    // Catch a clashing slot before writing the proposal — accepting it would
+    // be refused anyway, so surfacing it now saves the other party a
+    // pointless round trip.
+    const conflictMessage = await checkProposalConflictAction(requestId, selectedDate, startTime, endTime)
+    if (conflictMessage) {
+      setError(conflictMessage)
       setSaving(false)
       return
     }

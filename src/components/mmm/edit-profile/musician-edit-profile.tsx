@@ -51,7 +51,24 @@ export type MusicianEditProfileData = {
   general_available_days: string[] | null
   travel_radius_miles: number | null
   youtube_channel_url: string | null
+  spotify_url: string | null
+  soundcloud_url: string | null
+  website_url: string | null
+  unavailable_dates: string[] | null
   profile_image_url: string | null
+}
+
+/**
+ * Trims a pasted link and gives it a scheme if it has none — someone typing
+ * "spotify.com/artist/…" would otherwise produce an href the browser resolves
+ * relative to this site. Empty stays null, so "no link" is a real null in the
+ * column rather than an empty string that reads as present.
+ */
+function normalizeUrl(value: string): string | null {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
 }
 
 export function MusicianEditProfile({
@@ -102,8 +119,17 @@ export function MusicianEditProfile({
     if (miles >= NATIONWIDE_RADIUS_MILES) return 'Any distance'
     return TRAVEL_DISTANCES.find((d) => d.startsWith(`Within ${miles} `)) ?? ''
   })
-  const [unavailableDates, setUnavailableDates] = useState<string[]>(registration.unavailable_dates ?? [])
+  // Prefer the real column; fall back to the auth-metadata copy for anyone
+  // whose row predates the backfill migration.
+  const [unavailableDates, setUnavailableDates] = useState<string[]>(
+    musician.unavailable_dates ?? registration.unavailable_dates ?? [],
+  )
   const [availabilityNotes, setAvailabilityNotes] = useState(registration.availability_notes ?? '')
+
+  const [youtubeUrl, setYoutubeUrl] = useState(musician.youtube_channel_url ?? '')
+  const [spotifyUrl, setSpotifyUrl] = useState(musician.spotify_url ?? '')
+  const [soundcloudUrl, setSoundcloudUrl] = useState(musician.soundcloud_url ?? '')
+  const [websiteUrl, setWebsiteUrl] = useState(musician.website_url ?? '')
 
   const toggleInList = (setter: (fn: (cur: string[]) => string[]) => void, value: string) =>
     setter((cur) => (cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value]))
@@ -149,6 +175,17 @@ export function MusicianEditProfile({
         willing_to_travel: radius > 0,
         travel_radius_miles: radius,
         general_available_days: preferredDays,
+        // Real columns now. youtube_channel_url existed but the form never
+        // wrote it, so a musician had no way to set any link at all; the
+        // other three are new. Blank saves as null rather than '' so the
+        // profile page's "has a link?" checks stay truthful.
+        youtube_channel_url: normalizeUrl(youtubeUrl),
+        spotify_url: normalizeUrl(spotifyUrl),
+        soundcloud_url: normalizeUrl(soundcloudUrl),
+        website_url: normalizeUrl(websiteUrl),
+        // Moved out of auth metadata: the booking conflict checks have to be
+        // able to query these, and metadata is not queryable.
+        unavailable_dates: unavailableDates,
       })
       .eq('id', musician.id)
 
@@ -275,6 +312,54 @@ export function MusicianEditProfile({
                   value={experience}
                   onChange={(e) => setExperience(e.target.value)}
                   placeholder="Share your musical journey, training, performances, and anything you'd like us to know."
+                />
+              </EditField>
+            </div>
+          </div>
+
+          {/* Music links. The youtube_channel_url column and the profile page's
+              link section both already existed, but no form ever wrote to it —
+              so in practice no musician could add a link. */}
+          <div className="mt-6 border-t border-ocean-200/70 pt-5">
+            <h3 className="font-poppins text-[13px] font-bold text-ocean-900">Music Links (Optional)</h3>
+            <p className="mt-0.5 font-poppins text-[12.5px] text-ocean-900/70">
+              Share where facilities can hear your music. These appear on your public profile.
+            </p>
+            <div className="mt-3 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+              <EditField label="YouTube">
+                <input
+                  className={editInputClass}
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  placeholder="youtube.com/@yourchannel"
+                  inputMode="url"
+                />
+              </EditField>
+              <EditField label="Spotify">
+                <input
+                  className={editInputClass}
+                  value={spotifyUrl}
+                  onChange={(e) => setSpotifyUrl(e.target.value)}
+                  placeholder="open.spotify.com/artist/…"
+                  inputMode="url"
+                />
+              </EditField>
+              <EditField label="SoundCloud">
+                <input
+                  className={editInputClass}
+                  value={soundcloudUrl}
+                  onChange={(e) => setSoundcloudUrl(e.target.value)}
+                  placeholder="soundcloud.com/yourname"
+                  inputMode="url"
+                />
+              </EditField>
+              <EditField label="Website">
+                <input
+                  className={editInputClass}
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  placeholder="yourband.com"
+                  inputMode="url"
                 />
               </EditField>
             </div>

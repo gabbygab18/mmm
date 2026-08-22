@@ -211,12 +211,16 @@ export function NotificationBell({ tone = 'light', placement = 'bottom-end' }: N
                       </button>
                     </div>
 
-                    {/* Timestamp */}
-                    <div className="mt-2">
-                      <p className="text-xs text-stone-500">
-                        {formatRelativeTime(new Date(alert.created_at))}
-                      </p>
-                    </div>
+                    {/* Timestamp. alerts.created_at is nullable in the schema
+                        (it has a default but no NOT NULL), so a row without
+                        one would otherwise render "Invalid Date". */}
+                    {alert.created_at && (
+                      <div className="mt-2">
+                        <p className="text-xs text-stone-500">
+                          {formatRelativeTime(new Date(alert.created_at))}
+                        </p>
+                      </div>
+                    )}
                   </Link>
                 ))}
               </div>

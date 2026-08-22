@@ -261,17 +261,6 @@ export async function notifyUser(payload: NotifyPayload) {
       return
     }
 
-    // Log email send (mark it as sent even if actual delivery fails for now)
-    const emailLogged = await logEmailSend({
-      userId: payload.userId,
-      alertType: payload.alertType,
-      recipientEmail: payload.recipientEmail,
-      subject: payload.subject,
-      body: payload.body,
-      relatedRequestId: payload.relatedRequestId,
-    })
-    console.log(`[notifyUser] Email logged=${emailLogged} for user=${payload.userId}`)
-
     if (!resend || !EMAIL_FROM) {
       console.log(`[notifyUser] RESEND_API_KEY or EMAIL_FROM_ADDRESS not set — skipping actual send to ${payload.recipientEmail}`)
       return
@@ -287,13 +276,28 @@ export async function notifyUser(payload: NotifyPayload) {
     })
 
     if (sendError) {
-      // In-app alert and the log row already exist — a failed send here means
-      // the user still sees it in-app, just not in their inbox.
+      // Deliberately NOT logged to notifications_log. That table doubles as
+      // the de-duplication ledger (shouldSendEmail treats any row for the
+      // same user/type/request as "already sent"), so writing a row here
+      // would make one transient Resend failure permanently suppress this
+      // notification — it could never be retried. Leaving it unlogged means
+      // a later retry can still get through. The in-app alert already exists
+      // either way, so the user is not left with nothing.
       console.error(`[notifyUser] Resend send failed for user=${payload.userId}:`, sendError)
       return
     }
 
-    console.log(`[notifyUser] Email sent for user=${payload.userId}, to=${payload.recipientEmail}`)
+    // Logged only after Resend has accepted the message, so the ledger
+    // records real sends rather than attempts.
+    const emailLogged = await logEmailSend({
+      userId: payload.userId,
+      alertType: payload.alertType,
+      recipientEmail: payload.recipientEmail,
+      subject: payload.subject,
+      body: payload.body,
+      relatedRequestId: payload.relatedRequestId,
+    })
+    console.log(`[notifyUser] Email sent for user=${payload.userId}, to=${payload.recipientEmail}, logged=${emailLogged}`)
   } catch (e) {
     console.error(`[notifyUser] Error:`, e)
   }

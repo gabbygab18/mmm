@@ -2,6 +2,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { notifyUser, getRecipientEmail, buildRequestJourneyEmailHtml } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
 import { ScheduleCalendar } from './schedule-calendar'
@@ -217,8 +218,15 @@ export default async function SchedulePage({
   const musicianIds = Array.from(new Set(requests.map((row) => row.musician_id).filter(Boolean) as string[]))
   const locationIds = Array.from(new Set(requests.map((row) => row.center_location_id).filter(Boolean) as string[]))
 
+  // Service-role client for this one read: musicians.phone is no longer
+  // granted to `authenticated` (it was readable platform-wide off the API
+  // for every approved musician), so the request-scoped client can no longer
+  // select it. Safe here because musicianIds comes only from bookings the
+  // signed-in user is a party to — the authorization already happened above,
+  // in the role-scoped request queries.
+  const adminSupabase = createSupabaseAdminClient()
   const { data: musicians } = musicianIds.length
-    ? await supabase.from('musicians').select('id, name, zip_code, phone, profile_image_url').in('id', musicianIds)
+    ? await adminSupabase.from('musicians').select('id, name, zip_code, phone, profile_image_url').in('id', musicianIds)
     : { data: [] as { id: string; name: string; zip_code: string; phone: string | null; profile_image_url: string | null }[] }
 
   const { data: locations } = locationIds.length

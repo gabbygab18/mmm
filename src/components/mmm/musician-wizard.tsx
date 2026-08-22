@@ -616,6 +616,11 @@ export function MusicianWizard({
       travel_radius_miles: radius,
       general_available_days: preferredDays,
       youtube_channel_url: youtubeChannelUrl.trim() || null,
+      // Real column, not just auth metadata — the booking conflict checks
+      // query this to stop a request landing on a date the musician blocked
+      // out, and metadata is not queryable. The metadata copy above stays for
+      // the other registration extras that have no columns.
+      unavailable_dates: unavailableDates,
       profile_complete: true,
     }
     // Leave both columns alone when empty, so the provisional handle and any

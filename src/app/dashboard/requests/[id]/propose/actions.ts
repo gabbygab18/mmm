@@ -4,6 +4,7 @@ import { requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { notifyUser, getRecipientEmail, buildRequestJourneyEmailHtml } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
+import { checkBookingConflicts, describeConflict } from '@/lib/booking-conflicts'
 
 function formatDateLabel(value: string) {
   const [year, month, day] = value.split('-').map(Number)
@@ -19,6 +20,42 @@ function formatTimeLabel(value: string) {
   const period = hours >= 12 ? 'PM' : 'AM'
   const displayHours = hours % 12 || 12
   return `${displayHours}:${`${minutes}`.padStart(2, '0')} ${period}`
+}
+
+/**
+ * Pre-flight conflict check for a suggested alternate time. Proposing a slot
+ * the musician is already booked for (or has blocked out) just wastes a round
+ * trip — the accept action would refuse it anyway — so it is caught here,
+ * while the person can still pick a different time.
+ *
+ * Returns a message to show, or null when the slot is free.
+ */
+export async function checkProposalConflictAction(
+  requestId: string,
+  date: string,
+  startTime: string,
+  endTime: string,
+): Promise<string | null> {
+  await requireAuthenticatedUser()
+  const supabase = await createSupabaseServerClient()
+
+  const { data: request } = await supabase
+    .from('requests')
+    .select('musician_id')
+    .eq('id', requestId)
+    .maybeSingle()
+
+  if (!request?.musician_id) return null
+
+  const result = await checkBookingConflicts({
+    musicianId: request.musician_id,
+    date,
+    startTime,
+    endTime,
+    excludeRequestId: requestId,
+  })
+
+  return describeConflict(result)
 }
 
 /**

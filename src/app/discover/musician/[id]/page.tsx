@@ -34,7 +34,7 @@ export default async function MusicianProfilePage({ params }: { params: Promise<
   const supabase = await createSupabaseServerClient()
   const { id: username } = await params
   const MUSICIAN_COLUMNS =
-    'id, username, name, bio, zip_code, profile_image_url, youtube_channel_url, music_types, instruments, band_size_preference, compensation_preference, general_available_days, willing_to_travel, travel_radius_miles, has_own_transport, profile_complete, approved'
+    'id, username, name, bio, zip_code, profile_image_url, youtube_channel_url, spotify_url, soundcloud_url, website_url, music_types, instruments, band_size_preference, compensation_preference, general_available_days, willing_to_travel, travel_radius_miles, has_own_transport, profile_complete, approved'
 
   let musician: {
     id: string
@@ -44,6 +44,9 @@ export default async function MusicianProfilePage({ params }: { params: Promise<
     zip_code: string | null
     profile_image_url: string | null
     youtube_channel_url: string | null
+    spotify_url: string | null
+    soundcloud_url: string | null
+    website_url: string | null
     music_types: string[] | null
     instruments: string[] | null
     band_size_preference: string | null
@@ -132,18 +135,38 @@ export default async function MusicianProfilePage({ params }: { params: Promise<
 
             {musician.bio && <p className="mt-3 text-sm text-ocean-900">{musician.bio}</p>}
 
-            {musician.youtube_channel_url && (
-              <div className="mt-3">
-                <a
-                  href={musician.youtube_channel_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-ocean-700 underline hover:text-ocean-900"
-                >
-                  YouTube Channel
-                </a>
-              </div>
-            )}
+            {/* Music links. Only youtube_channel_url existed before, and no
+                form ever wrote to it, so this section was effectively dead —
+                the other three are new and all four are editable now. */}
+            {(() => {
+              const links = [
+                { label: 'YouTube', href: musician.youtube_channel_url },
+                { label: 'Spotify', href: musician.spotify_url },
+                { label: 'SoundCloud', href: musician.soundcloud_url },
+                { label: 'Website', href: musician.website_url },
+              ].filter((link): link is { label: string; href: string } => Boolean(link.href))
+
+              if (links.length === 0) return null
+
+              return (
+                <div className="mt-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-ocean-900/60">Listen</p>
+                  <div className="mt-1.5 flex flex-wrap gap-2">
+                    {links.map((link) => (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="rounded-lg border border-ocean-300 px-3 py-1.5 text-sm font-medium text-ocean-800 transition hover:bg-ocean-50"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div>

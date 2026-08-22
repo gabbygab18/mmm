@@ -5,6 +5,7 @@ import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { notifyUser, getRecipientEmail, buildRequestJourneyEmailHtml } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
+import { checkBookingConflicts } from '@/lib/booking-conflicts'
 import { SubmitButton } from '@/components/mmm/submit-button'
 
 type WorkflowRole = 'musician' | 'center_coordinator'
@@ -144,6 +145,43 @@ async function updateRequestStatusAction(formData: FormData) {
 
     if (latestPendingProposal && latestPendingProposal.proposed_by_user_id === user.id) {
       redirect('/dashboard/requests?status=accept_waiting')
+    }
+
+    // Double-booking guard. This is the authoritative check: accepting is the
+    // moment the booking becomes a real commitment, and until now nothing
+    // stopped a musician from accepting two overlapping requests (or one on a
+    // date they had marked unavailable). The times checked are the ones that
+    // will actually be adopted below — the latest pending proposal when there
+    // is one, otherwise what is already on the request.
+    const effectiveDate = latestPendingProposal
+      ? (
+          await supabase
+            .from('request_time_proposals')
+            .select('proposed_date, proposed_start_time, proposed_end_time')
+            .eq('id', latestPendingProposal.id)
+            .maybeSingle()
+        ).data
+      : null
+
+    const checkDate = effectiveDate?.proposed_date ?? requestRow.requested_date
+    const checkStart = effectiveDate?.proposed_start_time ?? requestRow.requested_start_time
+    const checkEnd = effectiveDate?.proposed_end_time ?? requestRow.requested_end_time
+
+    if (requestRow.musician_id && checkDate && checkStart && checkEnd) {
+      const conflict = await checkBookingConflicts({
+        musicianId: requestRow.musician_id,
+        date: checkDate,
+        startTime: checkStart,
+        endTime: checkEnd,
+        excludeRequestId: requestId,
+      })
+
+      if (conflict.kind === 'date_blocked') {
+        redirect('/dashboard/requests?status=conflict_date')
+      }
+      if (conflict.kind === 'overlap') {
+        redirect('/dashboard/requests?status=conflict_time')
+      }
     }
 
     const timestamp = new Date().toISOString()
@@ -434,6 +472,19 @@ export default async function RequestsPage({
       {justUpdatedStatus === 'created' && (
         <p className="rounded-lg bg-emerald-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-emerald-800">
           Request sent.
+        </p>
+      )}
+      {/* Double-booking guard outcomes. Wording stays free/busy — it says the
+          slot is taken, never which facility took it. */}
+      {justUpdatedStatus === 'conflict_time' && (
+        <p className="rounded-lg bg-rose-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-rose-800">
+          Couldn&apos;t accept — that time overlaps a performance already scheduled for this musician. Suggest a
+          different time instead.
+        </p>
+      )}
+      {justUpdatedStatus === 'conflict_date' && (
+        <p className="rounded-lg bg-rose-50 px-4 py-2.5 font-poppins text-[12.5px] font-medium text-rose-800">
+          Couldn&apos;t accept — the musician has marked that date unavailable. Suggest a different date instead.
         </p>
       )}
 

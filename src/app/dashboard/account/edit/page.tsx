@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseAdminClient } from '@/lib/supabase/admin'
 import { MusicianEditProfile } from '@/components/mmm/edit-profile/musician-edit-profile'
 import { FacilityEditProfile } from '@/components/mmm/edit-profile/facility-edit-profile'
 
@@ -16,10 +17,18 @@ export default async function EditProfilePage() {
   const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [])
 
   if (role === 'musician') {
-    const { data: musician } = await supabase
+    // Service-role client: musicians.phone is no longer granted to
+    // `authenticated` (it used to be readable platform-wide for every approved
+    // musician). Column privileges are role-wide, not row-wide, so the revoke
+    // takes the number away from its owner too — this read is scoped to the
+    // signed-in user's own row, which restores exactly that and nothing more.
+    // Writes are unaffected: only SELECT was revoked, so the form still saves
+    // phone through the normal request-scoped client.
+    const adminSupabase = createSupabaseAdminClient()
+    const { data: musician } = await adminSupabase
       .from('musicians')
       .select(
-        'id, first_name, last_name, name, bio, phone, zip_code, instruments, music_types, band_size_preference, general_available_days, travel_radius_miles, youtube_channel_url, profile_image_url, profile_complete',
+        'id, first_name, last_name, name, bio, phone, zip_code, instruments, music_types, band_size_preference, general_available_days, travel_radius_miles, youtube_channel_url, spotify_url, soundcloud_url, website_url, unavailable_dates, profile_image_url, profile_complete',
       )
       .eq('user_id', user.id)
       .maybeSingle()

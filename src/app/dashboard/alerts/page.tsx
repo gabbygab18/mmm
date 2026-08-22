@@ -202,7 +202,10 @@ export default function AlertsPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-poppins font-semibold text-ocean-900 break-words">{alert.title}</h3>
                       <p className="mt-1 font-poppins text-sm text-ocean-900/70 break-words">{alert.message}</p>
-                      <p className="mt-2 font-poppins text-xs text-ocean-900/50">{formatDate(alert.created_at)}</p>
+                      {/* Nullable in the schema — default, but no NOT NULL. */}
+                      {alert.created_at && (
+                        <p className="mt-2 font-poppins text-xs text-ocean-900/50">{formatDate(alert.created_at)}</p>
+                      )}
                     </div>
                   </div>
 
