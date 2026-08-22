@@ -21,6 +21,8 @@ type MusicianOption = {
   name: string
   zip_code: string
   general_available_days?: string[]
+  /** Profile-page handle. Falls back to the id, which that route also accepts. */
+  username?: string | null
 }
 
 type NearbyCenterRow = {
@@ -239,11 +241,21 @@ export default function NewRequestPage() {
         return
       }
 
+      // The RPC doesn't return usernames, and the profile link needs one —
+      // fetched separately rather than by changing the shared RPC's shape.
+      // Falls back to the id, which /discover/musician/[id] also resolves.
+      const musicianIds = (nearbyMusicians ?? []).map((row: NearbyMusicianRow) => row.musician_id)
+      const { data: handles } = musicianIds.length
+        ? await supabase.from('musicians').select('id, username').in('id', musicianIds)
+        : { data: [] as { id: string; username: string | null }[] }
+      const usernameById = new Map((handles ?? []).map((row) => [row.id, row.username]))
+
       const options = (nearbyMusicians ?? []).map((row: NearbyMusicianRow) => ({
         id: row.musician_id,
         name: row.musician_name,
         zip_code: row.musician_zip_code,
         general_available_days: row.general_available_days,
+        username: usernameById.get(row.musician_id) ?? null,
       }))
       setMusicianOptions(options)
       
@@ -258,6 +270,16 @@ export default function NewRequestPage() {
 
     refreshNearbyMusicians()
   }, [role, selectedCenterLocationId])
+
+  const selectedMusician = useMemo(
+    () => musicianOptions.find((m) => m.id === selectedMusicianId) ?? null,
+    [musicianOptions, selectedMusicianId],
+  )
+
+  const selectedCenterLocation = useMemo(
+    () => centerLocationOptions.find((c) => c.id === selectedCenterLocationId) ?? null,
+    [centerLocationOptions, selectedCenterLocationId],
+  )
 
   const submitDisabled = useMemo(() => {
     if (!role) return true
@@ -405,22 +427,41 @@ export default function NewRequestPage() {
             </div>
 
             {role === 'musician' && (
-              <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
-                Your location
-                <select
-                  value={selectedCenterLocationId}
-                  onChange={(event) => setSelectedCenterLocationId(event.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
-                  required
-                >
-                  <option value="">Select a nearby center location</option>
-                  {centerLocationOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.center_name} — {option.name} (ZIP {option.zip_code})
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div>
+                <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
+                  Your location
+                  <select
+                    value={selectedCenterLocationId}
+                    onChange={(event) => setSelectedCenterLocationId(event.target.value)}
+                    className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
+                    required
+                  >
+                    <option value="">Select a nearby center location</option>
+                    {centerLocationOptions.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.center_name} — {option.name} (ZIP {option.zip_code})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {/* Mirror of the facility-side profile link below — same form,
+                    same need to check who you're requesting before picking a
+                    date. The route resolves a bare location id too. */}
+                {selectedCenterLocation && (
+                  <Link
+                    href={`/discover/location/${selectedCenterLocation.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 font-poppins text-[11px] font-semibold text-ocean-700 underline underline-offset-2 transition hover:text-ocean-900"
+                  >
+                    View {selectedCenterLocation.name} profile
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5h5v5M19 5l-8 8M11 5H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
             )}
 
             {role === 'center_coordinator' && (
@@ -455,26 +496,46 @@ export default function NewRequestPage() {
                   )
                 )}
 
-                <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
-                  Musician
-                  <select
-                    value={selectedMusicianId}
-                    onChange={(event) => {
-                      setSelectedMusicianId(event.target.value)
-                      const selected = musicianOptions.find((m) => m.id === event.target.value)
-                      setSelectedMusicianGeneralDays((selected?.general_available_days as string[] | null) ?? [])
-                    }}
-                    className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
-                    required
-                  >
-                    <option value="">Select a nearby musician</option>
-                    {musicianOptions.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.name} (ZIP {option.zip_code})
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <div>
+                  <label className="block font-poppins text-[11px] font-semibold text-ocean-900">
+                    Musician
+                    <select
+                      value={selectedMusicianId}
+                      onChange={(event) => {
+                        setSelectedMusicianId(event.target.value)
+                        const selected = musicianOptions.find((m) => m.id === event.target.value)
+                        setSelectedMusicianGeneralDays((selected?.general_available_days as string[] | null) ?? [])
+                      }}
+                      className="mt-1.5 w-full rounded-lg border border-ocean-300 bg-white px-3 py-2.5 font-poppins text-[12px] text-ocean-900 outline-none ring-ocean-500 focus:ring-1"
+                      required
+                    >
+                      <option value="">Select a nearby musician</option>
+                      {musicianOptions.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.name} (ZIP {option.zip_code})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {/* Check who you're about to request before committing to a
+                      date — otherwise the only way to see the profile is to
+                      leave this form and lose what's been filled in, so it
+                      opens in a new tab. */}
+                  {selectedMusician && (
+                    <Link
+                      href={`/discover/musician/${selectedMusician.username ?? selectedMusician.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 font-poppins text-[11px] font-semibold text-ocean-700 underline underline-offset-2 transition hover:text-ocean-900"
+                    >
+                      View {selectedMusician.name}&apos;s profile
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5h5v5M19 5l-8 8M11 5H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5" />
+                      </svg>
+                    </Link>
+                  )}
+                </div>
               </>
             )}
 
