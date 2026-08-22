@@ -17,6 +17,62 @@ export function escapeHtml(value: string) {
     .replace(/'/g, '&#39;')
 }
 
+// Shared type and colour tokens. Declared up front because everything below
+// builds strings out of them.
+const SANS = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+const SERIF = "Georgia, 'Times New Roman', serif"
+const NAVY = '#0a2f5a'
+const INK = '#123556'
+const MUTED = '#6b7b8d'
+const RULE = '#dde5ee'
+
+/**
+ * Absolute origin for images in the signature.
+ *
+ * Mail clients have no page to resolve a relative path against, so every asset
+ * needs a full URL. Not the Vercel preview host: those rotate per deployment
+ * and would leave dead images in mail already sent.
+ */
+const ASSET_ORIGIN = 'https://margaretsmemorycaremusic.org'
+
+/**
+ * The brand signature, as the approved artwork itself rather than a rebuild.
+ *
+ * A single image is what the client supplied and what they want sent, so it is
+ * used whole. Two consequences worth knowing:
+ *
+ *  - Many mail clients block remote images by default, and an image-only
+ *    signature disappears entirely when they do. The alt text therefore
+ *    carries the contact details in plain words, and a text line beneath
+ *    repeats the address and site so the essentials survive with images off.
+ *  - The file is served from the production origin, not a Vercel preview
+ *    host, since those rotate per deployment and would break images in mail
+ *    already delivered.
+ */
+function renderSignatureHtml(): string {
+  const alt = 'Margaret’s Memorycare Music — Bringing Joy Through Live Music. Connecting Musicians. Enriching Lives. info@margaretsmemorycaremusic.org · www.margaretsmemorycaremusic.org'
+
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td align="left">
+        <a href="${ASSET_ORIGIN}" style="text-decoration: none;">
+          <img src="${ASSET_ORIGIN}/mmm/email-signature.png"
+               alt="${alt}"
+               width="536"
+               style="display: block; width: 100%; max-width: 536px; height: auto; border: 0;">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top: 10px; font-family: ${SANS}; font-size: 12px; line-height: 18px; color: ${MUTED};">
+        <a href="mailto:info@margaretsmemorycaremusic.org" style="color: ${MUTED}; text-decoration: none;">info@margaretsmemorycaremusic.org</a>
+        &nbsp;&middot;&nbsp;
+        <a href="${ASSET_ORIGIN}" style="color: ${MUTED}; text-decoration: none;">www.margaretsmemorycaremusic.org</a>
+      </td>
+    </tr>
+  </table>`
+}
+
 /** Where a request/performance is in its lifecycle, for the step checklist
     appended to journey emails. The two "cancelled" variants exist because
     cancelling before vs. after acceptance leaves a different number of
@@ -30,12 +86,6 @@ export type RequestJourneyStage =
 
 const JOURNEY_STEPS = ['Request sent', 'Accepted & scheduled', 'Performance completed']
 
-const SANS = "'Helvetica Neue', Helvetica, Arial, sans-serif"
-const SERIF = "Georgia, 'Times New Roman', serif"
-const NAVY = '#0a2f5a'
-const INK = '#123556'
-const MUTED = '#6b7b8d'
-const RULE = '#dde5ee'
 
 /**
  * The step checklist, as a table rather than a <ul>.
@@ -115,7 +165,6 @@ export function buildRequestJourneyEmailHtml(bodyText: string, stage: RequestJou
         <tr>
           <td style="background-color: ${NAVY}; padding: 22px 32px;">
             <p style="margin: 0; font-family: ${SERIF}; font-size: 20px; line-height: 26px; font-weight: 700; color: #ffffff;">Margaret&rsquo;s MemoryCare Music</p>
-            <p style="margin: 4px 0 0 0; font-family: ${SANS}; font-size: 11px; line-height: 16px; letter-spacing: 1.2px; text-transform: uppercase; color: #9dc2e8;">Bringing live music to memory care</p>
           </td>
         </tr>
 
@@ -137,8 +186,14 @@ export function buildRequestJourneyEmailHtml(bodyText: string, stage: RequestJou
         </tr>
 
         <tr>
-          <td style="border-top: 1px solid ${RULE}; padding: 20px 32px 26px 32px; margin-top: 12px;">
-            <p style="margin: 0; font-family: ${SANS}; font-size: 12px; line-height: 18px; color: ${MUTED};">
+          <td style="border-top: 1px solid ${RULE}; padding: 24px 32px 8px 32px;">
+            ${renderSignatureHtml()}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 4px 32px 26px 32px;">
+            <p style="margin: 0; font-family: ${SANS}; font-size: 11px; line-height: 17px; color: ${MUTED};">
               You&rsquo;re receiving this because you have an account with Margaret&rsquo;s MemoryCare Music.
             </p>
           </td>
