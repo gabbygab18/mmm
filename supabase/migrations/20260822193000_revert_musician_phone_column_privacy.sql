@@ -1,0 +1,27 @@
+-- Revert the column-level phone revoke from 20260822093000.
+--
+-- That migration removed table-level SELECT on public.musicians and re-granted
+-- every column except phone, to stop any authenticated user reading every
+-- approved musician's personal number off the API.
+--
+-- It broke musician profile completion in production. Two failures, both
+-- traced back to the missing TABLE-level privilege rather than the column:
+--
+--   1. `INSERT ... ON CONFLICT (user_id) DO UPDATE` — which is what the
+--      onboarding wizard's upsert compiles to — requires table-level SELECT
+--      in Postgres so it can read the conflicting row. Column grants do not
+--      satisfy it. This surfaced to users as the bare
+--      "permission denied for table musicians".
+--   2. `select('*')` expands to every column, including phone, so any such
+--      read failed too.
+--
+-- Restoring the table grant re-exposes phone to authenticated users. That is a
+-- real but bounded privacy issue, and it is strictly better than a broken
+-- signup flow. The proper fix is to move phone into a separate table with its
+-- own RLS (owner + admin only) rather than trying to carve one column out of a
+-- deliberately permissive row policy — column privileges are the wrong tool
+-- here, because they are role-wide while the requirement is row-relative.
+--
+-- Tracked as follow-up work; not attempted in the same change as the revert.
+
+grant select on public.musicians to anon, authenticated;
