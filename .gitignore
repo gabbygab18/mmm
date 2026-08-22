@@ -36,3 +36,7 @@ yarn-error.log*
 *.swp
 *.swo
 .env*
+
+# Database exports — contain real user PII (emails, names, phone numbers).
+# Never commit these; they are local safety copies only.
+backups/
