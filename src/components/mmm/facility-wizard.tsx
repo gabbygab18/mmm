@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { readOwnContact, saveOwnPhone } from '@/lib/private-contact'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
 import { BackButton, NextButton, StepHeading, StepIcon, StepTracker } from '@/components/mmm/registration-ui'
@@ -208,12 +209,18 @@ export function FacilityWizard({
         // account's name to the user's own email — never show that as a
         // pre-filled "facility name" even if an old row still has it.
         setFacilityName(center.name && center.name !== user.email ? center.name : '')
-        setFacilityPhone(center.phone ?? '')
         setWebsite(center.website ?? '')
+
+        // Numbers come from private_contacts, not the centers row — that row
+        // is readable platform-wide for discovery. Only overwrite the metadata
+        // prefill above when something is actually saved, so a part-finished
+        // registration does not lose what was typed.
+        const { data: contact } = await readOwnContact(supabase, user.id)
+        if (contact?.phone) setFacilityPhone(contact.phone)
+        if (contact?.directorPhone) setDirectorPhone(contact.directorPhone)
         setDirectorFirstName(center.director_first_name ?? '')
         setDirectorLastName(center.director_last_name ?? '')
         setDirectorEmail(center.director_email ?? '')
-        setDirectorPhone(center.director_phone ?? '')
         setJobTitle(center.director_job_title ?? '')
         setContactMethod(center.preferred_contact_method ?? '')
         setPreferredDays(center.preferred_days ?? [])
@@ -244,7 +251,6 @@ export function FacilityWizard({
           setResidentCount(location.resident_count != null ? String(location.resident_count) : '')
           setLocationHandle(location.username ?? '')
           setLocationPhotoUrl(location.location_image_url ?? '')
-          if (!center.phone && location.phone) setFacilityPhone(location.phone)
         }
       }
 
@@ -569,12 +575,10 @@ export function FacilityWizard({
     const centerRow: Record<string, unknown> = {
       user_id: user.id,
       name: facilityName.trim(),
-      phone: facilityPhone.trim() || null,
       website: website.trim() || null,
       director_first_name: directorFirstName.trim() || null,
       director_last_name: directorLastName.trim() || null,
       director_email: directorEmail.trim() || null,
-      director_phone: directorPhone.trim() || null,
       director_job_title: jobTitle || null,
       preferred_contact_method: contactMethod || null,
       preferred_days: preferredDays,
@@ -599,6 +603,19 @@ export function FacilityWizard({
       .select('id')
       .single()
 
+    // Both numbers go to private_contacts, not onto the centers row: that row
+    // is readable platform-wide so musicians can discover facilities, which
+    // would expose the facility line and the director's direct number to
+    // anyone signed in. RLS releases them only after an accepted booking.
+    if (!centerError && savedCenter) {
+      const { error: phoneError } = await saveOwnPhone(supabase, user.id, facilityPhone, directorPhone)
+      if (phoneError) {
+        setError(phoneError)
+        setLoading(false)
+        return
+      }
+    }
+
     if (centerError || !savedCenter) {
       setError(centerError?.message ?? 'Your community profile could not be saved.')
       setLoading(false)
@@ -613,7 +630,6 @@ export function FacilityWizard({
       city: city.trim() || null,
       state: state || null,
       zip_code: zip.trim(),
-      phone: facilityPhone.trim() || null,
       resident_count: residentCount.trim() ? Number(residentCount.trim()) : null,
     }
     // Both are nullable, so only write them when there is something to write —

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { saveOwnPhone } from '@/lib/private-contact'
 import { TextField, PhoneField, SelectField, PillGroup, Field } from '@/components/mmm/form-kit'
 import { EditProfileFooter, EditProfileHeader, SectionCard, editInputClass } from './edit-profile-ui'
 import {
@@ -21,13 +22,12 @@ const COMMUNITY_TYPES = ['Private Community', 'Public Community'] as const
 
 export type FacilityEditProfileData = {
   id: string
+  user_id: string
   name: string | null
-  phone: string | null
   website: string | null
   director_first_name: string | null
   director_last_name: string | null
   director_email: string | null
-  director_phone: string | null
   director_job_title: string | null
   preferred_contact_method: string | null
   preferred_days: string[] | null
@@ -58,12 +58,18 @@ export function FacilityEditProfile({
   email,
   firstName: initialFirstName,
   lastName: initialLastName,
+  initialPhone,
+  initialDirectorPhone,
 }: {
   center: FacilityEditProfileData
   location: FacilityLocationEditData | null
   email: string
   firstName: string
   lastName: string
+  /** Both read from private_contacts by the server page — not from the centers
+      row, which is readable platform-wide for discovery. */
+  initialPhone: string | null
+  initialDirectorPhone: string | null
 }) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -76,12 +82,12 @@ export function FacilityEditProfile({
   const [address, setAddress] = useState(location?.address ?? '')
   const [zip, setZip] = useState(location?.zip_code ?? '')
   const [website, setWebsite] = useState(center.website ?? '')
-  const [facilityPhone, setFacilityPhone] = useState(center.phone ?? '')
+  const [facilityPhone, setFacilityPhone] = useState(initialPhone ?? '')
 
   const [directorFirstName, setDirectorFirstName] = useState(center.director_first_name ?? '')
   const [directorLastName, setDirectorLastName] = useState(center.director_last_name ?? '')
   const [directorEmail, setDirectorEmail] = useState(center.director_email ?? '')
-  const [directorPhone, setDirectorPhone] = useState(center.director_phone ?? '')
+  const [directorPhone, setDirectorPhone] = useState(initialDirectorPhone ?? '')
   const [jobTitle, setJobTitle] = useState(center.director_job_title ?? '')
   const [contactMethod, setContactMethod] = useState(center.preferred_contact_method ?? '')
 
@@ -130,12 +136,10 @@ export function FacilityEditProfile({
       .from('centers')
       .update({
         name: facilityName.trim(),
-        phone: facilityPhone.trim() || null,
         website: website.trim() || null,
         director_first_name: directorFirstName.trim() || null,
         director_last_name: directorLastName.trim() || null,
         director_email: directorEmail.trim() || null,
-        director_phone: directorPhone.trim() || null,
         director_job_title: jobTitle || null,
         preferred_contact_method: contactMethod || null,
         preferred_days: preferredDays,
@@ -164,6 +168,15 @@ export function FacilityEditProfile({
       return
     }
 
+    // Numbers live in private_contacts — see the wizard for why the centers
+    // row is the wrong place for them.
+    const { error: phoneError } = await saveOwnPhone(supabase, center.user_id, facilityPhone, directorPhone)
+    if (phoneError) {
+      setError(phoneError)
+      setSaving(false)
+      return
+    }
+
     if (location) {
       const { error: locationError } = await supabase
         .from('center_locations')
@@ -171,7 +184,6 @@ export function FacilityEditProfile({
           name: facilityName.trim() || 'Main Location',
           address: address.trim(),
           zip_code: zip.trim(),
-          phone: facilityPhone.trim() || null,
         })
         .eq('id', location.id)
 

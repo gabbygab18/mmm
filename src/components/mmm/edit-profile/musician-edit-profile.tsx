@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { saveOwnPhone } from '@/lib/private-contact'
 import { AvatarPhotoButton } from '@/components/mmm/avatar-photo-button'
 import { TextField, PhoneField, SelectField, PillGroup } from '@/components/mmm/form-kit'
 import {
@@ -39,11 +40,11 @@ const NATIONWIDE_RADIUS_MILES = 5000
 
 export type MusicianEditProfileData = {
   id: string
+  user_id: string
   first_name: string | null
   last_name: string | null
   name: string | null
   bio: string | null
-  phone: string | null
   zip_code: string | null
   instruments: string[] | null
   music_types: string[] | null
@@ -74,10 +75,14 @@ function normalizeUrl(value: string): string | null {
 export function MusicianEditProfile({
   musician,
   email,
+  initialPhone,
   registration,
 }: {
   musician: MusicianEditProfileData
   email: string
+  /** Read from private_contacts by the server page — not on the musicians row,
+      which is readable platform-wide for discovery. */
+  initialPhone: string | null
   /** Metadata-only extras the onboarding wizard also keeps outside the
       `musicians` table (no matching/search logic depends on them, so they
       have never needed real columns) — years of experience, preferred time
@@ -97,7 +102,7 @@ export function MusicianEditProfile({
   const [firstName, setFirstName] = useState(musician.first_name ?? '')
   const [lastName, setLastName] = useState(musician.last_name ?? '')
   const [bio, setBio] = useState(musician.bio ?? '')
-  const [phone, setPhone] = useState(musician.phone ?? '')
+  const [phone, setPhone] = useState(initialPhone ?? '')
   const [zip, setZip] = useState(musician.zip_code ?? '')
   const [performanceTypes, setPerformanceTypes] = useState<string[]>(
     musician.band_size_preference ? [musician.band_size_preference] : [],
@@ -167,7 +172,6 @@ export function MusicianEditProfile({
         last_name: lastName.trim(),
         name: `${firstName.trim()} ${lastName.trim()}`,
         bio: bio.trim() || null,
-        phone: phone.trim() || null,
         zip_code: zip.trim(),
         instruments,
         music_types: genres,
@@ -191,6 +195,17 @@ export function MusicianEditProfile({
 
     if (updateError) {
       setError(updateError.message)
+      setSaving(false)
+      return
+    }
+
+    // Phone goes to private_contacts, not onto the musicians row: that row is
+    // readable platform-wide so facilities can discover musicians, which would
+    // expose the number to anyone signed in. RLS on private_contacts releases
+    // it only once the two sides have an accepted booking.
+    const { error: phoneError } = await saveOwnPhone(supabase, musician.user_id, phone)
+    if (phoneError) {
+      setError(phoneError)
       setSaving(false)
       return
     }

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ChangeEvent, ReactNode, useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { readOwnPhone, saveOwnPhone } from '@/lib/private-contact'
 import { MarketingHeader } from '@/components/mmm/marketing-header'
 import { MarketingFooter } from '@/components/mmm/marketing-footer'
 import { PasswordField, PhoneField, PillGroup, SelectField, TextField } from '@/components/mmm/form-kit'
@@ -324,6 +325,13 @@ export function MusicianWizard({
         .eq('user_id', user.id)
         .maybeSingle()
 
+      // Phone comes from private_contacts, not the musicians row — that row
+      // is readable platform-wide for discovery, so a number on it is exposed
+      // to anyone signed in. Read before the `if`, since someone part-way
+      // through onboarding may have saved a number but no musicians row yet.
+      const savedPhone = await readOwnPhone(supabase, user.id)
+      if (savedPhone) setPhone(savedPhone)
+
       if (musician) {
         setWasAlreadyComplete(Boolean(musician.profile_complete))
         // Completing the wizard once already means the Volunteer Agreement was
@@ -332,7 +340,6 @@ export function MusicianWizard({
         if (musician.first_name) setFirstName(musician.first_name)
         if (musician.last_name) setLastName(musician.last_name)
         setBio(musician.bio ?? '')
-        setPhone(musician.phone ?? '')
         setZip(musician.zip_code ?? '')
         if (musician.band_size_preference) setPerformanceTypes([musician.band_size_preference])
         const instruments: string[] = musician.instruments ?? []
@@ -607,7 +614,6 @@ export function MusicianWizard({
       last_name: lastName.trim(),
       bio: bio.trim() || null,
       zip_code: zip.trim(),
-      phone: phone.trim() || null,
       instruments,
       music_types: genres,
       band_size_preference: performanceTypes[0] ?? null,
@@ -633,6 +639,16 @@ export function MusicianWizard({
 
     if (saveError) {
       setError(saveError.message)
+      setLoading(false)
+      return
+    }
+
+    // Phone goes to private_contacts rather than onto the row above: the
+    // musicians row is readable platform-wide so facilities can discover
+    // musicians, which would put the number in reach of anyone signed in.
+    const { error: phoneError } = await saveOwnPhone(supabase, user.id, phone)
+    if (phoneError) {
+      setError(phoneError)
       setLoading(false)
       return
     }

@@ -744,6 +744,27 @@ export type Database = {
           },
         ]
       }
+      private_contacts: {
+        Row: {
+          director_phone: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          director_phone?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          director_phone?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       request_status_history: {
         Row: {
           changed_by_user_id: string
@@ -1191,6 +1212,10 @@ export type Database = {
       musician_display_name: {
         Args: { p_first: string; p_full: string; p_last: string }
         Returns: string
+      }
+      users_are_connected: {
+        Args: { user_a: string; user_b: string }
+        Returns: boolean
       }
     }
     Enums: {

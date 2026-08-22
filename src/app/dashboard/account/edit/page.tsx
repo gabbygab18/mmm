@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { createSupabaseAdminClient } from '@/lib/supabase/admin'
+import { readOwnPhone, readOwnContact } from '@/lib/private-contact'
 import { MusicianEditProfile } from '@/components/mmm/edit-profile/musician-edit-profile'
 import { FacilityEditProfile } from '@/components/mmm/edit-profile/facility-edit-profile'
 
@@ -17,21 +17,17 @@ export default async function EditProfilePage() {
   const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [])
 
   if (role === 'musician') {
-    // Service-role client: musicians.phone is no longer granted to
-    // `authenticated` (it used to be readable platform-wide for every approved
-    // musician). Column privileges are role-wide, not row-wide, so the revoke
-    // takes the number away from its owner too — this read is scoped to the
-    // signed-in user's own row, which restores exactly that and nothing more.
-    // Writes are unaffected: only SELECT was revoked, so the form still saves
-    // phone through the normal request-scoped client.
-    const adminSupabase = createSupabaseAdminClient()
-    const { data: musician } = await adminSupabase
+    const { data: musician } = await supabase
       .from('musicians')
       .select(
-        'id, first_name, last_name, name, bio, phone, zip_code, instruments, music_types, band_size_preference, general_available_days, travel_radius_miles, youtube_channel_url, spotify_url, soundcloud_url, website_url, unavailable_dates, profile_image_url, profile_complete',
+        'id, user_id, first_name, last_name, name, bio, zip_code, instruments, music_types, band_size_preference, general_available_days, travel_radius_miles, youtube_channel_url, spotify_url, soundcloud_url, website_url, unavailable_dates, profile_image_url, profile_complete',
       )
       .eq('user_id', user.id)
       .maybeSingle()
+
+    // Phone lives in private_contacts now — the musicians row is readable
+    // platform-wide, so a number stored there is exposed to anyone signed in.
+    const ownPhone = await readOwnPhone(supabase, user.id)
 
     // Not finished yet — that's the onboarding wizard's job (account-creation
     // step + Volunteer Agreement), not this edit-only page.
@@ -41,6 +37,7 @@ export default async function EditProfilePage() {
       <MusicianEditProfile
         musician={musician}
         email={user.email ?? ''}
+        initialPhone={ownPhone}
         registration={{
           years_of_experience: str(reg.years_of_experience),
           preferred_time: str(reg.preferred_time),
@@ -55,7 +52,7 @@ export default async function EditProfilePage() {
   const { data: center } = await supabase
     .from('centers')
     .select(
-      'id, name, phone, website, director_first_name, director_last_name, director_email, director_phone, director_job_title, preferred_contact_method, preferred_days, visit_frequency, preferred_time, performance_location, preferred_length, scheduling_notes, profile_complete, about_description, established_year, community_type, highlights, testimonial_quote, testimonial_author, preferred_music_styles, preferred_performance_types',
+      'id, user_id, name, website, director_first_name, director_last_name, director_email, director_job_title, preferred_contact_method, preferred_days, visit_frequency, preferred_time, performance_location, preferred_length, scheduling_notes, profile_complete, about_description, established_year, community_type, highlights, testimonial_quote, testimonial_author, preferred_music_styles, preferred_performance_types',
     )
     .eq('user_id', user.id)
     .maybeSingle()
@@ -70,6 +67,10 @@ export default async function EditProfilePage() {
     .limit(1)
     .maybeSingle()
 
+  // Both numbers come from private_contacts — the centers row is readable
+  // platform-wide, so numbers stored there reach anyone signed in.
+  const { data: contact } = await readOwnContact(supabase, user.id)
+
   return (
     <FacilityEditProfile
       center={center}
@@ -77,6 +78,8 @@ export default async function EditProfilePage() {
       email={user.email ?? ''}
       firstName={str(meta.first_name)}
       lastName={str(meta.last_name)}
+      initialPhone={contact?.phone ?? null}
+      initialDirectorPhone={contact?.directorPhone ?? null}
     />
   )
 }

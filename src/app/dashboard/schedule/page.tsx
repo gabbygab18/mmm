@@ -2,7 +2,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getCurrentUserRole, requireAuthenticatedUser } from '@/lib/auth'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { createSupabaseAdminClient } from '@/lib/supabase/admin'
+import { readPhonesFor } from '@/lib/private-contact'
 import { notifyUser, getRecipientEmail, buildRequestJourneyEmailHtml } from '@/lib/notifications'
 import type { AlertType } from '@/lib/notifications'
 import { ScheduleCalendar } from './schedule-calendar'
@@ -218,25 +218,30 @@ export default async function SchedulePage({
   const musicianIds = Array.from(new Set(requests.map((row) => row.musician_id).filter(Boolean) as string[]))
   const locationIds = Array.from(new Set(requests.map((row) => row.center_location_id).filter(Boolean) as string[]))
 
-  // Service-role client for this one read: musicians.phone is no longer
-  // granted to `authenticated` (it was readable platform-wide off the API
-  // for every approved musician), so the request-scoped client can no longer
-  // select it. Safe here because musicianIds comes only from bookings the
-  // signed-in user is a party to — the authorization already happened above,
-  // in the role-scoped request queries.
-  const adminSupabase = createSupabaseAdminClient()
   const { data: musicians } = musicianIds.length
-    ? await adminSupabase.from('musicians').select('id, name, zip_code, phone, profile_image_url').in('id', musicianIds)
-    : { data: [] as { id: string; name: string; zip_code: string; phone: string | null; profile_image_url: string | null }[] }
+    ? await supabase.from('musicians').select('id, user_id, name, zip_code, profile_image_url').in('id', musicianIds)
+    : { data: [] as { id: string; user_id: string; name: string; zip_code: string; profile_image_url: string | null }[] }
 
   const { data: locations } = locationIds.length
-    ? await supabase.from('center_locations').select('id, name, address, phone, center_id, location_image_url').in('id', locationIds)
-    : { data: [] as { id: string; name: string; address: string; phone: string | null; center_id: string; location_image_url: string | null }[] }
+    ? await supabase.from('center_locations').select('id, name, address, center_id, location_image_url').in('id', locationIds)
+    : { data: [] as { id: string; name: string; address: string; center_id: string; location_image_url: string | null }[] }
 
   const centerIds = Array.from(new Set((locations ?? []).map((row) => row.center_id)))
   const { data: centers } = centerIds.length
-    ? await supabase.from('centers').select('id, name, phone, profile_image_url').in('id', centerIds)
-    : { data: [] as { id: string; name: string; phone: string | null; profile_image_url: string | null }[] }
+    ? await supabase.from('centers').select('id, user_id, name, profile_image_url').in('id', centerIds)
+    : { data: [] as { id: string; user_id: string; name: string; profile_image_url: string | null }[] }
+
+  // Phone numbers live in private_contacts, not on the profile rows — those
+  // are readable platform-wide for discovery, so a number stored there leaks
+  // to anyone signed in. Read through the request-scoped client on purpose:
+  // its RLS returns a number only to the owner, an admin, or a counterparty
+  // on an accepted/completed booking, so entitlement is enforced by the
+  // database rather than by this page remembering to check.
+  const contactUserIds = [
+    ...(musicians ?? []).map((row) => row.user_id),
+    ...(centers ?? []).map((row) => row.user_id),
+  ].filter(Boolean)
+  const phoneByUserId = await readPhonesFor(supabase, contactUserIds)
 
   const musicianMap = new Map((musicians ?? []).map((row) => [row.id, row]))
   const locationMap = new Map((locations ?? []).map((row) => [row.id, row]))
@@ -340,8 +345,8 @@ export default async function SchedulePage({
                       <div className="mt-2 grid gap-1 font-poppins text-sm text-ocean-900/70 sm:grid-cols-2">
                         <p><span className="font-medium">Musician:</span> {musician?.name ?? 'Unknown'}{musician?.zip_code ? ` (ZIP ${musician.zip_code})` : ''}</p>
                         <p><span className="font-medium">Location:</span> {location?.address ?? 'Address unavailable'}</p>
-                        <p><span className="font-medium">Musician phone:</span> {musician?.phone ?? 'Not provided'}</p>
-                        <p><span className="font-medium">Center phone:</span> {location?.phone ?? center?.phone ?? 'Not provided'}</p>
+                        <p><span className="font-medium">Musician phone:</span> {(musician && phoneByUserId.get(musician.user_id)) ?? 'Not provided'}</p>
+                        <p><span className="font-medium">Center phone:</span> {(center && phoneByUserId.get(center.user_id)) ?? 'Not provided'}</p>
                       </div>
 
                       {!isAdmin && (
