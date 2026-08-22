@@ -212,3 +212,73 @@ export function buildRequestJourneyEmailHtml(bodyText: string, stage: RequestJou
 </html>`
 }
 
+
+/**
+ * An admin broadcast — news and updates sent to every musician or facility.
+ *
+ * Shares the frame and signature with the request e-mails so a broadcast
+ * still looks like it came from the same place, but carries no status
+ * checklist: there is no request behind it to report on.
+ *
+ * The closing line tells people why they received it and how to stop. That is
+ * not decoration on bulk mail — it is what keeps recipients from reporting it
+ * as spam, which is what actually costs a sending domain its reputation.
+ */
+export function buildBroadcastEmailHtml(bodyText: string): string {
+  const paragraphs = bodyText
+    .split('\n\n')
+    .map((para) => para.trim())
+    .filter(Boolean)
+    .map(
+      (para) =>
+        `<p style="margin: 0 0 14px 0; font-family: ${SANS}; font-size: 15px; line-height: 24px; color: ${INK};">${escapeHtml(para).replace(/\n/g, '<br/>')}</p>`,
+    )
+    .join('')
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Margaret's MemoryCare Music</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #eef2f7; -webkit-font-smoothing: antialiased;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #eef2f7;">
+  <tr>
+    <td align="center" style="padding: 28px 16px;">
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width: 100%; max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(10,47,90,0.08);">
+
+        <tr>
+          <td style="background-color: ${NAVY}; padding: 22px 32px;">
+            <p style="margin: 0; font-family: ${SERIF}; font-size: 20px; line-height: 26px; font-weight: 700; color: #ffffff;">Margaret&rsquo;s MemoryCare Music</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 32px 32px 20px 32px;">${paragraphs}</td>
+        </tr>
+
+        <tr>
+          <td style="border-top: 1px solid ${RULE}; padding: 24px 32px 8px 32px;">
+            ${renderSignatureHtml()}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 4px 32px 26px 32px;">
+            <p style="margin: 0; font-family: ${SANS}; font-size: 11px; line-height: 17px; color: ${MUTED};">
+              You&rsquo;re receiving this because you have an account with Margaret&rsquo;s MemoryCare Music.
+              You can turn these updates off under Profile &rsaquo; Account settings.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>`
+}

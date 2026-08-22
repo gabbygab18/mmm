@@ -73,7 +73,11 @@ const NAV: Record<string, NavItem[]> = {
     { href: '/dashboard/schedule', label: 'Bookings', icon: 'bookings' },
     { href: '/dashboard/admin/oversight', label: 'Oversight', icon: 'reports' },
     { href: '/dashboard/education', label: 'Education Library', icon: 'education' },
-    { href: '/dashboard/alerts', label: 'Announcement', icon: 'announcement' },
+    // "Announcement" pointed at the admin's own notification inbox, which is
+    // not what the label promises. It now opens the broadcast composer; the
+    // inbox is still reachable as Notifications.
+    { href: '/dashboard/admin/broadcast', label: 'Announcement', icon: 'announcement' },
+    { href: '/dashboard/alerts', label: 'Notifications', icon: 'notifications' },
     { href: '/dashboard/admin/reports', label: 'Reports', icon: 'analytics' },
     { href: '/dashboard/admin/categories', label: 'Categories', icon: 'adminresources' },
     { href: '/dashboard/admin/content', label: 'Website Content', icon: 'resources' },

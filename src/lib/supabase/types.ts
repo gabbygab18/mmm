@@ -68,6 +68,50 @@ export type Database = {
           },
         ]
       }
+      broadcasts: {
+        Row: {
+          audiences: string[]
+          body: string
+          created_at: string
+          failed_count: number
+          id: string
+          recipient_count: number
+          sent_by_user_id: string
+          sent_count: number
+          subject: string
+        }
+        Insert: {
+          audiences: string[]
+          body: string
+          created_at?: string
+          failed_count?: number
+          id?: string
+          recipient_count?: number
+          sent_by_user_id: string
+          sent_count?: number
+          subject: string
+        }
+        Update: {
+          audiences?: string[]
+          body?: string
+          created_at?: string
+          failed_count?: number
+          id?: string
+          recipient_count?: number
+          sent_by_user_id?: string
+          sent_count?: number
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcasts_sent_by_user_id_fkey"
+            columns: ["sent_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       center_favorite_musicians: {
         Row: {
           center_id: string
@@ -1231,6 +1275,7 @@ export type Database = {
         | "facility_confirmed"
         | "password_changed"
         | "account_deleted"
+        | "admin_broadcast"
       request_status:
         | "initiated"
         | "matched"
@@ -1377,6 +1422,7 @@ export const Constants = {
         "facility_confirmed",
         "password_changed",
         "account_deleted",
+        "admin_broadcast",
       ],
       request_status: [
         "initiated",
