@@ -52,13 +52,12 @@ export default async function CenterProfilePage({
   const sort = sortParam === 'name' ? 'name' : 'nearest'
 
   const CENTER_COLUMNS =
-    'id, username, name, phone, website, director_email, about_description, community_type, established_year, profile_image_url, profile_complete, approved, confirmed, created_at'
+    'id, username, name, website, director_email, about_description, community_type, established_year, profile_image_url, profile_complete, approved, confirmed, created_at'
 
   let center: {
     id: string
     username: string | null
     name: string
-    phone: string | null
     website: string | null
     director_email: string | null
     about_description: string | null
@@ -95,7 +94,7 @@ export default async function CenterProfilePage({
 
   const { data: locations } = await supabase
     .from('center_locations')
-    .select('id, username, name, address, city, state, zip_code, resident_count, phone, supports_transport, location_image_url, created_at')
+    .select('id, username, name, address, city, state, zip_code, resident_count, supports_transport, location_image_url, created_at')
     .eq('center_id', center.id)
     .order('created_at', { ascending: true })
 
@@ -240,13 +239,11 @@ export default async function CenterProfilePage({
                   </p>
                 </div>
               )}
-              {center.phone && (
-                <div className="flex items-center gap-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/mmm/facility-profile/icon-contact.png" alt="" className="h-5 w-5 shrink-0" />
-                  <p>{center.phone}</p>
-                </div>
-              )}
+              {/* No phone number here, per Tria — same reasoning as the
+                  facility profile page: musician profiles expose neither a
+                  number nor an email, so listing a facility's number was the
+                  odd one out. It still reaches the musician on Scheduled
+                  Events once a booking is accepted. */}
               {center.director_email && (
                 <div className="flex items-center gap-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -254,7 +251,7 @@ export default async function CenterProfilePage({
                   <p className="truncate">{center.director_email}</p>
                 </div>
               )}
-              {!center.website && !primaryLocation?.address && !center.phone && !center.director_email && (
+              {!center.website && !primaryLocation?.address && !center.director_email && (
                 <p className="italic text-ocean-900/50">No contact details on file yet.</p>
               )}
             </div>

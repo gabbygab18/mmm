@@ -50,7 +50,7 @@ export default async function LocationProfilePage({ params }: { params: Promise<
   const supabase = await createSupabaseServerClient()
   const { id: username } = await params
   const LOCATION_COLUMNS =
-    'id, username, center_id, name, address, city, state, zip_code, phone, supports_transport, location_image_url, resident_count, profile_complete'
+    'id, username, center_id, name, address, city, state, zip_code, supports_transport, location_image_url, resident_count, profile_complete'
 
   let location: {
     id: string
@@ -61,7 +61,6 @@ export default async function LocationProfilePage({ params }: { params: Promise<
     city: string | null
     state: string | null
     zip_code: string | null
-    phone: string | null
     supports_transport: boolean | null
     location_image_url: string | null
     resident_count: number | null
@@ -100,7 +99,7 @@ export default async function LocationProfilePage({ params }: { params: Promise<
   const { data: center } = await supabase
     .from('centers')
     .select(
-      'id, name, username, website, phone, director_first_name, director_last_name, director_email, approved, confirmed, profile_image_url, about_description, established_year, community_type, highlights, testimonial_quote, testimonial_author, preferred_music_styles, preferred_performance_types, preferred_days, visit_frequency, preferred_time, performance_location, preferred_length',
+      'id, name, username, website, director_first_name, director_last_name, director_email, approved, confirmed, profile_image_url, about_description, established_year, community_type, highlights, testimonial_quote, testimonial_author, preferred_music_styles, preferred_performance_types, preferred_days, visit_frequency, preferred_time, performance_location, preferred_length',
     )
     .eq('id', location.center_id)
     .maybeSingle()
@@ -296,8 +295,13 @@ export default async function LocationProfilePage({ params }: { params: Promise<
           <div className="space-y-5">
             <div className="rounded-2xl border border-ocean-200/70 bg-ocean-50 p-5 shadow-sm">
               <h2 className="font-poppins text-[15px] font-bold text-ocean-900">Contact Information</h2>
+              {/* No phone number here, per Tria: musician profiles don't expose
+                  a number either, so showing one only for facilities was
+                  inconsistent. The number is still shared with the musician on
+                  Scheduled Events once a booking is accepted — that is the
+                  point at which the two sides actually need to reach each
+                  other. */}
               <div className="mt-3 space-y-2.5">
-                {(location.phone || center.phone) && <InfoRow icon="/mmm/facility-profile/icon-contact.png">{location.phone || center.phone}</InfoRow>}
                 {center.director_email && <InfoRow icon="/mmm/facility-profile/icon-email.png">{center.director_email}</InfoRow>}
                 {center.website && (
                   <InfoRow icon="/mmm/facility-profile/icon-website.png">
@@ -308,7 +312,7 @@ export default async function LocationProfilePage({ params }: { params: Promise<
                 )}
                 {center.visit_frequency && <InfoRow icon="/mmm/facility-profile/icon-time.png">{center.visit_frequency}</InfoRow>}
                 {directorName && <InfoRow icon="/mmm/facility-profile/icon-director.png">{directorName}</InfoRow>}
-                {!location.phone && !center.phone && !center.director_email && !center.website && !directorName && (
+                {!center.director_email && !center.website && !directorName && (
                   <p className="text-sm italic text-ocean-900/50">No contact details on file yet.</p>
                 )}
               </div>
