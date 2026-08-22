@@ -49,9 +49,9 @@ const ASSET_ORIGIN = 'https://margaretsmemorycaremusic.org'
  *    host, since those rotate per deployment and would break images in mail
  *    already delivered.
  *
- * Displayed at its native 400px rather than stretched to the card's full
- * width: the supplied export is 400x200, and upscaling it would only make
- * the text soft. A 2x export would let it render crisply on retina.
+ * Shown at the card's full 536px content width, from a 1072px source — that
+ * is exactly 2x, so it stays sharp on retina without shipping more pixels
+ * than any client will use.
  */
 function renderSignatureHtml(): string {
   const alt = 'Margaret’s Memorycare Music — Bringing Joy Through Live Music. Connecting Musicians. Enriching Lives. info@margaretsmemorycaremusic.org · www.margaretsmemorycaremusic.org'
@@ -62,8 +62,8 @@ function renderSignatureHtml(): string {
         <a href="${ASSET_ORIGIN}" style="text-decoration: none;">
           <img src="${ASSET_ORIGIN}/mmm/email-signature.png"
                alt="${alt}"
-               width="400"
-               style="display: block; width: 100%; max-width: 400px; height: auto; border: 0;">
+               width="536"
+               style="display: block; width: 100%; max-width: 536px; height: auto; border: 0;">
         </a>
       </td>
     </tr>
