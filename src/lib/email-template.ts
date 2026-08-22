@@ -48,6 +48,10 @@ const ASSET_ORIGIN = 'https://margaretsmemorycaremusic.org'
  *  - The file is served from the production origin, not a Vercel preview
  *    host, since those rotate per deployment and would break images in mail
  *    already delivered.
+ *
+ * Displayed at its native 400px rather than stretched to the card's full
+ * width: the supplied export is 400x200, and upscaling it would only make
+ * the text soft. A 2x export would let it render crisply on retina.
  */
 function renderSignatureHtml(): string {
   const alt = 'Margaret’s Memorycare Music — Bringing Joy Through Live Music. Connecting Musicians. Enriching Lives. info@margaretsmemorycaremusic.org · www.margaretsmemorycaremusic.org'
@@ -58,8 +62,8 @@ function renderSignatureHtml(): string {
         <a href="${ASSET_ORIGIN}" style="text-decoration: none;">
           <img src="${ASSET_ORIGIN}/mmm/email-signature.png"
                alt="${alt}"
-               width="536"
-               style="display: block; width: 100%; max-width: 536px; height: auto; border: 0;">
+               width="400"
+               style="display: block; width: 100%; max-width: 400px; height: auto; border: 0;">
         </a>
       </td>
     </tr>
