@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { TimeGridPicker } from '@/app/components/TimeGridPicker'
+import { CalendarMonthGrid } from '@/components/mmm/calendar-month-grid'
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 
 type AvailabilityRow = {
@@ -17,28 +18,11 @@ function startOfMonth(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), 1)
 }
 
-function sameDay(left: Date, right: Date) {
-  return left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth() && left.getDate() === right.getDate()
-}
-
 function toDateInputValue(date: Date) {
   const year = date.getFullYear()
   const month = `${date.getMonth() + 1}`.padStart(2, '0')
   const day = `${date.getDate()}`.padStart(2, '0')
   return `${year}-${month}-${day}`
-}
-
-function buildCalendarDays(month: Date) {
-  const firstDay = startOfMonth(month)
-  const firstWeekday = firstDay.getDay()
-  const gridStart = new Date(firstDay)
-  gridStart.setDate(firstDay.getDate() - firstWeekday)
-
-  return Array.from({ length: 42 }, (_, index) => {
-    const day = new Date(gridStart)
-    day.setDate(gridStart.getDate() + index)
-    return day
-  })
 }
 
 function formatDateLabel(dateValue: string) {
@@ -193,9 +177,6 @@ export default function MusicianAvailabilityPage() {
     )
   }
 
-  const calendarDays = buildCalendarDays(visibleMonth)
-  const monthLabel = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(visibleMonth)
-  const selectedDateObject = new Date(`${selectedDate}T00:00:00`)
   const selectedDateSlots = rows.filter((row) => row.available_date === selectedDate)
 
   return (
@@ -209,66 +190,32 @@ export default function MusicianAvailabilityPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="rounded-2xl border border-ocean-200/70 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))}
-              className="rounded-md border border-ocean-200/70 px-2.5 py-1 text-sm text-ocean-900/70 transition hover:bg-ocean-50"
-            >
-              Prev
-            </button>
-            <h2 className="text-base font-semibold text-ocean-900">{monthLabel}</h2>
-            <button
-              type="button"
-              onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))}
-              className="rounded-md border border-ocean-200/70 px-2.5 py-1 text-sm text-ocean-900/70 transition hover:bg-ocean-50"
-            >
-              Next
-            </button>
-          </div>
-
-          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-ocean-900/40">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day}>{day}</div>
-            ))}
-          </div>
-
-          <div className="mt-2 grid grid-cols-7 gap-2">
-            {calendarDays.map((day) => {
-              const isCurrentMonth = day.getMonth() === visibleMonth.getMonth()
-              const isSelected = sameDay(day, selectedDateObject)
-              const dayValue = toDateInputValue(day)
-              const slotCount = rows.filter((row) => row.available_date === dayValue).length
-              const weekdayLabel = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(day)
-              const isGeneralAvailabilityDay = generalAvailableDays.includes(weekdayLabel)
-
+          <CalendarMonthGrid
+            title="Availability Calendar"
+            subtitle="Pick a date, then add the time window you can perform."
+            visibleMonth={visibleMonth}
+            onMonthChange={setVisibleMonth}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            renderDayBadge={(iso) => {
+              const slotCount = rows.filter((row) => row.available_date === iso).length
+              if (slotCount === 0) return null
               return (
-                <button
-                  key={dayValue}
-                  type="button"
-                  onClick={() => setSelectedDate(dayValue)}
-                  className={`min-h-[74px] rounded-xl border px-2 py-2 text-left transition ${
-                    isSelected
-                      ? 'border-amber-400 bg-amber-50 shadow-sm'
-                      : isGeneralAvailabilityDay
-                        ? 'border-sky-400 bg-sky-200 hover:border-sky-500'
-                        : 'border-ocean-200/70 bg-white hover:border-amber-300'
-                  } ${isCurrentMonth ? 'text-ocean-900' : 'text-ocean-300'}`}
-                >
-                  <div className="text-sm font-medium">{day.getDate()}</div>
-                  {slotCount > 0 && (
-                    <div className="mt-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
-                      {slotCount} slot{slotCount === 1 ? '' : 's'}
-                    </div>
-                  )}
-                </button>
+                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 font-poppins text-[10px] font-semibold text-amber-800">
+                  {slotCount}
+                </span>
               )
-            })}
-          </div>
+            }}
+            renderDayFooter={(_iso, day) => {
+              const weekdayLabel = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(day)
+              if (!generalAvailableDays.includes(weekdayLabel)) return null
+              return <span className="mt-2 block h-2 w-2 rounded-full bg-sky-500" title="Recurring availability" />
+            }}
+          />
 
           <div className="mt-3 flex items-center gap-3 text-xs text-ocean-900/70">
-            <span className="inline-block h-3 w-3 rounded bg-sky-100 border border-sky-300" />
-            <span>Soft highlight = your recurring day-of-week availability</span>
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-sky-500" />
+            <span>Your recurring day-of-week availability</span>
           </div>
         </div>
 
