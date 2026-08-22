@@ -590,24 +590,41 @@ export default async function RequestsPage({
 
                     {/* Music types, instruments and distance inline, so a
                         facility can size up a request without opening the
-                        profile first. */}
+                        profile first. Each group is labelled: unlabelled the
+                        pills were ambiguous, since a value like "Vocals"
+                        reads equally as a genre or an instrument. */}
                     {musician && (
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <div className="mt-2 space-y-1.5">
                         {distanceLabelFor(musician.zip_code, location?.zip_code) && (
-                          <span className="rounded-full bg-amber-50 px-2 py-0.5 font-poppins text-xs font-semibold text-amber-700">
-                            {distanceLabelFor(musician.zip_code, location?.zip_code)}
-                          </span>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="font-poppins text-xs font-medium text-ocean-900/60">Distance:</span>
+                            <span className="rounded-full bg-amber-50 px-2 py-0.5 font-poppins text-xs font-semibold text-amber-700">
+                              {distanceLabelFor(musician.zip_code, location?.zip_code)}
+                            </span>
+                          </div>
                         )}
-                        {((musician.music_types ?? []) as string[]).map((type) => (
-                          <span key={`t-${type}`} className="rounded-full bg-ocean-100 px-2 py-0.5 font-poppins text-xs font-medium text-ocean-800">
-                            {type}
-                          </span>
-                        ))}
-                        {((musician.instruments ?? []) as string[]).map((instrument) => (
-                          <span key={`i-${instrument}`} className="rounded-full border border-ocean-200 px-2 py-0.5 font-poppins text-xs font-medium text-ocean-700">
-                            {instrument}
-                          </span>
-                        ))}
+
+                        {((musician.music_types ?? []) as string[]).length > 0 && (
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="font-poppins text-xs font-medium text-ocean-900/60">Music types:</span>
+                            {((musician.music_types ?? []) as string[]).map((type) => (
+                              <span key={`t-${type}`} className="rounded-full bg-ocean-100 px-2 py-0.5 font-poppins text-xs font-medium text-ocean-800">
+                                {type}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {((musician.instruments ?? []) as string[]).length > 0 && (
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="font-poppins text-xs font-medium text-ocean-900/60">Instruments:</span>
+                            {((musician.instruments ?? []) as string[]).map((instrument) => (
+                              <span key={`i-${instrument}`} className="rounded-full border border-ocean-200 px-2 py-0.5 font-poppins text-xs font-medium text-ocean-700">
+                                {instrument}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
